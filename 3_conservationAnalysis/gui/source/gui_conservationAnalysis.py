@@ -51,110 +51,139 @@ class OrderedCounter(Counter, OrderedDict):
 # Choose window theme.
 Sg.theme('DarkGrey13')
 # Create window layout.
-layout = [[Sg.Text('Phage Display - UbV Trimming',
-                   text_color='#8294cc',
-                   font=('Segoe UI Semibold', 16),
-                   expand_x=True)
-           ],
-          [Sg.Text('''    Analyses ELISA and/or sequencing data for UbVs by showing only non-conserved amino acid
+layout = [
+
+    # Title and introduction.
+    [Sg.Text('Phage Display - UbV Trimming',
+             text_color='#8294cc',
+             font=('Segoe UI Semibold', 16),
+             expand_x=True)
+     ],
+    [Sg.Text('''    Analyses ELISA and/or sequencing data for UbVs by showing only non-conserved amino acid
     residues and highlighting regions that were targeted for diversification based on the initial phage
     display library design.
     Final output is in xlsx format.\n''',
-                   text_color='#8294cc',
-                   font=('Segoe UI', 12)
-                   )
-           ],
-          [Sg.Text('''\n1. Choose input format:''',
-                   text_color='white',
-                   font=('Segoe UI Bold', 10)
-                   )
-           ],
-          [Sg.Radio('A. ELISA and sequencing data',
-                    'FORMAT',
-                    default=True,
-                    key='-FORMAT1-',
-                    text_color='#bfbfbf',
-                    font=('Segoe UI Bold', 10)
-                    ),
-           Sg.Radio('B. Sequencing data only',
-                    'FORMAT',
-                    default=False,
-                    key='-FORMAT2-',
-                    text_color='#bfbfbf',
-                    font=('Segoe UI Bold', 10)
-                    )
-           ],
-          [Sg.Text('''    A. requires xlsx output from phageDisplayElisaAnalysis.py.
-    B. requires fasta alignment output from phageDisplaySeqAnalysis.py.\n''',
-                   text_color='#bfbfbf',
-                   font=('Segoe UI', 10)
-                   )
-           ],
-          [Sg.Text('''\n2. Enter the full path of the ELISA or alignment file:''',
-                   text_color='white',
-                   font=('Segoe UI Bold', 10)
-                   )
-           ],
-          [Sg.Input(key='-FILEINPUT-',
-                    size=70),
-           Sg.FileBrowse()
-           ],
-          [Sg.Text('''    * File depends on the format chosen previously. 
-    * ELISA data must be in xlsx format.
-    * Alignment data must be in fasta format.\n''',
-                   text_color='#bfbfbf',
-                   font=('Segoe UI', 10)
-                   )
-           ],
+             text_color='#8294cc',
+             font=('Segoe UI', 12)
+             )
+     ],
 
-          [Sg.Text('''\n3. Choose library design:''',
-                   text_color='white',
-                   font=('Segoe UI Bold', 10)
-                   )
-           ],
-          [Sg.Radio('A. Library 1 (Ernst et al., 2013)',
-                    'LIBRARY',
-                    default=True,
-                    key='-LIBRARY1-',
-                    text_color='#bfbfbf',
-                    font=('Segoe UI Bold', 10)
-                    ),
-           Sg.Radio('B. Library 2 (Ernst et al., 2013)',
-                    'LIBRARY',
-                    default=False,
-                    key='-LIBRARY2-',
-                    text_color='#bfbfbf',
-                    font=('Segoe UI Bold', 10)
-                    ),
-           Sg.Radio('C. N/A',
-                    'LIBRARY',
-                    default=False,
-                    key='-LIBRARY0-',
-                    text_color='#bfbfbf',
-                    font=('Segoe UI Bold', 10)
-                    )
-           ],
+    # Input format prompt.
+    [Sg.Text('''\n1. Choose input format:''',
+             text_color='white',
+             font=('Segoe UI Bold', 10)
+             )
+     ],
+    [Sg.Radio('ELISA and sequencing data',
+              'FORMAT',
+              default=True,
+              key='-FORMAT1-',
+              text_color='#bfbfbf',
+              font=('Segoe UI Bold', 10),
+              enable_events=True
+              ),
+     Sg.Radio('Sequencing data only',
+              'FORMAT',
+              default=False,
+              key='-FORMAT2-',
+              text_color='#bfbfbf',
+              font=('Segoe UI Bold', 10),
+              enable_events=True
+              )
+     ],
+    [Sg.Text('''    Requires xlsx output from phageDisplayElisaAnalysis.py.
+    Requires fasta alignment output from phageDisplaySeqAnalysis.py.\n''',
+             text_color='#bfbfbf',
+             font=('Segoe UI', 10)
+             )
+     ],
 
-          [Sg.Text('''    A. Diversified residues:
-          (Region 1) 2, 4, 6, 8-12, 14
-          (Region 2) 35, 37, 39-40, 42, 44, 46-49
-          (Region 3) 62-64, 66, 68, 70-72\n
-    B. Diversified residues:
-          (Region 1) 2, 4, 6, 8-12, 14
-          (Region 2) 42, 44, 46-49
-          (Region 3) 62-64, 66, 68, 70-78\n\n''',
-                   text_color='#bfbfbf',
-                   font=('Segoe UI', 10)
-                   )
-           ],
-          [Sg.Button('Enter',
-                     bind_return_key=True,
-                     font=('Segoe UI Bold', 16),
-                     size=(10, 0),
-                     pad=(275, 0)
-                     )
-           ],
-          ]
+    # File input prompt.
+    [Sg.Text('''\n2. Enter the full path of the ELISA file:''',
+             text_color='white',
+             font=('Segoe UI Bold', 10),
+             key='-FILEBEGINNINGTEXT-'
+             )
+     ],
+    [Sg.Input(key='-FILEINPUT-',
+              size=70),
+     Sg.FileBrowse()
+     ],
+    [Sg.Text('''    * Must be in xlsx format.\n''',
+             text_color='#bfbfbf',
+             font=('Segoe UI', 10),
+             key='-FILEENDTEXT-'
+             )
+     ],
+
+    # Consensus sequence input prompt.
+    [Sg.Text('3. Enter the consensus sequence for comparison:',
+             text_color='white',
+             font=('Segoe UI Bold', 10)
+             )
+     ],
+    [Sg.Input(key='-CONSERVATIONINPUT-',
+              size=95,
+              default_text='MQIFVKTLTGKTITLEVEPSDTIENVKAKIQDKEGIPPDQQRLIFAGKQLEDGRTLSDYNIQKESTLHLVLRLRGGGG'
+              )
+     ],
+    [Sg.Text('''    * Default is human ubiquitin (PDB: ). In most cases this does not need to be changed.\n''',
+             text_color='#bfbfbf',
+             font=('Segoe UI', 10)
+             )
+     ],
+
+    # Library format prompt.
+    [Sg.Text('''\n4. Choose library design:''',
+             text_color='white',
+             font=('Segoe UI Bold', 10)
+             )
+     ],
+    [Sg.Radio('Library 1 (Ernst et al., 2013)',
+              'LIBRARY',
+              default=True,
+              key='-LIBRARY1-',
+              text_color='#bfbfbf',
+              font=('Segoe UI Bold', 10),
+              enable_events=True
+              ),
+     Sg.Radio('Library 2 (Ernst et al., 2013)',
+              'LIBRARY',
+              default=False,
+              key='-LIBRARY2-',
+              text_color='#bfbfbf',
+              font=('Segoe UI Bold', 10),
+              enable_events=True
+              ),
+     Sg.Radio('N/A',
+              'LIBRARY',
+              default=False,
+              key='-LIBRARY0-',
+              text_color='#bfbfbf',
+              font=('Segoe UI Bold', 10),
+              enable_events=True
+              )
+     ],
+
+    [Sg.Text('''    Diversified residues:
+        (Region 1) 2, 4, 6, 8-12, 14
+        (Region 2) 35, 37, 39-40, 42, 44, 46-49
+        (Region 3) 62-64, 66, 68, 70-72\n\n''',
+             text_color='#bfbfbf',
+             font=('Segoe UI', 10),
+             key='-LIBRARYENDTEXT-'
+             )
+     ],
+
+    # 'Enter' button.
+    [Sg.Button('Enter',
+               bind_return_key=True,
+               font=('Segoe UI Bold', 16),
+               size=(10, 0),
+               pad=(275, 0)
+               )
+     ],
+]
 
 # Name window, assign layout, and change window behaviour.
 window = Sg.Window('Phage Display - UbV Conservation Analysis',
@@ -162,15 +191,46 @@ window = Sg.Window('Phage Display - UbV Conservation Analysis',
                    alpha_channel=0.95,
                    grab_anywhere=True,
                    resizable=True,
-                   size=(725, 800))
+                   size=(725, 775))
 
 # Create a while loop that keeps the window open.
 while True:
     event, values = window.read()
+
     # Break the loop and close the window if 'Exit' or close window buttons are pressed.
     if event == Sg.WIN_CLOSED:
         window.close()
         break
+
+    elif event == '-FORMAT1-':
+        window['-FILEBEGINNINGTEXT-'].update('''\n1. Enter the full path of the ELISA file:''')
+        window['-FILEENDTEXT-'].update('''    * Must be in xlsx format.\n''')
+        continue
+
+    elif event == '-FORMAT2-':
+        window['-FILEBEGINNINGTEXT-'].update('''\n2. Enter the full path of the amino acid alignment file:''')
+        window['-FILEENDTEXT-'].update('''    * Must be in fasta format.\n''')
+        continue
+
+    elif event == '-LIBRARY1-':
+        window['-LIBRARYENDTEXT-'].update('''    Diversified residues:
+        (Region 1) 2, 4, 6, 8-12, 14
+        (Region 2) 35, 37, 39-40, 42, 44, 46-49
+        (Region 3) 62-64, 66, 68, 70-72\n\n''')
+        continue
+
+    elif event == '-LIBRARY2-':
+        window['-LIBRARYENDTEXT-'].update('''    Diversified residues:
+        (Region 1) 2, 4, 6, 8-12, 14
+        (Region 2) 42, 44, 46-49
+        (Region 3) 62-64, 66, 68, 70-78\n\n''')
+        continue
+
+    elif event == '-LIBRARY0-':
+        window['-LIBRARYENDTEXT-'].update('''    Diversified residues:
+        N/A\n\n''')
+        continue
+
     # If 'Enter' is pressed, updates Sg.Text with Sg.Input values.
     elif event == 'Enter':
         inputOptions = {'1': 'ELISA and sequencing',
@@ -178,6 +238,7 @@ while True:
         libraryOptions = {'1': 'Library 1 (Ernst et al., 2013)',
                           '2': 'Library 2 (Ernst et al., 2013)',
                           'pass': 'No library chosen'}
+        # TODO: Add consensus sequence settings here.
 
         if values['-FORMAT1-']:
             inputFormat = '1'

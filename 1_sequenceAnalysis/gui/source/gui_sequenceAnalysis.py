@@ -43,9 +43,10 @@ warnings.filterwarnings('ignore')
 # Choose window theme.
 Sg.theme('DarkGrey13')
 
-# TODO: Add title to top of window, centered, slightly larger, says script name.
 # Create window layout.
 layout = [
+
+    # Title and introduction.
     [Sg.Text('Phage Display - Sequence Analysis',
              text_color='#8294cc',
              font=('Segoe UI Semibold', 16),
@@ -60,6 +61,8 @@ layout = [
              font=('Segoe UI', 12)
              )
      ],
+
+    # Working directory input prompt.
     [Sg.Text('''1. Enter/select the parent folder location/path where files are located:''',
              text_color='white',
              font=('Segoe UI Bold', 10)
@@ -75,6 +78,8 @@ layout = [
              font=('Segoe UI', 10)
              )
      ],
+
+    # 5' trim input prompt.
     [Sg.Text('''2. Enter the sequence to begin the 5' trim at:''',
              text_color='white',
              font=('Segoe UI Bold', 10)
@@ -95,6 +100,8 @@ layout = [
              font=('Segoe UI', 10)
              )
      ],
+
+    # 3' trim input prompt.
     [Sg.Text('''3. Enter the number of nucleotides downstream of the 5' trim site to trim at:''',
              text_color='white',
              font=('Segoe UI Bold', 10)
@@ -110,6 +117,8 @@ layout = [
              font=('Segoe UI', 10)
              )
      ],
+
+    # 'Enter' button.
     [Sg.Button('Enter',
                bind_return_key=True,
                font=('Segoe UI Bold', 16),
@@ -130,10 +139,12 @@ window = Sg.Window('Phage Display - Sequence Analysis',
 # Create a while loop that keeps the window open.
 while True:
     event, values = window.read()
+
     # Break the loop and close the window if 'Exit' or close window buttons are pressed.
     if event == Sg.WIN_CLOSED:
         window.close()
         break
+
     # If 'Enter' is pressed, updates Sg.Text with Sg.Input values.
     elif event == 'Enter':
         path = str(values['-FOLDERINPUT-'])
@@ -150,15 +161,17 @@ while True:
             continue
         else:
             os.chdir(path)
+
         # Stops user if no appropriate files found in the working directory.
         if len(glob.glob('*.seq')) < 1:
-            Sg.Popup('No .seq files were found in this directory.'
+            Sg.Popup('No seq files were found in this directory.'
                      'Please enter it again.',
-                     title='No .seq Files Found',
+                     title='No Seq Files Found',
                      grab_anywhere=True,
                      text_color='#4276ac'
                      )
             continue
+
         # Stops user if 5' trim input isn't valid and prompts to retry.
         startSiteInput = re.search('[agtcurynwsmkbhdv]{6,}', startSite, re.IGNORECASE)
         if startSiteInput is None:
@@ -170,6 +183,7 @@ Please enter a valid IUPAC nucleotide sequence.''',
                      any_key_closes=False
                      )
             continue
+
         # Stops user if 3' trim input isn't valid and prompts to retry.
         if endSite is None:
             Sg.Popup('''Invalid input for 3' trim site.

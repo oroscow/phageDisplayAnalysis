@@ -112,6 +112,7 @@ while True:
 ##################
 
 # ELISA and sequencing data.
+# TODO: Find out why ELISA data analysis is getting hung up.
 if inputFormat == '1':
     # Select ELISA data source. User prompt.
     cyanprint('''\nEnter the analysed ELISA data file name:
@@ -155,12 +156,8 @@ if inputFormat == '1':
     logging.info('Standard deviation values extracted from %s.' % elisaFileName)
 
     # Retrieve well data.
-    wellList = list(allCells['Wells'])
-    wellList = wellList[1:]
-    countID = []
-    for wells in wellList:
-        trimList = re.findall(r'([A-Z][0-1][0-9])', wells)
-        countID.append(trimList)
+    countID = list(allCells['Wells'])
+    countID = countID[1:]
     logging.info('Wells extracted from %s.' % elisaFileName)
 
     # Retrieve amino acid sequences from ELISA file.
@@ -202,8 +199,9 @@ elif inputFormat == '2':
         alignFile.close()
 
     # Retrieve well data.
-    countIDregex = re.compile(r'([A-Z][0-1][0-9])')
-    wellList = countIDregex.findall(allData)
+    wellList = re.findall(r'([A-H][0-1][0-9])',
+                          allData
+                          )
     # Create list of unique nucleotide sequences ordered by frequency.
     unique = OrderedCounter(aaList)
     unique = unique.most_common()
@@ -221,6 +219,7 @@ elif inputFormat == '2':
             if seq in value:
                 orderedIndex.append(key)
     logging.info('Ordered index of amino acid well IDs created.')
+    # TODO: Fix the way specific IDs are written to the sheet.
     countID = []
     begin = 0
     for uniqueSeq, count in uniqueDict.items():
@@ -228,6 +227,10 @@ elif inputFormat == '2':
         countID.append(orderedIndex[begin:end])
         begin += count
     logging.info('List of specific well IDs associated with amino acid sequences created.')
+    # Create new list of unique amino acids.
+    aaList = []
+    for uniqueSeq, count in uniqueDict.items():
+        aaList.append(uniqueSeq)
 
 ##################
 # For each amino acid sequence, replace non-diversified regions with dashes.

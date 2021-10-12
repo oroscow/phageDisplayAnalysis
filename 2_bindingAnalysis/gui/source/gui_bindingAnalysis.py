@@ -38,8 +38,6 @@
 # * This code is confirmed to work in Windows and unconfirmed to work in Macs and Linux. It should work in theory
 #   but path names may need to be changed to suit Macs and Linux' path formats.
 
-# TODO: Add workaround for overflow cells (e.g. find OVRFLW, replace with 4, continue with code; find nan, replace
-#  with 0, continue with code).
 # TODO: Make code to read sequences from excel file without need for fasta files.
 
 ##################
@@ -74,119 +72,153 @@ class OrderedCounter(Counter, OrderedDict):
 Sg.theme('DarkGrey13')
 
 # Create window layout.
-layout = [[Sg.Text('Phage Display - ELISA Analysis',
-                   text_color='#8294cc',
-                   font=('Segoe UI Semibold', 16),
-                   expand_x=True)
-           ],
-          [Sg.Text('''        Analyses phage display sequencing and ELISA data to help assess relative binding affinity.
+layout = [
+
+    # Title and introduction.
+    [Sg.Text('Phage Display - ELISA Analysis',
+             text_color='#8294cc',
+             font=('Segoe UI Semibold', 16),
+             expand_x=True)
+     ],
+    [Sg.Text('''        Analyses phage display sequencing and ELISA data to help assess relative binding affinity.
         
                 Calculates the average of duplicate ELISA absorbances for each protein and normalizes them
                 against the average of the negative controls/blanks. Phages that have ELISA data but don't
                 have corresponding sequencing data are excluded from the final results.
                 Final output is in xlsx format.\n''',
-                   text_color='#8294cc',
-                   font=('Segoe UI', 12)
-                   )
-           ],
-          [Sg.Text('''                Click the button below to see the required plate layout for this program.''',
-                   text_color='#8294cc',
-                   font=('Segoe UI', 10)
-                   )
-           ],
-          [Sg.Button('Plate Layout',
-                     font=('Segoe UI', 10),
-                     size=(20, 0),
-                     pad=(70, 0)
-                     )
-           ],
-          [Sg.Text('''\n1. Enter the full path of the raw ELISA data file:''',
-                   text_color='white',
-                   font=('Segoe UI Bold', 10)
-                   )
-           ],
-          [Sg.Input(key='-ELISAINPUT-',
-                    size=70
-                    ),
-           Sg.FileBrowse()
-           ],
-          [Sg.Text('''    * Make sure there are no dashes in the name, replace with an underscore if necessary.
+             text_color='#8294cc',
+             font=('Segoe UI', 12)
+             )
+     ],
+
+    # 'Plate layout' button.
+    [Sg.Text('''                Click the button below to see the required plate layout for this program.''',
+             text_color='#8294cc',
+             font=('Segoe UI', 10)
+             )
+     ],
+    [Sg.Button('Plate Layout',
+               font=('Segoe UI', 10),
+               size=(20, 0),
+               pad=(70, 0)
+               )
+     ],
+
+    # ELISA file input prompt.
+    [Sg.Text('''\n1. Enter the full path of the raw ELISA data file:''',
+             text_color='white',
+             font=('Segoe UI Bold', 10)
+             )
+     ],
+    [Sg.Input(key='-ELISAINPUT-',
+              size=70
+              ),
+     Sg.FileBrowse()
+     ],
+    [Sg.Text('''    * Make sure there are no dashes in the name, replace with an underscore if necessary.
             * Must be in xlsx format.
             * This location will also be the location of the output files.\n''',
-                   text_color='#bfbfbf',
-                   font=('Segoe UI', 10)
-                   )
-           ],
-          [Sg.Text('''2. Enter well IDs that contain ELISA blanks/negative controls:''',
-                   text_color='white',
-                   font=('Segoe UI Bold', 10)
-                   )
-           ],
-          [Sg.Input(key='-BLANKINPUT-',
-                    size=30
-                    )
-           ],
-          [Sg.Text('''    * Not case-sensitive.
+             text_color='#bfbfbf',
+             font=('Segoe UI', 10)
+             )
+     ],
+
+    # Blank well ID input prompt.
+    [Sg.Text('2. Enter well IDs that contain ELISA blanks/negative controls:',
+             text_color='white',
+             font=('Segoe UI Bold', 10)
+             )
+     ],
+    [Sg.Input(key='-BLANKINPUT-',
+              size=30
+              )
+     ],
+    [Sg.Text('''    * Not case-sensitive.
             * Separate with commas (no spaces) if more than one.
               E.g. p22,p23,p24\n''',
-                   text_color='#bfbfbf',
-                   font=('Segoe UI', 10)
-                   )
-           ],
-          [Sg.Text('''3. Enter the full path of the amino acid alignment file:''',
-                   text_color='white',
-                   font=('Segoe UI Bold', 10)
-                   )
-           ],
-          [Sg.Input(key='-AAINPUT-',
-                    size=70
-                    ),
-           Sg.FileBrowse()
-           ],
-          [Sg.Text('''    * Must be in fasta format.\n''',
-                   text_color='#bfbfbf',
-                   font=('Segoe UI', 10)
-                   )
-           ],
-          [Sg.Text('''4. Enter the full path of the nucleotide alignment file:''',
-                   text_color='white',
-                   font=('Segoe UI Bold', 10)
-                   )
-           ],
-          [Sg.Input(key='-NTINPUT-',
-                    size=70
-                    ),
-           Sg.FileBrowse()
-           ],
-          [Sg.Text('''    * Must be in fasta format.\n''',
-                   text_color='#bfbfbf',
-                   font=('Segoe UI', 10)
-                   )
-           ],
-          [Sg.Button('Enter',
-                     bind_return_key=True,
-                     font=('Segoe UI Bold', 16),
-                     size=(10, 0),
-                     pad=(275, 0)
-                     )
-           ]
-          ]
+             text_color='#bfbfbf',
+             font=('Segoe UI', 10)
+             )
+     ],
+
+    # Emission absorbance input prompt.
+    [Sg.Text('3. Enter the wavelength of the emission peak (nm):',
+             text_color='white',
+             font=('Segoe UI Bold', 10)
+             )
+     ],
+    [Sg.Input(key='-EMISSIONINPUT-',
+              size=15,
+              default_text='450'
+              )
+     ],
+    [Sg.Text('''    * In most cases it will be 450 nm and does not need to be changed.\n''',
+             text_color='#bfbfbf',
+             font=('Segoe UI', 10)
+             )
+     ],
+
+    # Amino acid alignment file input prompt.
+    [Sg.Text('4. Enter the full path of the amino acid alignment file:',
+             text_color='white',
+             font=('Segoe UI Bold', 10)
+             )
+     ],
+    [Sg.Input(key='-AAINPUT-',
+              size=70
+              ),
+     Sg.FileBrowse()
+     ],
+    [Sg.Text('''    * Must be in fasta format.\n''',
+             text_color='#bfbfbf',
+             font=('Segoe UI', 10)
+             )
+     ],
+
+    # Nucleotide alignment file input prompt.
+    [Sg.Text('''5. Enter the full path of the nucleotide alignment file:''',
+             text_color='white',
+             font=('Segoe UI Bold', 10)
+             )
+     ],
+    [Sg.Input(key='-NTINPUT-',
+              size=70
+              ),
+     Sg.FileBrowse()
+     ],
+    [Sg.Text('''    * Must be in fasta format.\n''',
+             text_color='#bfbfbf',
+             font=('Segoe UI', 10)
+             )
+     ],
+
+    # 'Enter' button.
+    [Sg.Button('Enter',
+               bind_return_key=True,
+               font=('Segoe UI Bold', 16),
+               size=(10, 0),
+               pad=(275, 0)
+               )
+     ]
+]
 
 # Name window, assign layout, and change window behaviour.
 window = Sg.Window('Phage Display - ELISA Analysis',
                    layout,
                    alpha_channel=0.95,
                    grab_anywhere=True,
-                   size=(725, 825)
+                   size=(750, 900)
                    )
 
 # Create a while loop that keeps the window open.
 while True:
     event, values = window.read()
+
     # If 'Exit' or close window buttons are pressed, break the loop and close the window.
     if event == Sg.WIN_CLOSED:
         window.close()
         break
+
     # If 'Plate Layout' is pressed, a popup will show the plate layout picture.
     elif event == 'Plate Layout':
         # Make sure the path for the image corresponds to the location of the image in the executable's folder.
@@ -194,10 +226,12 @@ while True:
                  title='Plate Layout',
                  grab_anywhere=True
                  )
+
     # If 'Enter' is pressed, update variable with input values.
     elif event == 'Enter':
         rawElisaFilePath = str(values['-ELISAINPUT-'])
         blankWells = str(values['-BLANKINPUT-'])
+        emissionAbs = str(values['-EMISSIONINPUT-'])
         aaAlignFilePath = str(values['-AAINPUT-'])
         ntAlignFilePath = str(values['-NTINPUT-'])
         # Stops user if no file is found in the working directory.
@@ -215,7 +249,8 @@ while True:
                           rawElisaFilePath
                           )
             os.chdir(path)
-        # Stops user if formatting is incorrect.
+
+        # Stops user if well formatting is incorrect.
         blankWellsInput = re.match(r'[p]\d{2}[,]*',
                                    blankWells
                                    )
@@ -223,11 +258,25 @@ while True:
             Sg.Popup('Invalid input for blank wells.'
                      'Please make sure there are commas (no spaces) between each'
                      ' entry.',
-                     title='File Not Found',
+                     title='Invalid Blank Wells Input',
                      grab_anywhere=True,
                      text_color='#4276ac'
                      )
             continue
+
+        # Stops user if emission absorbance formatting is incorrect.
+        emissionAbsInput = re.match(r'\d{3}',
+                                    emissionAbs
+                                    )
+        if emissionAbsInput is None:
+            Sg.Popup('Invalid input for emission absorbance.'
+                     'Please make sure there three digits.',
+                     title='Invalid Emission Absorbance Input',
+                     grab_anywhere=True,
+                     text_color='#4276ac'
+                     )
+            continue
+
         # Stops user if no file is not found in the working directory.
         if not os.path.exists(aaAlignFilePath):
             Sg.Popup('The entered amino acid alignment fasta file does not exist in this location.'
@@ -237,6 +286,7 @@ while True:
                      text_color='#4276ac'
                      )
             continue
+
         # Stops user if no file is not found in the working directory.
         if not os.path.exists(ntAlignFilePath):
             Sg.Popup('The entered nucleotide alignment fasta file does not exist in this location.'
@@ -257,6 +307,7 @@ while True:
             ntAlignFile = re.findall(r'[a-zA-Z0-9]+\.xlsx$',
                                      ntAlignFilePath
                                      )
+            emissionAbs = int(emissionAbs)
             break
 
 ##################
@@ -288,12 +339,12 @@ else:
     # Retrieve and parse raw ELISA data.
     ##################
 
+    # TODO: Add workaround for overflow cells (e.g. find OVRFLW, replace with 4, continue with code; find nan, replace
+    #  with 0, continue with code).
     allCells = pandas.read_excel(rawElisaFilePath)
     logging.info('Raw data read from ELISA file.')
     # Remove rows where the last column isn't equal to the emission absorbance.
     lastColName = 'Unnamed: ' + str(allCells.shape[1] - 1)
-    # TODO: Add option to change absorbance.
-    emissionAbs = 450
     dataCellsRaw = allCells[allCells[lastColName] == emissionAbs]
     # Remove the emission absorbance column.
     dataCellsRaw = dataCellsRaw.iloc[:, :-1]
@@ -579,11 +630,11 @@ else:
     logging.info('Ordered list of amino acid absorbances created.')
 
     # Associate specific well IDs with corresponding unique sequence.
-    countID = []
+    aaCountID = []
     begin = 0
     for uniqueSeq, count in aaUniqueDict.items():
         end = int(count) + begin
-        countID.append(aaOrderedNames[begin:end])
+        aaCountID.append(aaOrderedNames[begin:end])
         begin += count
     logging.info('List of specific well IDs associated with amino acid sequences created.')
 
@@ -612,11 +663,11 @@ else:
     logging.info('Ordered list of nucleotide absorbances created.')
 
     # Associate specific well IDs with corresponding unique sequence.
-    countID = []
+    ntCountID = []
     begin = 0
     for uniqueSeq, count in uniqueNtDict.items():
         end = int(count) + begin
-        countID.append(ntOrderedNames[begin:end])
+        ntCountID.append(ntOrderedNames[begin:end])
         begin += count
     logging.info('List of specific well IDs associated with nucleotide sequences created.')
 
@@ -629,56 +680,56 @@ else:
     #########
 
     # Retrieve max absorbance for ordered values.
-    uniqueMaxList = []
+    aaUniqueMaxList = []
     begin = 0
     for seq, count in aaUniqueDict.items():
         end = int(count) + begin
         uniqueMax = max(aaOrderedAbs[begin:end])
-        uniqueMaxList.append(uniqueMax)
+        aaUniqueMaxList.append(uniqueMax)
         begin += count
     logging.info('List of unique amino acid maximum absorbances created.')
 
     # Retrieve min absorbance for ordered values.
-    uniqueMinList = []
+    aaUniqueMinList = []
     begin = 0
     for seq, count in aaUniqueDict.items():
         end = int(count) + begin
         uniqueMin = min(aaOrderedAbs[begin:end])
-        uniqueMinList.append(uniqueMin)
+        aaUniqueMinList.append(uniqueMin)
         begin += count
     logging.info('List of unique amino acid minimum absorbances created.')
 
     # Retrieve median absorbance for ordered values.
-    uniqueMedianList = []
+    aaUniqueMedianList = []
     begin = 0
     for seq, count in aaUniqueDict.items():
         end = int(count) + begin
         uniqueMedian = statistics.median(aaOrderedAbs[begin:end])
-        uniqueMedianList.append(uniqueMedian)
+        aaUniqueMedianList.append(uniqueMedian)
         begin += count
     logging.info('List of unique amino acid median absorbances created.')
 
     # Retrieve mean absorbance for ordered values.
-    uniqueMeanList = []
+    aaUniqueMeanList = []
     begin = 0
     for seq, count in aaUniqueDict.items():
         end = int(count) + begin
         uniqueMean = statistics.mean(aaOrderedAbs[begin:end])
-        uniqueMeanList.append(uniqueMean)
+        aaUniqueMeanList.append(uniqueMean)
         begin += count
     logging.info('List of unique amino acid mean absorbances created.')
 
     # Retrieve standard deviation of absorbances for ordered values.
-    uniqueStdevList = []
+    aaUniqueStdevList = []
     begin = 0
     for seq, count in aaUniqueDict.items():
         end = int(count) + begin
         try:
             uniqueStdev = statistics.stdev(aaOrderedAbs[begin:end])
-            uniqueStdevList.append(uniqueStdev)
+            aaUniqueStdevList.append(uniqueStdev)
         # Above statistic won't work if only a single value so append '0.0' value to the list.
         except statistics.StatisticsError:
-            uniqueStdevList.append(0)
+            aaUniqueStdevList.append(0)
         begin += count
     logging.info('List of unique amino acid absorbance standard deviations created.')
 
@@ -687,56 +738,56 @@ else:
     #########
 
     # Retrieve max absorbance for ordered values.
-    uniqueMaxList = []
+    ntUniqueMaxList = []
     begin = 0
     for seq, count in uniqueNtDict.items():
         end = int(count) + begin
         uniqueMax = max(ntOrderedAbs[begin:end])
-        uniqueMaxList.append(uniqueMax)
+        ntUniqueMaxList.append(uniqueMax)
         begin += count
     logging.info('List of unique nucleotide maximum absorbances created.')
 
     # Retrieve min absorbance for ordered values.
-    uniqueMinList = []
+    ntUniqueMinList = []
     begin = 0
     for seq, count in uniqueNtDict.items():
         end = int(count) + begin
         uniqueMin = min(ntOrderedAbs[begin:end])
-        uniqueMinList.append(uniqueMin)
+        ntUniqueMinList.append(uniqueMin)
         begin += count
     logging.info('List of unique nucleotide minimum absorbances created.')
 
     # Retrieve median absorbance for ordered values.
-    uniqueMedianList = []
+    ntUniqueMedianList = []
     begin = 0
     for seq, count in uniqueNtDict.items():
         end = int(count) + begin
         uniqueMedian = statistics.median(ntOrderedAbs[begin:end])
-        uniqueMedianList.append(uniqueMedian)
+        ntUniqueMedianList.append(uniqueMedian)
         begin += count
     logging.info('List of unique nucleotide median absorbances created.')
 
     # Retrieve mean absorbance for ordered values.
-    uniqueMeanList = []
+    ntUniqueMeanList = []
     begin = 0
     for seq, count in uniqueNtDict.items():
         end = int(count) + begin
         uniqueMean = statistics.mean(ntOrderedAbs[begin:end])
-        uniqueMeanList.append(uniqueMean)
+        ntUniqueMeanList.append(uniqueMean)
         begin += count
     logging.info('List of unique nucleotide mean absorbances created.')
 
     # Retrieve stdev absorbance for ordered values.
-    uniqueStdevList = []
+    ntUniqueStdevList = []
     begin = 0
     for seq, count in uniqueNtDict.items():
         end = int(count) + begin
         try:
             uniqueStdev = statistics.stdev(ntOrderedAbs[begin:end])
-            uniqueStdevList.append(uniqueStdev)
+            ntUniqueStdevList.append(uniqueStdev)
         # Above statistic won't work if only a single value so append '0.0' value to the list.
         except statistics.StatisticsError:
-            uniqueStdevList.append(0)
+            ntUniqueStdevList.append(0)
         begin += count
     logging.info('List of unique nucleotide absorbance standard deviations created.')
 
@@ -895,7 +946,7 @@ else:
     maxRow = 2
     maxCol = aaAlignLen + 2
     worksheet2.write(0, aaAlignLen + 2, 'Max.', title_format)
-    for seq in uniqueMaxList:
+    for seq in aaUniqueMaxList:
         worksheet2.write(maxRow, maxCol, seq, stats_format)
         maxRow += 1
     logging.info('List of unique amino acid maximum absorbances written to %s worksheet.' % worksheet2Name)
@@ -904,7 +955,7 @@ else:
     minRow = 2
     minCol = aaAlignLen + 3
     worksheet2.write(0, aaAlignLen + 3, 'Min.', title_format)
-    for seq in uniqueMinList:
+    for seq in aaUniqueMinList:
         worksheet2.write(minRow, minCol, seq, stats_format)
         minRow += 1
     logging.info('List of unique amino acid minimum absorbances written to %s worksheet.' % worksheet2Name)
@@ -913,7 +964,7 @@ else:
     medianRow = 2
     medianCol = aaAlignLen + 4
     worksheet2.write(0, aaAlignLen + 4, 'Median', title_format)
-    for seq in uniqueMedianList:
+    for seq in aaUniqueMedianList:
         worksheet2.write(medianRow, medianCol, seq, stats_format)
         medianRow += 1
     logging.info('List of unique amino acid median absorbances written to %s worksheet.' % worksheet2Name)
@@ -922,7 +973,7 @@ else:
     meanRow = 2
     meanCol = aaAlignLen + 5
     worksheet2.write(0, aaAlignLen + 5, 'Mean', title_format)
-    for seq in uniqueMeanList:
+    for seq in aaUniqueMeanList:
         worksheet2.write(meanRow, meanCol, seq, stats_format)
         meanRow += 1
     logging.info('List of unique amino acid mean absorbances written to %s worksheet.' % worksheet2Name)
@@ -931,13 +982,13 @@ else:
     stdevRow = 2
     stdevCol = aaAlignLen + 6
     worksheet2.write(0, aaAlignLen + 6, 'St. Dev.', title_format)
-    for seq in uniqueStdevList:
+    for seq in aaUniqueStdevList:
         worksheet2.write(stdevRow, stdevCol, seq, stats_format)
         stdevRow += 1
     logging.info('List of unique amino acid absorbance standard deviations written to %s worksheet.' % worksheet2Name)
 
     # Change column width to fit all IDs.
-    wellColWidth = round((len(countID[0]) * 3) * 1.4)
+    wellColWidth = round((len(aaCountID[0]) * 3) * 1.4)
     worksheet2.set_column(aaAlignLen + 7, aaAlignLen + 7, wellColWidth)
     # Write IDs to worksheet.
     worksheet2.write(0, aaAlignLen + 7, 'Wells', wellTitle_format)
@@ -945,7 +996,7 @@ else:
     wellCol = aaAlignLen + 7
     countIDregex = re.compile(r"([A-Z][0-1][0-9])")
     sep = ', '
-    for wellList in countID:
+    for wellList in aaCountID:
         wellList = countIDregex.findall(str(wellList))
         wellList = sep.join(wellList)
         worksheet2.write(wellRow, wellCol, wellList, wellList_format)
@@ -1067,7 +1118,7 @@ else:
     maxRow = 2
     maxCol = ntAlignLen + 2
     worksheet4.write(0, ntAlignLen + 2, 'Max.', title_format)
-    for seq in uniqueMaxList:
+    for seq in ntUniqueMaxList:
         worksheet4.write(maxRow, maxCol, seq, stats_format)
         maxRow += 1
     logging.info('List of unique nucleotide maximum absorbances written to %s worksheet.' % worksheet4Name)
@@ -1076,7 +1127,7 @@ else:
     minRow = 2
     minCol = ntAlignLen + 3
     worksheet4.write(0, ntAlignLen + 3, 'Min.', title_format)
-    for seq in uniqueMinList:
+    for seq in ntUniqueMinList:
         worksheet4.write(minRow, minCol, seq, stats_format)
         minRow += 1
     logging.info('List of unique nucleotide minimum absorbances written to %s worksheet.' % worksheet4Name)
@@ -1085,7 +1136,7 @@ else:
     medianRow = 2
     medianCol = ntAlignLen + 4
     worksheet4.write(0, ntAlignLen + 4, 'Median', title_format)
-    for seq in uniqueMedianList:
+    for seq in ntUniqueMedianList:
         worksheet4.write(medianRow, medianCol, seq, stats_format)
         medianRow += 1
     logging.info('List of unique nucleotide median absorbances written to %s worksheet.' % worksheet4Name)
@@ -1094,7 +1145,7 @@ else:
     meanRow = 2
     meanCol = ntAlignLen + 5
     worksheet4.write(0, ntAlignLen + 5, 'Mean', title_format)
-    for seq in uniqueMeanList:
+    for seq in ntUniqueMeanList:
         worksheet4.write(meanRow, meanCol, seq, stats_format)
         meanRow += 1
     logging.info('List of unique nucleotide mean absorbances written to %s worksheet.' % worksheet4Name)
@@ -1103,7 +1154,7 @@ else:
     stdevRow = 2
     stdevCol = ntAlignLen + 6
     worksheet4.write(0, ntAlignLen + 6, 'St. Dev.', title_format)
-    for seq in uniqueStdevList:
+    for seq in ntUniqueStdevList:
         worksheet4.write(stdevRow, stdevCol, seq, stats_format)
         stdevRow += 1
     logging.info('List of unique nucleotide absorbance standard deviations written to %s worksheet.' % worksheet4Name)
@@ -1116,7 +1167,7 @@ else:
     wellCol = ntAlignLen + 7
     countIDregex = re.compile(r"([A-Z][0-1][0-9])")
     sep = ', '
-    for wellList in countID:
+    for wellList in ntCountID:
         wellList = countIDregex.findall(str(wellList))
         wellList = sep.join(wellList)
         worksheet4.write(wellRow, wellCol, wellList, wellList_format)

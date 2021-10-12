@@ -471,11 +471,11 @@ for index in aaOrderedNames:
 logging.info('Ordered list of amino acid absorbances created.')
 
 # Associate specific well IDs with corresponding unique sequence.
-countID = []
+aaCountID = []
 begin = 0
 for uniqueSeq, count in aaUniqueDict.items():
     end = int(count) + begin
-    countID.append(aaOrderedNames[begin:end])
+    aaCountID.append(aaOrderedNames[begin:end])
     begin += count
 logging.info('List of specific well IDs associated with amino acid sequences created.')
 
@@ -503,11 +503,11 @@ for index in ntOrderedNames:
 logging.info('Ordered list of nucleotide absorbances created.')
 
 # Associate specific well IDs with corresponding unique sequence.
-countID = []
+ntCountID = []
 begin = 0
 for uniqueSeq, count in uniqueNtDict.items():
     end = int(count) + begin
-    countID.append(ntOrderedNames[begin:end])
+    ntCountID.append(ntOrderedNames[begin:end])
     begin += count
 logging.info('List of specific well IDs associated with nucleotide sequences created.')
 
@@ -520,56 +520,56 @@ logging.info('List of specific well IDs associated with nucleotide sequences cre
 #########
 
 # Retrieve max absorbance for ordered values.
-uniqueMaxList = []
+aaUniqueMaxList = []
 begin = 0
 for seq, count in aaUniqueDict.items():
     end = int(count) + begin
     uniqueMax = max(aaOrderedAbs[begin:end])
-    uniqueMaxList.append(uniqueMax)
+    aaUniqueMaxList.append(uniqueMax)
     begin += count
 logging.info('List of unique amino acid maximum absorbances created.')
 
 # Retrieve min absorbance for ordered values.
-uniqueMinList = []
+aaUniqueMinList = []
 begin = 0
 for seq, count in aaUniqueDict.items():
     end = int(count) + begin
     uniqueMin = min(aaOrderedAbs[begin:end])
-    uniqueMinList.append(uniqueMin)
+    aaUniqueMinList.append(uniqueMin)
     begin += count
 logging.info('List of unique amino acid minimum absorbances created.')
 
 # Retrieve median absorbance for ordered values.
-uniqueMedianList = []
+aaUniqueMedianList = []
 begin = 0
 for seq, count in aaUniqueDict.items():
     end = int(count) + begin
     uniqueMedian = statistics.median(aaOrderedAbs[begin:end])
-    uniqueMedianList.append(uniqueMedian)
+    aaUniqueMedianList.append(uniqueMedian)
     begin += count
 logging.info('List of unique amino acid median absorbances created.')
 
 # Retrieve mean absorbance for ordered values.
-uniqueMeanList = []
+aaUniqueMeanList = []
 begin = 0
 for seq, count in aaUniqueDict.items():
     end = int(count) + begin
     uniqueMean = statistics.mean(aaOrderedAbs[begin:end])
-    uniqueMeanList.append(uniqueMean)
+    aaUniqueMeanList.append(uniqueMean)
     begin += count
 logging.info('List of unique amino acid mean absorbances created.')
 
 # Retrieve standard deviation of absorbances for ordered values.
-uniqueStdevList = []
+aaUniqueStdevList = []
 begin = 0
 for seq, count in aaUniqueDict.items():
     end = int(count) + begin
     try:
         uniqueStdev = statistics.stdev(aaOrderedAbs[begin:end])
-        uniqueStdevList.append(uniqueStdev)
+        aaUniqueStdevList.append(uniqueStdev)
     # Above statistic won't work if only a single value so append '0.0' value to the list.
     except statistics.StatisticsError:
-        uniqueStdevList.append(0)
+        aaUniqueStdevList.append(0)
     begin += count
 logging.info('List of unique amino acid absorbance standard deviations created.')
 
@@ -578,56 +578,56 @@ logging.info('List of unique amino acid absorbance standard deviations created.'
 #########
 
 # Retrieve max absorbance for ordered values.
-uniqueMaxList = []
+ntUniqueMaxList = []
 begin = 0
 for seq, count in uniqueNtDict.items():
     end = int(count) + begin
     uniqueMax = max(ntOrderedAbs[begin:end])
-    uniqueMaxList.append(uniqueMax)
+    ntUniqueMaxList.append(uniqueMax)
     begin += count
 logging.info('List of unique nucleotide maximum absorbances created.')
 
 # Retrieve min absorbance for ordered values.
-uniqueMinList = []
+ntUniqueMinList = []
 begin = 0
 for seq, count in uniqueNtDict.items():
     end = int(count) + begin
     uniqueMin = min(ntOrderedAbs[begin:end])
-    uniqueMinList.append(uniqueMin)
+    ntUniqueMinList.append(uniqueMin)
     begin += count
 logging.info('List of unique nucleotide minimum absorbances created.')
 
 # Retrieve median absorbance for ordered values.
-uniqueMedianList = []
+ntUniqueMedianList = []
 begin = 0
 for seq, count in uniqueNtDict.items():
     end = int(count) + begin
     uniqueMedian = statistics.median(ntOrderedAbs[begin:end])
-    uniqueMedianList.append(uniqueMedian)
+    ntUniqueMedianList.append(uniqueMedian)
     begin += count
 logging.info('List of unique nucleotide median absorbances created.')
 
 # Retrieve mean absorbance for ordered values.
-uniqueMeanList = []
+ntUniqueMeanList = []
 begin = 0
 for seq, count in uniqueNtDict.items():
     end = int(count) + begin
     uniqueMean = statistics.mean(ntOrderedAbs[begin:end])
-    uniqueMeanList.append(uniqueMean)
+    ntUniqueMeanList.append(uniqueMean)
     begin += count
 logging.info('List of unique nucleotide mean absorbances created.')
 
 # Retrieve stdev absorbance for ordered values.
-uniqueStdevList = []
+ntUniqueStdevList = []
 begin = 0
 for seq, count in uniqueNtDict.items():
     end = int(count) + begin
     try:
         uniqueStdev = statistics.stdev(ntOrderedAbs[begin:end])
-        uniqueStdevList.append(uniqueStdev)
+        ntUniqueStdevList.append(uniqueStdev)
     # Above statistic won't work if only a single value so append '0.0' value to the list.
     except statistics.StatisticsError:
-        uniqueStdevList.append(0)
+        ntUniqueStdevList.append(0)
     begin += count
 logging.info('List of unique nucleotide absorbance standard deviations created.')
 
@@ -786,7 +786,7 @@ logging.info('Residue numbers written to %s worksheet.' % worksheet2Name)
 maxRow = 2
 maxCol = aaAlignLen + 2
 worksheet2.write(0, aaAlignLen + 2, 'Max.', title_format)
-for seq in uniqueMaxList:
+for seq in aaUniqueMaxList:
     worksheet2.write(maxRow, maxCol, seq, stats_format)
     maxRow += 1
 logging.info('List of unique amino acid maximum absorbances written to %s worksheet.' % worksheet2Name)
@@ -795,7 +795,7 @@ logging.info('List of unique amino acid maximum absorbances written to %s worksh
 minRow = 2
 minCol = aaAlignLen + 3
 worksheet2.write(0, aaAlignLen + 3, 'Min.', title_format)
-for seq in uniqueMinList:
+for seq in aaUniqueMinList:
     worksheet2.write(minRow, minCol, seq, stats_format)
     minRow += 1
 logging.info('List of unique amino acid minimum absorbances written to %s worksheet.' % worksheet2Name)
@@ -804,7 +804,7 @@ logging.info('List of unique amino acid minimum absorbances written to %s worksh
 medianRow = 2
 medianCol = aaAlignLen + 4
 worksheet2.write(0, aaAlignLen + 4, 'Median', title_format)
-for seq in uniqueMedianList:
+for seq in aaUniqueMedianList:
     worksheet2.write(medianRow, medianCol, seq, stats_format)
     medianRow += 1
 logging.info('List of unique amino acid median absorbances written to %s worksheet.' % worksheet2Name)
@@ -813,7 +813,7 @@ logging.info('List of unique amino acid median absorbances written to %s workshe
 meanRow = 2
 meanCol = aaAlignLen + 5
 worksheet2.write(0, aaAlignLen + 5, 'Mean', title_format)
-for seq in uniqueMeanList:
+for seq in aaUniqueMeanList:
     worksheet2.write(meanRow, meanCol, seq, stats_format)
     meanRow += 1
 logging.info('List of unique amino acid mean absorbances written to %s worksheet.' % worksheet2Name)
@@ -822,13 +822,13 @@ logging.info('List of unique amino acid mean absorbances written to %s worksheet
 stdevRow = 2
 stdevCol = aaAlignLen + 6
 worksheet2.write(0, aaAlignLen + 6, 'St. Dev.', title_format)
-for seq in uniqueStdevList:
+for seq in aaUniqueStdevList:
     worksheet2.write(stdevRow, stdevCol, seq, stats_format)
     stdevRow += 1
 logging.info('List of unique amino acid absorbance standard deviations written to %s worksheet.' % worksheet2Name)
 
 # Change column width to fit all IDs.
-wellColWidth = round((len(countID[0]) * 3) * 1.4)
+wellColWidth = round((len(aaCountID[0]) * 3) * 1.4)
 worksheet2.set_column(aaAlignLen + 7, aaAlignLen + 7, wellColWidth)
 # Write IDs to worksheet.
 worksheet2.write(0, aaAlignLen + 7, 'Wells', wellTitle_format)
@@ -836,7 +836,7 @@ wellRow = 2
 wellCol = aaAlignLen + 7
 countIDregex = re.compile(r"([A-Z][0-1][0-9])")
 sep = ', '
-for wellList in countID:
+for wellList in aaCountID:
     wellList = countIDregex.findall(str(wellList))
     wellList = sep.join(wellList)
     worksheet2.write(wellRow, wellCol, wellList, wellList_format)
@@ -959,7 +959,7 @@ logging.info('Base pair numbers written to %s worksheet.' % worksheet4Name)
 maxRow = 2
 maxCol = ntAlignLen + 2
 worksheet4.write(0, ntAlignLen + 2, 'Max.', title_format)
-for seq in uniqueMaxList:
+for seq in ntUniqueMaxList:
     worksheet4.write(maxRow, maxCol, seq, stats_format)
     maxRow += 1
 logging.info('List of unique nucleotide maximum absorbances written to %s worksheet.' % worksheet4Name)
@@ -968,7 +968,7 @@ logging.info('List of unique nucleotide maximum absorbances written to %s worksh
 minRow = 2
 minCol = ntAlignLen + 3
 worksheet4.write(0, ntAlignLen + 3, 'Min.', title_format)
-for seq in uniqueMinList:
+for seq in ntUniqueMinList:
     worksheet4.write(minRow, minCol, seq, stats_format)
     minRow += 1
 logging.info('List of unique nucleotide minimum absorbances written to %s worksheet.' % worksheet4Name)
@@ -977,7 +977,7 @@ logging.info('List of unique nucleotide minimum absorbances written to %s worksh
 medianRow = 2
 medianCol = ntAlignLen + 4
 worksheet4.write(0, ntAlignLen + 4, 'Median', title_format)
-for seq in uniqueMedianList:
+for seq in ntUniqueMedianList:
     worksheet4.write(medianRow, medianCol, seq, stats_format)
     medianRow += 1
 logging.info('List of unique nucleotide median absorbances written to %s worksheet.' % worksheet4Name)
@@ -986,7 +986,7 @@ logging.info('List of unique nucleotide median absorbances written to %s workshe
 meanRow = 2
 meanCol = ntAlignLen + 5
 worksheet4.write(0, ntAlignLen + 5, 'Mean', title_format)
-for seq in uniqueMeanList:
+for seq in ntUniqueMeanList:
     worksheet4.write(meanRow, meanCol, seq, stats_format)
     meanRow += 1
 logging.info('List of unique nucleotide mean absorbances written to %s worksheet.' % worksheet4Name)
@@ -995,7 +995,7 @@ logging.info('List of unique nucleotide mean absorbances written to %s worksheet
 stdevRow = 2
 stdevCol = ntAlignLen + 6
 worksheet4.write(0, ntAlignLen + 6, 'St. Dev.', title_format)
-for seq in uniqueStdevList:
+for seq in ntUniqueStdevList:
     worksheet4.write(stdevRow, stdevCol, seq, stats_format)
     stdevRow += 1
 logging.info('List of unique nucleotide absorbance standard deviations written to %s worksheet.' % worksheet4Name)
@@ -1008,7 +1008,7 @@ wellRow = 2
 wellCol = ntAlignLen + 7
 countIDregex = re.compile(r"([A-Z][0-1][0-9])")
 sep = ', '
-for wellList in countID:
+for wellList in ntCountID:
     wellList = countIDregex.findall(str(wellList))
     wellList = sep.join(wellList)
     worksheet4.write(wellRow, wellCol, wellList, wellList_format)

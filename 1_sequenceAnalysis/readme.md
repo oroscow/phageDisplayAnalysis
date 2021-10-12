@@ -42,8 +42,11 @@ desktop.
 Note: Only do this for trusted sources. Be very careful about opening executables sent by strangers and make sure to do
 your due diligence and carefully examine all sources online.
 
+6. 
+
 ### Terminal
 
 1. Go to _phageDisplay/sequenceAnalysis/terminal/_ and download '_terminal_sequenceAnalysis.py_'.
 2. Run in IDE of choice (PyCharm recommended).
+3. Follow the prompts.
 
