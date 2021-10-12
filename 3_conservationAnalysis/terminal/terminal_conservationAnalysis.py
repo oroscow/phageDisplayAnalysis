@@ -112,7 +112,6 @@ while True:
 ##################
 
 # ELISA and sequencing data.
-# TODO: Find out why ELISA data analysis is getting hung up.
 if inputFormat == '1':
     # Select ELISA data source. User prompt.
     cyanprint('''\nEnter the analysed ELISA data file name:
@@ -125,11 +124,12 @@ if inputFormat == '1':
                            '',
                            elisaFileInput
                            )
-
     # Read ELISA file.
     allCells = pandas.read_excel(elisaFileInput,
                                  sheet_name=1
                                  )
+    # Remove useless rows.
+    allCells = allCells.iloc[:-2, :]
     logging.info('%s data read.' % elisaFileName)
 
     # Retrieve statistical data.
@@ -219,7 +219,6 @@ elif inputFormat == '2':
             if seq in value:
                 orderedIndex.append(key)
     logging.info('Ordered index of amino acid well IDs created.')
-    # TODO: Fix the way specific IDs are written to the sheet.
     countID = []
     begin = 0
     for uniqueSeq, count in uniqueDict.items():
@@ -419,17 +418,17 @@ if inputFormat == '1':
         stdevRow += 1
     logging.info('Standard deviation values written to %s worksheet.' % worksheet1Name)
 
-    # TODO: Make well column formatting and wellList format more in line with countID formatting.
     # Wells.
+    worksheet1.write(1, consensusLen + 7, 'Wells', wellTitle_format)
     wellRow = 3
     wellCol = consensusLen + 7
-    worksheet1.write(1, consensusLen + 7, 'Wells', wellTitle_format)
+    # TODO: Find a way to make this countID more like the other countID or vice versa so the formatting matches.
     # Change column width to fit all IDs.
-    wellColWidth = round((len(countID[0]) * 3) * 1.4)
+    wellColWidth = round((len(countID[0]) / 1.16))
     worksheet1.set_column(consensusLen + 7, consensusLen + 7, wellColWidth)
-    # Write wells to worksheet.
-    for well in wellList:
-        worksheet1.write(wellRow, wellCol, well, wellList_format)
+    # Write specific IDs to worksheet.
+    for wellList in countID:
+        worksheet1.write(wellRow, wellCol, wellList, wellList_format)
         wellRow += 1
     logging.info('Wells written to %s worksheet.' % worksheet1Name)
 
@@ -442,15 +441,15 @@ if inputFormat == '1':
     logging.info('Conditional formatting applied to statistics.')
 
 elif inputFormat == '2':
+    worksheet1.write(1, consensusLen + 2, 'Wells', wellTitle_format)
+    wellRow = 3
+    wellCol = consensusLen + 2
+    countIDregex = re.compile(r'([A-H][0-1][0-9])')
+    sep = ', '
     # Change column width to fit all IDs.
     wellColWidth = round((len(countID[0]) * 3) * 1.4)
     worksheet1.set_column(consensusLen + 2, consensusLen + 2, wellColWidth)
     # Write specific IDs to worksheet.
-    worksheet1.write(1, consensusLen + 2, 'Wells', wellTitle_format)
-    wellRow = 3
-    wellCol = consensusLen + 2
-    countIDregex = re.compile(r'([A-Z][0-1][0-9])')
-    sep = ', '
     for wellList in countID:
         wellList = countIDregex.findall(str(wellList))
         wellList = sep.join(wellList)
