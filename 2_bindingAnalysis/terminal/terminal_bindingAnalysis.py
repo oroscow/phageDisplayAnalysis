@@ -1,53 +1,9 @@
 #! python3
-# terminal_bindingAnalysis.py - Analyses ELISA results along with corresponding sequence data. Calculates the average
-# of duplicates for each protein and normalizes them against the average of the negative controls/blanks. ELISA results
-# that don't have corresponding sequencing results are excluded from the final results. Final output is in xlsx
-#  format.
-
-# * Required plate layout:
-#     1   2  3  4  5  6  7  8  9  10  11  12  13  14  15  16  17  18  19  20  21  22  23  24
-#    _______________________________________________________________________________________
-# A | 01 01 02 02 03 03 04 04 05  05  06  06  07  07  08  08  09  09  10  10  11  11  12  12
-# B | _____________________________________EMPTY____________________________________________
-# C | 13 13 14 14 15 15 16 16 17  17  18  18  19  19  20  20  21  21  22  22  23  23  24  24
-# D | _____________________________________EMPTY____________________________________________
-# E | 25 25 26 26 27 27 28 28 29  29  30  30  31  31  32  32  33  33  34  34  35  35  36  36
-# F | _____________________________________EMPTY____________________________________________
-# G | 37 37 38 38 39 39 40 40 41  41  42  42  43  43  44  44  45  45  46  46  47  47  48  48
-# H | _____________________________________EMPTY____________________________________________
-# I | 49 49 50 50 51 51 52 52 53  53  54  54  55  55  56  56  57  57  58  58  59  59  60  60
-# J | _____________________________________EMPTY____________________________________________
-# K | 61 61 62 62 63 63 64 64 65  65  66  66  67  67  68  68  69  69  70  70  71  71  72  72
-# L | _____________________________________EMPTY____________________________________________
-# M | 73 73 74 74 75 75 76 76 77  77  78  78  79  79  80  80  81  81  82  82  83  83  84  84
-# N | _____________________________________EMPTY____________________________________________
-# O | 85 85 86 86 87 87 88 88 89  89  90  90  91  91  92  92  93  93  94  94  95  95  96  96
-# P | _____________________________________BLANKS___________________________________________
-
-# Usage notes:
-# * This code is dependent on the style of the worksheet used as the ELISA data source. This will be entirely based
-#   upon the output from the "phageDisplayELISA384well" export format used with the BioTek plate reader.
-# * Any assumptions that were made from previous code will be retained.
-#   E.g. if the data source is the output from "phageDisplaySeqAnalysis.py" then all alignments will exclude sequences
-#   that weren't full length and those that have premature stop codons.
-
-# Compatibility notes:
-# * PyCharm is the recommended IDE to use. If using Spyder, avoid version 5 as this version for has conflicts with the
-#   xlsxwriter package and will get stuck on importing modules.
-# * This code is confirmed to work with the latest version of Python 3 (3.9). Later/earlier versions may work but have
-#   not been verified.
-# * This code is confirmed to work in Windows and unconfirmed to work in Macs and Linux. It should work in theory
-#   but path names may need to be changed to suit Macs and Linux' path formats.
-
-# TODO: Add workaround for overflow cells (e.g. find OVRFLW, replace with 4, continue with code; find nan, replace
-#  with 0, continue with code).
-# TODO: Reduce number of file inputs somehow for ease of use.
 
 ##################
 #    MODULES
 ##################
 
-from molbiotools import cyanprint, greenprint
 import os
 import re
 import logging
@@ -56,6 +12,20 @@ import pandas
 import statistics
 from Bio import AlignIO
 from collections import Counter, OrderedDict
+
+
+##################
+#    FUNCTIONS
+##################
+
+def cyanprint(text):
+    """Print cyan coloured text in the console."""
+    print('\033[0;36m' + text + '\033[0m')
+
+
+def greenprint(text):
+    """Print green coloured text in the console."""
+    print('\033[0;32m' + text + '\033[0m')
 
 
 ##################
@@ -76,7 +46,7 @@ class OrderedCounter(Counter, OrderedDict):
 ##################
 
 # Working directory setup. User Prompt.
-greenprint('\nAnalysis started.')
+greenprint('\nProgram started.')
 cyanprint('''\nEnter parent folder location/path where files are located:
 * This will also be the location for the output files.'''
           )
@@ -97,8 +67,8 @@ Please try again.'''
 
 # Choose the ELISA data source. User Prompt.
 cyanprint('''\nEnter the raw ELISA data file name:
-* Must be in .xlsx format.
-* Include the file extension in the name.'''
+* Must be in xlsx format. Include the file extension in the name.
+* This location will also be the location of the output files.'''
           )
 while True:
     rawElisaFileName = input()
@@ -129,6 +99,9 @@ logging.info('%s chosen as raw ELISA data source.' % rawElisaFileName)
 # Retrieve and parse raw ELISA data.
 ##################
 
+# TODO: Add workaround for overflow cells (e.g. find OVRFLW, replace with 4, continue with code; find nan, replace
+#  with 0, continue with code).
+# TODO: Make code to read sequences from excel file without need for fasta files.
 allCells = pandas.read_excel(rawElisaFilePath)
 logging.info('Raw data read from ELISA file.')
 # Remove rows where the last column isn't equal to the emission absorbance.
@@ -178,7 +151,7 @@ greenprint('''\nData retrieved from raw ELISA file.''')
 # User prompt.
 cyanprint('''\nEnter well IDs that contain ELISA blanks/negative controls:
 * Not case-sensitive.
-* separate with commas (no spaces) if more than one.
+* Separate with commas (no spaces) if more than one.
 E.g. 'p22,p23,p24'.'''
           )
 while True:
@@ -1094,7 +1067,7 @@ greenprint('\nExcel alignment with ELISA absorbances created.')
 logging.info('Excel file exported as %s_analysed.xlsx.' % rawElisaFileNameShort)
 # TODO: Change what the popup says and have earlier popups that address this if the code fails. The code won't even
 #  get to this popup if any of these issues arise.
-cyanprint('''\nAnalysis finished. See log file for details.
+cyanprint('''\nProgram finished. See log file for details.
 
 
 Post-analysis help:
@@ -1109,5 +1082,5 @@ If you encounter an error involving index values being out of range, this is bec
 counts does not match the total number of ELISA scores. Check the original sequencing file to make sure sequences
 aren't repeated.'''
           )
-logging.info('phageDisplayElisaAnalysis.py finished running.')
+logging.info('Binding Analysis program finished running.')
 logging.shutdown()

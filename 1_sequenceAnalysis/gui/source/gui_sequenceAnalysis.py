@@ -52,28 +52,32 @@ layout = [
              font=('Segoe UI Semibold', 16),
              expand_x=True)
      ],
-    [Sg.Text('''        Analyses the University of Guelph's Advanced Analytics Centre (AAC) Genomics Facility
-        Sanger sequencing output (seq/ab1 files).
-    
-        Files are renamed, organised, converted to fasta files, trimmed, translated, and aligned.
-        Final amino acid/nucleotide alignments are in fasta, clustal, and xlsx formats.\n\n''',
+    [Sg.Text('''        Analyses the University of Guelph's Advanced Analytics Centre (AAC)
+        Genomics Facility Sanger sequencing output. Original files are left unaltered
+        and copies are renamed, reorganised, converted to fasta, trimmed, translated,
+        and aligned. Final amino acid/nucleotide alignments are in fasta, clustal,
+        and xlsx formats.\n''',
              text_color='#8294cc',
              font=('Segoe UI', 12)
              )
      ],
 
     # Working directory input prompt.
-    [Sg.Text('''1. Enter/select the parent folder location/path where files are located:''',
+    [Sg.Text('1. Enter/select the parent folder location/path where files are located:',
              text_color='white',
              font=('Segoe UI Bold', 10)
              )
      ],
     [Sg.Input(key='-FOLDERINPUT-',
-              size=70
+              size=60,
+              pad=(25, 0),
+              font=('Segoe UI', 10)
               ),
-     Sg.FolderBrowse()
+     Sg.FolderBrowse(font=('Segoe UI Bold', 10),
+                     size=(10, 0)
+                     ),
      ],
-    [Sg.Text('''    * This will also be the location for the output files.\n\n''',
+    [Sg.Text('    * This will also be the location for the output files.\n',
              text_color='#bfbfbf',
              font=('Segoe UI', 10)
              )
@@ -82,20 +86,20 @@ layout = [
     # 5' trim input prompt.
     [Sg.Text('''2. Enter the sequence to begin the 5' trim at:''',
              text_color='white',
-             font=('Segoe UI Bold', 10)
+             font=('Segoe UI Bold', 10),
              )
      ],
     [Sg.Input(key='-MOTIFINPUT-',
-              size=30
+              size=10,
+              pad=(25, 0),
+              default_text='AAAATG',
+              font=('Segoe UI', 10)
               )
      ],
-    [Sg.Text('''    * Entry is not case-sensitive.
-    * Entry must be at least six nucleotides long.
+    [Sg.Text('''    * Not case-sensitive.
+    * Must be at least six nucleotides long.
     * Use conserved nucleotides to prevent trimming at multiple sites.
-      E.g. For UbVs, use AAAATG (last FLAG tag residue & UbV start codon).
-      
-      Note: You must use conserved nucleotides or else sequences will be trimmed at multiple sites,
-      producing different size products and preventing alignment.\n\n''',
+      E.g. For UbVs, use AAAATG (last FLAG tag residue & UbV start codon).\n''',
              text_color='#bfbfbf',
              font=('Segoe UI', 10)
              )
@@ -108,10 +112,13 @@ layout = [
              )
      ],
     [Sg.Input(key='-LENINPUT-',
-              size=30
+              size=10,
+              pad=(25, 0),
+              default_text='237',
+              font=('Segoe UI', 10)
               )
      ],
-    [Sg.Text('''    * Entry must be greater than or equal to ten.
+    [Sg.Text('''    * Must be at least ten nucleotides long.
       E.g. For UbVs, use 237 (nucleotides downstream of the 5' trim site).\n\n''',
              text_color='#bfbfbf',
              font=('Segoe UI', 10)
@@ -123,7 +130,8 @@ layout = [
                bind_return_key=True,
                font=('Segoe UI Bold', 16),
                size=(10, 0),
-               pad=(275, 0)
+               pad=(30, 0),
+               use_ttk_buttons=True
                )
      ]
 ]
@@ -133,7 +141,8 @@ window = Sg.Window('Phage Display - Sequence Analysis',
                    layout,
                    alpha_channel=0.95,
                    grab_anywhere=True,
-                   size=(700, 750)
+                   size=(600, 640),
+                   ttk_theme='clam'
                    )
 
 # Create a while loop that keeps the window open.
@@ -145,7 +154,7 @@ while True:
         window.close()
         break
 
-    # If 'Enter' is pressed, updates Sg.Text with Sg.Input values.
+    # If 'Enter' is pressed, updates variables with input values.
     elif event == 'Enter':
         path = str(values['-FOLDERINPUT-'])
         startSite = str(values['-MOTIFINPUT-'])
@@ -173,7 +182,9 @@ while True:
             continue
 
         # Stops user if 5' trim input isn't valid and prompts to retry.
-        startSiteInput = re.search('[agtcurynwsmkbhdv]{6,}', startSite, re.IGNORECASE)
+        startSiteInput = re.search('[agtcurynwsmkbhdv]{6,}',
+                                   startSite,
+                                   re.IGNORECASE)
         if startSiteInput is None:
             Sg.Popup('''Invalid input for 5' trim site.
 Please enter a valid IUPAC nucleotide sequence.''',
@@ -185,7 +196,10 @@ Please enter a valid IUPAC nucleotide sequence.''',
             continue
 
         # Stops user if 3' trim input isn't valid and prompts to retry.
-        if endSite is None:
+        endSiteInput = re.search('[0-9]{10,}',
+                                   startSite,
+                                   re.IGNORECASE)
+        if endSiteInput is None:
             Sg.Popup('''Invalid input for 3' trim site.
 Please enter a number.''',
                      title='Invalid End Site Input',
@@ -1130,7 +1144,7 @@ else:
 
     workbook.close()
     logging.info('Excel alignment exported as %s_aaTrimmed_aligned.xlsx.' % folderName)
-    Sg.Popup('''Analysis finished. See log file for details.
+    Sg.Popup('''Program finished, see log file for details.
 \n\nPost-analysis help:
 \nNon-trimmed files are in the 'noTrim' folder and couldn't be trimmed because of one of the following reasons:
 \n      a) There's no sequence.
@@ -1146,6 +1160,6 @@ them from bases originally called by the sequencing equipment), move the origina
              text_color='#8294cc',
              font=('Segoe UI Semibold', 10)
              )
-    logging.info('phageDisplaySeqAnalysis.py finished running.')
+    logging.info('Sequence Analysis program finished running.')
     logging.shutdown()
     window.close()

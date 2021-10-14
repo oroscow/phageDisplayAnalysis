@@ -1,44 +1,4 @@
 #! python3
-# gui_bindingAnalysis.py - Analyses ELISA results along with corresponding sequence data. Calculates the average
-# of duplicates for each protein and normalizes them against the average of the negative controls/blanks. ELISA results
-# that don't have corresponding sequencing results are removed from the final results.
-
-# * Required plate layout:
-#     1   2  3  4  5  6  7  8  9  10  11  12  13  14  15  16  17  18  19  20  21  22  23  24
-#    _______________________________________________________________________________________
-# A | 01 01 02 02 03 03 04 04 05  05  06  06  07  07  08  08  09  09  10  10  11  11  12  12
-# B | _____________________________________EMPTY____________________________________________
-# C | 13 13 14 14 15 15 16 16 17  17  18  18  19  19  20  20  21  21  22  22  23  23  24  24
-# D | _____________________________________EMPTY____________________________________________
-# E | 25 25 26 26 27 27 28 28 29  29  30  30  31  31  32  32  33  33  34  34  35  35  36  36
-# F | _____________________________________EMPTY____________________________________________
-# G | 37 37 38 38 39 39 40 40 41  41  42  42  43  43  44  44  45  45  46  46  47  47  48  48
-# H | _____________________________________EMPTY____________________________________________
-# I | 49 49 50 50 51 51 52 52 53  53  54  54  55  55  56  56  57  57  58  58  59  59  60  60
-# J | _____________________________________EMPTY____________________________________________
-# K | 61 61 62 62 63 63 64 64 65  65  66  66  67  67  68  68  69  69  70  70  71  71  72  72
-# L | _____________________________________EMPTY____________________________________________
-# M | 73 73 74 74 75 75 76 76 77  77  78  78  79  79  80  80  81  81  82  82  83  83  84  84
-# N | _____________________________________EMPTY____________________________________________
-# O | 85 85 86 86 87 87 88 88 89  89  90  90  91  91  92  92  93  93  94  94  95  95  96  96
-# P | _____________________________________BLANKS___________________________________________
-
-# Usage notes:
-# * This code is dependent on the style of the worksheet used as the ELISA data source. This will be entirely based
-#   upon the output from the "phageDisplayELISA384well" export format used with the BioTek plate reader.
-# * Any assumptions that were made from previous code will be retained.
-#   E.g. if the data source is the output from "phageDisplaySeqAnalysis.py" then all alignments will exclude sequences
-#   that weren't full length and those that have premature stop codons.
-
-# Compatibility notes:
-# * PyCharm is the recommended IDE to use. If using Spyder, avoid version 5 as this version for has conflicts with the
-#   xlsxwriter package and will get stuck on importing modules.
-# * This code is confirmed to work with the latest version of Python 3 (3.9). Later/earlier versions may work but have
-#   not been verified.
-# * This code is confirmed to work in Windows and unconfirmed to work in Macs and Linux. It should work in theory
-#   but path names may need to be changed to suit Macs and Linux' path formats.
-
-# TODO: Make code to read sequences from excel file without need for fasta files.
 
 ##################
 #    MODULES
@@ -75,49 +35,54 @@ Sg.theme('DarkGrey13')
 layout = [
 
     # Title and introduction.
-    [Sg.Text('Phage Display - ELISA Analysis',
+    [Sg.Text('Phage Display - Binding Analysis',
              text_color='#8294cc',
              font=('Segoe UI Semibold', 16),
              expand_x=True)
      ],
-    [Sg.Text('''        Analyses phage display sequencing and ELISA data to help assess relative binding affinity.
-        
-                Calculates the average of duplicate ELISA absorbances for each protein and normalizes them
-                against the average of the negative controls/blanks. Phages that have ELISA data but don't
-                have corresponding sequencing data are excluded from the final results.
-                Final output is in xlsx format.\n''',
+    [Sg.Text('''        Analyses ELISA binding data along with corresponding sequence data.
+        Calculates the average of duplicate absorbances for each protein and
+        normalizes them against the average of the negative controls/blanks.
+        ELISA data that don't have corresponding sequencing data are excluded
+        from the final results.''',
              text_color='#8294cc',
              font=('Segoe UI', 12)
              )
      ],
 
     # 'Plate layout' button.
-    [Sg.Text('''                Click the button below to see the required plate layout for this program.''',
+    [Sg.Text('        Click the button below to see the required plate layout for this program.',
              text_color='#8294cc',
-             font=('Segoe UI', 10)
+             font=('Segoe UI', 12)
              )
      ],
     [Sg.Button('Plate Layout',
-               font=('Segoe UI', 10),
-               size=(20, 0),
-               pad=(70, 0)
+               font=('Segoe UI Bold', 10),
+               size=(13, 0),
+               pad=(40, 0),
+               use_ttk_buttons=True
                )
      ],
 
     # ELISA file input prompt.
-    [Sg.Text('''\n1. Enter the full path of the raw ELISA data file:''',
+    [Sg.Text('\n1. Enter the full path of the raw ELISA data file:',
              text_color='white',
              font=('Segoe UI Bold', 10)
              )
      ],
     [Sg.Input(key='-ELISAINPUT-',
-              size=70
+              size=60,
+              pad=(25, 0),
+              font=('Segoe UI', 10)
               ),
-     Sg.FileBrowse()
+     Sg.FileBrowse(font=('Segoe UI Bold', 10),
+                   size=(10, 0),
+                   file_types=(('Excel Files', '*.xlsx'), ('All Files', '*.*'),)
+                   )
      ],
-    [Sg.Text('''    * Make sure there are no dashes in the name, replace with an underscore if necessary.
-            * Must be in xlsx format.
-            * This location will also be the location of the output files.\n''',
+    [Sg.Text('''    * Must be in xlsx format.
+    * This location will also be the location of the output files.
+    * Make sure there are no dashes in the name, replace with an underscore if necessary.\n''',
              text_color='#bfbfbf',
              font=('Segoe UI', 10)
              )
@@ -130,12 +95,14 @@ layout = [
              )
      ],
     [Sg.Input(key='-BLANKINPUT-',
-              size=30
+              size=20,
+              pad=(25, 0),
+              font=('Segoe UI', 10)
               )
      ],
     [Sg.Text('''    * Not case-sensitive.
-            * Separate with commas (no spaces) if more than one.
-              E.g. p22,p23,p24\n''',
+    * For multiple wells, use any kind of separator between them.
+      E.g. p22,p23,p24 and P22-P23-P24 both work\n''',
              text_color='#bfbfbf',
              font=('Segoe UI', 10)
              )
@@ -148,8 +115,10 @@ layout = [
              )
      ],
     [Sg.Input(key='-EMISSIONINPUT-',
-              size=15,
-              default_text='450'
+              size=5,
+              pad=(25, 0),
+              default_text='450',
+              font=('Segoe UI', 10)
               )
      ],
     [Sg.Text('''    * In most cases it will be 450 nm and does not need to be changed.\n''',
@@ -165,9 +134,14 @@ layout = [
              )
      ],
     [Sg.Input(key='-AAINPUT-',
-              size=70
+              size=60,
+              pad=(25, 0),
+              font=('Segoe UI', 10)
               ),
-     Sg.FileBrowse()
+     Sg.FileBrowse(font=('Segoe UI Bold', 10),
+                   size=(10, 0),
+                   file_types=(('Fasta Files', '*.fasta'), ('All Files', '*.*'),)
+                   )
      ],
     [Sg.Text('''    * Must be in fasta format.\n''',
              text_color='#bfbfbf',
@@ -176,15 +150,20 @@ layout = [
      ],
 
     # Nucleotide alignment file input prompt.
-    [Sg.Text('''5. Enter the full path of the nucleotide alignment file:''',
+    [Sg.Text('5. Enter the full path of the nucleotide alignment file:',
              text_color='white',
              font=('Segoe UI Bold', 10)
              )
      ],
     [Sg.Input(key='-NTINPUT-',
-              size=70
+              size=60,
+              pad=(25, 0),
+              font=('Segoe UI', 10)
               ),
-     Sg.FileBrowse()
+     Sg.FileBrowse(font=('Segoe UI Bold', 10),
+                   size=(10, 0),
+                   file_types=(('Fasta Files', '*.fasta'), ('All Files', '*.*'),)
+                   )
      ],
     [Sg.Text('''    * Must be in fasta format.\n''',
              text_color='#bfbfbf',
@@ -197,17 +176,19 @@ layout = [
                bind_return_key=True,
                font=('Segoe UI Bold', 16),
                size=(10, 0),
-               pad=(275, 0)
+               pad=(30, 0),
+               use_ttk_buttons=True
                )
      ]
 ]
 
 # Name window, assign layout, and change window behaviour.
-window = Sg.Window('Phage Display - ELISA Analysis',
+window = Sg.Window('Phage Display - Binding Analysis',
                    layout,
                    alpha_channel=0.95,
                    grab_anywhere=True,
-                   size=(750, 900)
+                   size=(600, 880),
+                   ttk_theme='clam'
                    )
 
 # Create a while loop that keeps the window open.
@@ -227,7 +208,7 @@ while True:
                  grab_anywhere=True
                  )
 
-    # If 'Enter' is pressed, update variable with input values.
+    # If 'Enter' is pressed, updates variables with input values.
     elif event == 'Enter':
         rawElisaFilePath = str(values['-ELISAINPUT-'])
         blankWells = str(values['-BLANKINPUT-'])
@@ -236,8 +217,8 @@ while True:
         ntAlignFilePath = str(values['-NTINPUT-'])
         # Stops user if no file is found in the working directory.
         if not os.path.exists(rawElisaFilePath):
-            Sg.Popup('The entered raw ELISA xlsx file does not exist in this location.'
-                     'Please enter it again.',
+            Sg.Popup('''The entered raw ELISA xlsx file does not exist in this location.
+Please enter it again.''',
                      title='File Not Found',
                      grab_anywhere=True,
                      text_color='#4276ac'
@@ -250,13 +231,15 @@ while True:
                           )
             os.chdir(path)
 
+        # TODO: Stop user if emission absorbance input isn't the correct format.
+
         # Stops user if well formatting is incorrect.
-        blankWellsInput = re.match(r'[p]\d{2}[,]*',
+        blankWellsInput = re.match(r'[pP]\d{2}[,]*',
                                    blankWells
                                    )
         if blankWellsInput is None:
-            Sg.Popup('Invalid input for blank wells.'
-                     'Please make sure there are commas (no spaces) between each'
+            Sg.Popup('''Invalid input for blank wells.
+Please make sure there are commas (no spaces) between each'''
                      ' entry.',
                      title='Invalid Blank Wells Input',
                      grab_anywhere=True,
@@ -269,8 +252,8 @@ while True:
                                     emissionAbs
                                     )
         if emissionAbsInput is None:
-            Sg.Popup('Invalid input for emission absorbance.'
-                     'Please make sure there three digits.',
+            Sg.Popup('''Invalid input for emission absorbance.
+Please make sure there three digits.''',
                      title='Invalid Emission Absorbance Input',
                      grab_anywhere=True,
                      text_color='#4276ac'
@@ -279,8 +262,8 @@ while True:
 
         # Stops user if no file is not found in the working directory.
         if not os.path.exists(aaAlignFilePath):
-            Sg.Popup('The entered amino acid alignment fasta file does not exist in this location.'
-                     'Please enter it again.',
+            Sg.Popup('''The entered amino acid alignment fasta file does not exist in this location.
+Please enter it again.''',
                      title='File Not Found',
                      grab_anywhere=True,
                      text_color='#4276ac'
@@ -289,8 +272,8 @@ while True:
 
         # Stops user if no file is not found in the working directory.
         if not os.path.exists(ntAlignFilePath):
-            Sg.Popup('The entered nucleotide alignment fasta file does not exist in this location.'
-                     'Please enter it again.',
+            Sg.Popup('''The entered nucleotide alignment fasta file does not exist in this location.
+Please enter it again.''',
                      title='File Not Found',
                      grab_anywhere=True,
                      text_color='#4276ac'
@@ -341,6 +324,7 @@ else:
 
     # TODO: Add workaround for overflow cells (e.g. find OVRFLW, replace with 4, continue with code; find nan, replace
     #  with 0, continue with code).
+    # TODO: Make code to read sequences from excel file without need for fasta files.
     allCells = pandas.read_excel(rawElisaFilePath)
     logging.info('Raw data read from ELISA file.')
     # Remove rows where the last column isn't equal to the emission absorbance.
@@ -1252,7 +1236,7 @@ else:
     logging.info('Excel file exported as %s_analysed.xlsx.' % rawElisaFileNameShort)
     # TODO: Change what the popup says and have earlier popups that address this if the code fails. The code won't even
     #  get to this popup if any of these issues arise.
-    Sg.Popup('''Analysis finished. See log file for details.
+    Sg.Popup('''Program finished. See log file for details.
 \n\nPost-analysis help:
 \nNon-trimmed files are in the 'noTrim' folder and couldn't be trimmed because of one of the following reasons:
 \n      a) Statistical error.
@@ -1267,6 +1251,6 @@ If you encounter an error involving index values being out of range, this is bec
              grab_anywhere=True,
              text_color='#8294cc'
              )
-    logging.info('phageDisplayElisaAnalysis.py finished running.')
+    logging.info('Binding Analysis program finished running.')
     logging.shutdown()
     window.close()

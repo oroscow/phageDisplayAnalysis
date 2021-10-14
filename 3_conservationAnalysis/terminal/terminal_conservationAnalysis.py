@@ -1,35 +1,40 @@
 #! python3
-# terminal_conservationAnalysis.py - Analyses UbV ELISA and/or sequencing data by showing only non-conserved amino acid
-# residues and highlighting regions that were diversified in the phage display library. Final amino acid alignment is
-# in xlsx format.
-
-# Usage notes:
-# * This code is dependent on the style of the worksheet used as the ELISA data source. This will be entirely based
-#   upon the output from the "phageDisplayELISA384well" export format used with the BioTek plate reader.
-# * Any assumptions that were made from previous code will be retained.
-#   E.g. if the data source is the output from "phageDisplaySeqAnalysis.py" then all alignments will exclude sequences
-#   that weren't full length and those that have premature stop codons.
-
-# Compatibility notes:
-# * PyCharm is the recommended IDE to use. If using Spyder, avoid version 5 as this version for has conflicts with the
-#   xlsxwriter package and will get stuck on importing modules.
-# * This code is confirmed to work with the latest version of Python 3 (3.9). Later/earlier versions may work but have
-#   not been verified.
-# * This code is confirmed to work in Windows and unconfirmed to work in Macs and Linux. It should work in theory
-#   but path names may need to be changed to suit Macs and Linux' path formats.
-
 
 ##################
 #    MODULES
 ##################
 
-from molbiotools import cyanprint, greenprint, comparestrings
 import os
 import re
 import logging
 import xlsxwriter
 import pandas
 from collections import Counter, OrderedDict
+
+
+##################
+#    FUNCTIONS
+##################
+
+def cyanprint(text):
+    """Print cyan coloured text in the console."""
+    print('\033[0;36m' + text + '\033[0m')
+
+
+def greenprint(text):
+    """Print green coloured text in the console."""
+    print('\033[0;32m' + text + '\033[0m')
+
+
+def comparestrings(a, b):
+    """Return a string containing only the characters in string b that differ from string a."""
+    diff = ''
+    for x, y in zip(a, b):
+        if x == y:
+            diff += '-'
+        else:
+            diff += y
+    return diff
 
 
 ##################
@@ -164,7 +169,7 @@ if inputFormat == '1':
     trimCells = allCells.iloc[1:, 1:]
     trimCells = trimCells.to_string(index=False)
     aaList = trimCells.replace(' ', '')
-    seqRegex = re.compile(r'([ARNDCEQGHILKMFPSTWYVX]{10,})')
+    seqRegex = re.compile(r'[ARNDCEQGHILKMFPSTWYVX]{10,}')
     aaList = seqRegex.findall(aaList)
 
     # Create list of unique nucleotide sequences ordered by frequency.
@@ -183,7 +188,7 @@ elif inputFormat == '2':
                                   )
     logging.info('%s chosen as the amino acid sequence data source.' % aaAlignFileName)
 
-    seqRegex = re.compile(r'([ARNDCEQGHILKMFPSTWYVX]{10,})')
+    seqRegex = re.compile(r'[ARNDCEQGHILKMFPSTWYVX]{10,}')
     stopRegex = re.compile(r'([*]+[A-Z]*)')
     with open(aaAlignFileName, 'r') as alignFile:
         allData = alignFile.read()
@@ -219,12 +224,17 @@ elif inputFormat == '2':
             if seq in value:
                 orderedIndex.append(key)
     logging.info('Ordered index of amino acid well IDs created.')
-    countID = []
+    wellList = []
     begin = 0
     for uniqueSeq, count in uniqueDict.items():
         end = int(count) + begin
-        countID.append(orderedIndex[begin:end])
+        wellList.append(orderedIndex[begin:end])
         begin += count
+    sep = ', '
+    countID = []
+    for wells in wellList:
+        wellList = sep.join(wells)
+        countID.append(wellList)
     logging.info('List of specific well IDs associated with amino acid sequences created.')
     # Create new list of unique amino acids.
     aaList = []
@@ -422,7 +432,6 @@ if inputFormat == '1':
     worksheet1.write(1, consensusLen + 7, 'Wells', wellTitle_format)
     wellRow = 3
     wellCol = consensusLen + 7
-    # TODO: Find a way to make this countID more like the other countID or vice versa so the formatting matches.
     # Change column width to fit all IDs.
     wellColWidth = round((len(countID[0]) / 1.16))
     worksheet1.set_column(consensusLen + 7, consensusLen + 7, wellColWidth)
@@ -441,22 +450,18 @@ if inputFormat == '1':
     logging.info('Conditional formatting applied to statistics.')
 
 elif inputFormat == '2':
+    # Wells.
     worksheet1.write(1, consensusLen + 2, 'Wells', wellTitle_format)
     wellRow = 3
     wellCol = consensusLen + 2
-    countIDregex = re.compile(r'([A-H][0-1][0-9])')
-    sep = ', '
     # Change column width to fit all IDs.
-    wellColWidth = round((len(countID[0]) * 3) * 1.4)
+    wellColWidth = round((len(countID[0]) / 1.16))
     worksheet1.set_column(consensusLen + 2, consensusLen + 2, wellColWidth)
     # Write specific IDs to worksheet.
     for wellList in countID:
-        wellList = countIDregex.findall(str(wellList))
-        wellList = sep.join(wellList)
         worksheet1.write(wellRow, wellCol, wellList, wellList_format)
         wellRow += 1
     logging.info('Amino acid sequence-specific well IDs written to %s worksheet.' % worksheet1Name)
-    pass
 
 ##################
 # Choose phage display library to overlay.
@@ -636,5 +641,5 @@ elif inputFormat == '2':
     greenprint('\nExcel conserved alignment saved as %s_conservation.xlsx.' % aaAlignFileNameShort)
     logging.info('Excel file exported as %s_conservation.xlsx.' % aaAlignFileNameShort)
 greenprint('\nAnalysis finished. See log file for details.')
-logging.info('ubvTrims.py finished running.')
+logging.info('Conservation Analysis program finished running.')
 logging.shutdown()

@@ -1,38 +1,31 @@
 #! python3
-# gui_conservationAnalysis.py - Analyses UbV ELISA and/or sequencing data by showing only non-conserved amino acid
-# residues and highlighting regions that were diversified in the phage display library. Final amino acid alignment is
-# in xlsx format.
-
-# Usage notes:
-# * This code is dependent on the style of the worksheet used as the ELISA data source. This will be entirely based
-#   upon the output from the "phageDisplayELISA384well" export format used with the BioTek plate reader.
-# * Any assumptions that were made from previous code will be retained.
-#   E.g. if the data source is the output from "phageDisplaySeqAnalysis.py" then all alignments will exclude sequences
-#   that weren't full length and those that have premature stop codons.
-# * This code will assume that there is an extra amino acid residue, K, leftover from the FLAG tag when using the
-#   output from the 'phageDisplaySeqAnalysis.py' code. Without this, it will trim incorrectly.
-
-# Compatibility notes:
-# * PyCharm is the recommended IDE to use. If using Spyder, avoid version 5 as this version for has conflicts with the
-#   xlsxwriter package and will get stuck on importing modules.
-# * This code is confirmed to work with the latest version of Python 3 (3.9). Later/earlier versions may work but have
-#   not been verified.
-# * This code is confirmed to work in Windows and unconfirmed to work in Macs and Linux. It should work in theory
-#   but path names may need to be changed to suit Macs and Linux' path formats.
-
 
 ##################
 #    Modules
 ##################
 
 import PySimpleGUI as Sg
-from molbiotools import comparestrings
 import os
 import re
 import logging
 import xlsxwriter
 import pandas
 from collections import Counter, OrderedDict
+
+
+##################
+#    FUNCTIONS
+##################
+
+def comparestrings(a, b):
+    """Return a string containing only the characters in string b that differ from string a."""
+    diff = ''
+    for x, y in zip(a, b):
+        if x == y:
+            diff += '-'
+        else:
+            diff += y
+    return diff
 
 
 ##################
@@ -54,22 +47,21 @@ Sg.theme('DarkGrey13')
 layout = [
 
     # Title and introduction.
-    [Sg.Text('Phage Display - UbV Trimming',
+    [Sg.Text('Phage Display - Conservation Analysis',
              text_color='#8294cc',
              font=('Segoe UI Semibold', 16),
              expand_x=True)
      ],
-    [Sg.Text('''    Analyses ELISA and/or sequencing data for UbVs by showing only non-conserved amino acid
-    residues and highlighting regions that were targeted for diversification based on the initial phage
-    display library design.
-    Final output is in xlsx format.\n''',
+    [Sg.Text('''    Analyses UbV ELISA and/or sequencing data by showing only non-conserved amino acid
+    residues and highlighting regions that were targeted for diversification in the original
+    phage display library.\n''',
              text_color='#8294cc',
              font=('Segoe UI', 12)
              )
      ],
 
     # Input format prompt.
-    [Sg.Text('''1. Choose input format:''',
+    [Sg.Text('1. Choose input format:',
              text_color='white',
              font=('Segoe UI Bold', 10)
              )
@@ -99,15 +91,21 @@ layout = [
      ],
 
     # File input prompt.
-    [Sg.Text('''2. Enter the full path of the ELISA file:''',
+    [Sg.Text('2. Enter the full path of the ELISA file:',
              text_color='white',
              font=('Segoe UI Bold', 10),
              key='-FILEBEGINNINGTEXT-'
              )
      ],
     [Sg.Input(key='-FILEINPUT-',
-              size=70),
-     Sg.FileBrowse()
+              size=70,
+              pad=(25, 0),
+              font=('Segoe UI', 10)
+              ),
+     Sg.FileBrowse(font=('Segoe UI Bold', 10),
+                   size=(10, 0),
+                   file_types=(('All Files', '*.*'),)
+                   )
      ],
     [Sg.Text('''    * Must be in xlsx format.\n''',
              text_color='#bfbfbf',
@@ -123,18 +121,22 @@ layout = [
              )
      ],
     [Sg.Input(key='-CONSENSUSINPUT-',
-              size=95,
+              size=100,
+              pad=(25, 0),
+              font=('Segoe UI', 10),
               default_text='MQIFVKTLTGKTITLEVEPSDTIENVKAKIQDKEGIPPDQQRLIFAGKQLEDGRTLSDYNIQKESTLHLVLRLRGGGG'
               )
      ],
-    [Sg.Text('''    * Default is human ubiquitin (PDB: ). In most cases this does not need to be changed.\n''',
+    [Sg.Text('''    * Not case-sensitive.
+    * Default is human ubiquitin (accession: AAA36789/CAA28495/CAA44911). In most cases this does not
+      need to be changed.\n''',
              text_color='#bfbfbf',
              font=('Segoe UI', 10)
              )
      ],
 
     # Library format prompt.
-    [Sg.Text('''4. Choose library design:''',
+    [Sg.Text('4. Choose library design:',
              text_color='white',
              font=('Segoe UI Bold', 10)
              )
@@ -168,7 +170,7 @@ layout = [
     [Sg.Text('''    Diversified residues:
         (Region 1) 2, 4, 6, 8-12, 14
         (Region 2) 35, 37, 39-40, 42, 44, 46-49
-        (Region 3) 62-64, 66, 68, 70-72\n\n''',
+        (Region 3) 62-64, 66, 68, 70-72\n''',
              text_color='#bfbfbf',
              font=('Segoe UI', 10),
              key='-LIBRARYENDTEXT-'
@@ -180,18 +182,21 @@ layout = [
                bind_return_key=True,
                font=('Segoe UI Bold', 16),
                size=(10, 0),
-               pad=(275, 0)
+               pad=(30, 0),
+               use_ttk_buttons=True
                )
      ],
 ]
 
 # Name window, assign layout, and change window behaviour.
-window = Sg.Window('Phage Display - UbV Conservation Analysis',
+window = Sg.Window('Phage Display - Conservation Analysis',
                    layout,
                    alpha_channel=0.95,
                    grab_anywhere=True,
                    resizable=True,
-                   size=(725, 750))
+                   size=(675, 710),
+                   ttk_theme='clam'
+                   )
 
 # Create a while loop that keeps the window open.
 while True:
@@ -204,14 +209,15 @@ while True:
 
     elif event == '-FORMAT1-':
         window['-FILEBEGINNINGTEXT-'].update('''2. Enter the full path of the ELISA file:''')
-        # window['-FILEMIDDLETEXT-'].update('''    * Requires xlsx output from binding analysis program.\n''')
+        window['-FILEMIDDLETEXT-'].update('''    * Requires xlsx output from binding analysis program.\n''')
         window['-FILEENDTEXT-'].update('''    * Must be in xlsx format.\n''')
         continue
 
     elif event == '-FORMAT2-':
         window['-FILEBEGINNINGTEXT-'].update('''2. Enter the full path of the amino acid alignment file:''')
-#         window['-FILEMIDDLETEXT-'].update('''    * Requires fasta alignment output from sequence analysis program.
-# ''')
+        window['-FILEBEGINNINGTEXT-'].update('''2. Enter the full path of the amino acid alignment file:''')
+        window['-FILEMIDDLETEXT-'].update('''    * Requires fasta alignment output from sequence analysis program.
+''')
         window['-FILEENDTEXT-'].update('''    * Must be in fasta format.\n''')
         continue
 
@@ -219,22 +225,22 @@ while True:
         window['-LIBRARYENDTEXT-'].update('''    Diversified residues:
         (Region 1) 2, 4, 6, 8-12, 14
         (Region 2) 35, 37, 39-40, 42, 44, 46-49
-        (Region 3) 62-64, 66, 68, 70-72\n\n''')
+        (Region 3) 62-64, 66, 68, 70-72\n''')
         continue
 
     elif event == '-LIBRARY2-':
         window['-LIBRARYENDTEXT-'].update('''    Diversified residues:
         (Region 1) 2, 4, 6, 8-12, 14
         (Region 2) 42, 44, 46-49
-        (Region 3) 62-64, 66, 68, 70-78\n\n''')
+        (Region 3) 62-64, 66, 68, 70-78\n''')
         continue
 
     elif event == '-LIBRARY0-':
         window['-LIBRARYENDTEXT-'].update('''    Diversified residues:
-        N/A\n\n''')
+        N/A\n\n\n''')
         continue
 
-    # If 'Enter' is pressed, updates Sg.Text with Sg.Input values.
+    # If 'Enter' is pressed, updates variables with input values.
     elif event == 'Enter':
         inputOptions = {'1': 'ELISA and sequencing',
                         '2': 'sequencing'
@@ -244,23 +250,18 @@ while True:
                           'pass': 'No library chosen'
                           }
         consensusSeq = str(values['-CONSENSUSINPUT-'])
-        logging.info('''Consensus sequence set as '%s'.''' % consensusSeq)
+        consensusSeq = consensusSeq.upper()
+        seqRegex = re.compile(r'[ARNDCEQGHILKMFPSTWYVX]{10,}')
+        consensusSeqInput = seqRegex.search(consensusSeq, re.IGNORECASE)
+
         if values['-FORMAT1-']:
             inputFormat = '1'
             elisaFilePath = str(values['-FILEINPUT-'])
             elisaFilePath = elisaFilePath.replace('\\', '/')
-            # Stops user if incorrect file format.
-            if re.findall(r'.xlsx$', elisaFilePath) is None:
-                Sg.Popup('The input is not in xlsx format.'
-                         'Please choose the file again.',
-                         title='Invalid File Format',
-                         grab_anywhere=True,
-                         text_color='#4276ac')
-                continue
             # Stops user if no file is found in the working directory.
             if not os.path.exists(elisaFilePath):
-                Sg.Popup('The entered ELISA file does not exist in this location.'
-                         'Please choose the file again.',
+                Sg.Popup('''The entered ELISA file does not exist in this location.
+Please choose the file again.''',
                          title='File Not Found',
                          grab_anywhere=True,
                          text_color='#4276ac')
@@ -269,7 +270,17 @@ while True:
             os.chdir(path)
             elisaFileName = re.findall(r'[a-zA-Z0-9_]+\.xlsx$', elisaFilePath)
             elisaFileName = elisaFileName[0]
-            logging.info('%s chosen as ELISA absorbance data source.' % elisaFileName)
+            logging.info('%s chosen as ELISA data source.' % elisaFileName)
+
+            if consensusSeqInput is None:
+                Sg.Popup('''Invalid input for consensus sequence.
+Please enter a valid IUPAC amino acid sequence at least 10 digits long.''',
+                         title='Invalid Consensus Sequence',
+                         grab_anywhere=True,
+                         text_color='#4276ac',
+                         any_key_closes=False
+                         )
+                continue
 
         if values['-FORMAT2-']:
             inputFormat = '2'
@@ -277,8 +288,8 @@ while True:
             aaAlignFilePath = aaAlignFilePath.replace('\\', '/')
             # Stops user if no file is found in the working directory.
             if not os.path.exists(aaAlignFilePath):
-                Sg.Popup('The entered amino acid alignment file does not exist in this location.'
-                         'Please choose the file again.',
+                Sg.Popup('''The entered amino acid alignment file does not exist in this location.
+Please choose the file again.''',
                          title='File Not Found',
                          grab_anywhere=True,
                          text_color='#4276ac')
@@ -287,6 +298,17 @@ while True:
             os.chdir(path)
             aaAlignFileName = re.findall(r'[a-zA-Z0-9_]+\.fasta$', aaAlignFilePath)
             aaAlignFileName = aaAlignFileName[0]
+            logging.info('%s chosen as amino acid alignment data source.' % aaAlignFileName)
+
+            if consensusSeqInput is None:
+                Sg.Popup('''Invalid input for consensus sequence.
+Please enter a valid IUPAC amino acid sequence at least 10 digits long.''',
+                         title='Invalid Consensus Sequence',
+                         grab_anywhere=True,
+                         text_color='#4276ac',
+                         any_key_closes=False
+                         )
+                continue
 
         if values['-LIBRARY1-']:
             libraryInput = '1'
@@ -375,14 +397,12 @@ else:
         trimCells = allCells.iloc[1:, 1:]
         trimCells = trimCells.to_string(index=False)
         aaList = trimCells.replace(' ', '')
-        seqRegex = re.compile(r'([ARNDCEQGHILKMFPSTWYVX]{10,})')
         aaList = seqRegex.findall(aaList)
 
         # Create list of unique nucleotide sequences ordered by frequency.
         uniqueDict = dict(zip(aaList, countList))
 
     elif inputFormat == '2':
-        seqRegex = re.compile(r'([ARNDCEQGHILKMFPSTWYVX]{10,})')
         stopRegex = re.compile(r'([*]+[A-Z]*)')
         with open(aaAlignFileName, 'r') as alignFile:
             allData = alignFile.read()
@@ -418,12 +438,17 @@ else:
                 if seq in value:
                     orderedIndex.append(key)
         logging.info('Ordered index of amino acid well IDs created.')
-        countID = []
+        wellList = []
         begin = 0
         for uniqueSeq, count in uniqueDict.items():
             end = int(count) + begin
-            countID.append(orderedIndex[begin:end])
+            wellList.append(orderedIndex[begin:end])
             begin += count
+        sep = ', '
+        countID = []
+        for wells in wellList:
+            wellList = sep.join(wells)
+            countID.append(wellList)
         logging.info('List of specific well IDs associated with amino acid sequences created.')
         # Create new list of unique amino acids.
         aaList = []
@@ -616,10 +641,9 @@ else:
         logging.info('Standard deviation values written to %s worksheet.' % worksheet1Name)
 
         # Wells.
+        worksheet1.write(1, consensusLen + 7, 'Wells', wellTitle_format)
         wellRow = 3
         wellCol = consensusLen + 7
-        worksheet1.write(1, consensusLen + 7, 'Wells', wellTitle_format)
-        # TODO: Find a way to make this countID more like the other countID or vice versa so the formatting matches.
         # Change column width to fit all IDs.
         wellColWidth = round((len(countID[0]) / 1.16))
         worksheet1.set_column(consensusLen + 7, consensusLen + 7, wellColWidth)
@@ -638,22 +662,18 @@ else:
         logging.info('Conditional formatting applied to statistics.')
 
     elif inputFormat == '2':
+        # Wells.
         worksheet1.write(1, consensusLen + 2, 'Wells', wellTitle_format)
         wellRow = 3
         wellCol = consensusLen + 2
-        countIDregex = re.compile(r'([A-H][0-1][0-9])')
-        sep = ', '
         # Change column width to fit all IDs.
-        wellColWidth = round((len(countID[0]) * 3) * 1.4)
+        wellColWidth = round((len(countID[0]) / 1.16))
         worksheet1.set_column(consensusLen + 2, consensusLen + 2, wellColWidth)
         # Write specific IDs to worksheet.
         for wellList in countID:
-            wellList = countIDregex.findall(str(wellList))
-            wellList = sep.join(wellList)
             worksheet1.write(wellRow, wellCol, wellList, wellList_format)
             wellRow += 1
         logging.info('Amino acid sequence-specific well IDs written to %s worksheet.' % worksheet1Name)
-        pass
 
     ##################
     # Choose phage display library to overlay.

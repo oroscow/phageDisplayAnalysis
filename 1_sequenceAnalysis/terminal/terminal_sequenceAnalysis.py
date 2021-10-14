@@ -4,7 +4,6 @@
 #    MODULES
 ##################
 
-from molbiotools import cyanprint, greenprint
 import warnings
 import glob
 import logging
@@ -16,6 +15,20 @@ from collections import Counter, OrderedDict
 from shutil import copyfile
 from Bio import AlignIO, BiopythonWarning
 from Bio.Seq import Seq
+
+
+##################
+#    FUNCTIONS
+##################
+
+def cyanprint(text):
+    """Print cyan coloured text in the console."""
+    print('\033[0;36m' + text + '\033[0m')
+
+
+def greenprint(text):
+    """Print green coloured text in the console."""
+    print('\033[0;32m' + text + '\033[0m')
 
 
 ##################
@@ -46,7 +59,7 @@ warnings.filterwarnings('ignore',
 ##################
 
 # Working directory setup. User prompt.
-greenprint('\nAnalysis started.')
+greenprint('\nProgram started.')
 cyanprint('''\nEnter parent folder location/path where files are located:
 * This will also be the location for the output files.''')
 while True:
@@ -61,7 +74,7 @@ while True:
         # Redirect user to input the path again if no seq files are found.
         else:
             cyanprint('''\nInvalid input.
-No .seq files were found in this directory
+No seq files were found in this directory
 Please try again.'''
                       )
             continue
@@ -217,10 +230,10 @@ if not os.path.exists(noTrimPath):
 
 # User prompt.
 cyanprint('''\nEnter the sequence to begin the 5' trim at:
-* Entry is not case-sensitive.
-* Entry must be at least six nucleotides long.
+* Not case-sensitive.
+* Must be at least six nucleotides long.
 * Use conserved nucleotides to prevent trimming at multiple sites.
-E.g. For UbVs, use AAAATG (last FLAG tag residue & UbV start codon).'''
+  E.g. For UbVs, use AAAATG (last FLAG tag residue & UbV start codon).'''
           )
 fivePrimeRegex = re.compile('[agtcurynwsmkbhdv]{6,}',
                             re.IGNORECASE
@@ -292,10 +305,10 @@ if not os.path.exists(ntTrimmedPath):
 
 # Trim 3' end of sequence. User prompt.
 cyanprint('''\nEnter the number of nucleotides downstream of the 5' trim site to trim at:
-* Entry must be greater than or  equal to ten.
-E.g. For UbVs, use 237 (nucleotides downstream of the 5' trim site).'''
+* Must be at least ten nucleotides long.
+  E.g. For UbVs, use 237 (nucleotides downstream of the 5' trim site).'''
           )
-threePrimeRegex = re.compile('[0-9]{2,}')
+threePrimeRegex = re.compile('[0-9]{10,}')
 while True:
     endSite = input()
     logging.info('%s chosen as the sequence length.' % endSite)
@@ -1020,22 +1033,17 @@ worksheet4.add_table(1, 0, len(uniqueNt) + 1, ntAlignLen + 2,
 workbook.close()
 greenprint('\nExcel alignment created')
 logging.info('Excel alignment exported as %s_aaTrimmed_aligned.xlsx.' % folderName)
-cyanprint('''\nAnalysis finished. See log file for details.
-
-
-Post-analysis help:
-
-Non-trimmed files are in the 'noTrim' folder and couldn't be trimmed because of one of the following reasons:
-
-    a) There's no sequence.
+cyanprint('''\nProgram finished, see log file for details.
+\n\nPost-analysis help:
+\nNon-trimmed files are in the 'noTrim' folder and couldn't be trimmed because of one of the following reasons:
+\n      a) There's no sequence.
 In this case, either the sequence was not good enough quality/quantity to be sequenced or no sequence was 
 present in the sample.
-
-    b) The 5' trim site couldn't be found.       
+\n      b) The 5' trim site couldn't be found.       
 In this case, look at the corresponding ab1 file and assess whether or not the bases were called correctly. If
-not, create a copy of the ab1 file, edit the base calls (type manually called bases in lowercase to distinguish 
-them from bases originally called by the sequencing equipment), move the original unedited ab1 file to a separate 
-folder, replace its original position with the new edited ab1 file, and run this script again.'''
+not, create a copy of the ab1 file, edit the base calls (type manually called bases in lowercase to distinguish
+them from bases originally called by the sequencing equipment), move the original unedited ab1 file to a separate'''
+             '''folder, replace its original position with the new edited ab1 file, and run this script again.'''
           )
-logging.info('phageDisplaySeqAnalysis.py finished running.')
+logging.info('Sequence Analysis program finished running.')
 logging.shutdown()
