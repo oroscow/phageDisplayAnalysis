@@ -4,6 +4,8 @@ Analyses the University of Guelph's Advanced Analytics Centre (AAC) Genomics Fac
 files are left unaltered and copies are renamed, reorganised, converted to fasta, trimmed, translated, and aligned.
 Final amino acid/nucleotide alignments are in fasta, clustal, and xlsx formats.
 
+![gui](https://user-images.githubusercontent.com/55511532/137400899-cea27a53-72dc-4130-bcb7-eda1edcd1a98.png)
+
 ## Details:
 
 **Input:** Raw DNA Sanger sequencing data from the University of Guelph's Advanced Analytics Centre (AAC) Genomics Facility
@@ -47,9 +49,9 @@ desktop.
 5. The first time the program is run, Windows may try to prevent you from opening the file in order to protect your PC
 (see below). Click on 'More info' and then click on 'Run anyway'. Once you've done this once, it won't ask again.
 
-<img src="https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fmonstersocial.net%2Fwp-content%2Fuploads%2F2015%2F08%2Fwindowsprotectedyourpc.jpg&f=1&nofb=1">
+![warning](https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fmonstersocial.net%2Fwp-content%2Fuploads%2F2015%2F08%2Fwindowsprotectedyourpc.jpg&f=1&nofb=1)
 
-######Image credit to [monstersocial.net](https://monstersocial.net/).
+###### Image credit to [monstersocial.net](https://monstersocial.net/).
 
 Note: Only do this for trusted sources. Be very careful about opening executables sent by strangers and make sure to do
 your due diligence and carefully examine all sources online.

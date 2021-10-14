@@ -3,6 +3,8 @@
 Analyses UbV ELISA and/or sequencing data by showing only non-conserved amino acid residues and highlighting regions
 that were targeted for diversification in the original phage display library.
 
+![gui](https://user-images.githubusercontent.com/55511532/137401794-0cef3a9e-2250-418c-8bb8-81fe3e512fef.png)
+
 ## Details:
 
 **Input:** ELISA data (xlsx; formatted same as Binding Analysis output) or amino acid alignment data (fasta; generic
@@ -17,7 +19,7 @@ _phageDisplay/3_conservationAnalysis/sampleInputs_ to see the desired layout. In
 upon the emission absorbance stated on the right side of the table of raw data; this is used to determine which data to
 extract from the file. 
 * Any assumptions that were made in previous code will be retained. When using the output from the Sequencing/Binding
-Analysis programs, **the following will apply**:
+Analysis programs, the following will apply:
 
     a) Sequences that are not full length are excluded.
 
@@ -44,9 +46,9 @@ desktop.
 5. The first time the program is run, Windows may try to prevent you from opening the file in order to protect your PC
 (see below). Click on 'More info' and then click on 'Run anyway'. Once you've done this once, it won't ask again.
 
-<img src='https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fmonstersocial.net%2Fwp-content%2Fuploads%2F2015%2F08%2Fwindowsprotectedyourpc.jpg&f=1&nofb=1'>
+![warning](https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fmonstersocial.net%2Fwp-content%2Fuploads%2F2015%2F08%2Fwindowsprotectedyourpc.jpg&f=1&nofb=1)
 
-######Image credit to [monstersocial.net](https://monstersocial.net/).
+###### Image credit to [monstersocial.net](https://monstersocial.net/).
 
 Note: Only do this for trusted sources. Be very careful about opening executables sent by strangers and make sure to do
 your due diligence and carefully examine all sources online.

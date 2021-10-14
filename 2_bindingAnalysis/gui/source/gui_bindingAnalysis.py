@@ -77,7 +77,7 @@ layout = [
               ),
      Sg.FileBrowse(font=('Segoe UI Bold', 10),
                    size=(10, 0),
-                   file_types=(('Excel Files', '*.xlsx'), ('All Files', '*.*'),)
+                   file_types=(('Excel/Fasta Files', '*.xlsx;*.fasta'), ('All Files', '*.*'),)
                    )
      ],
     [Sg.Text('''    * Must be in xlsx format.

@@ -4,11 +4,14 @@ Analyses ELISA binding data along with corresponding sequence data. Calculates t
 each protein and normalizes them against the average of the negative controls/blanks. ELISA data that don't have
 corresponding sequencing data are excluded from the final results.
 
+![gui](https://user-images.githubusercontent.com/55511532/137400550-14d8f048-7b04-4d20-b35a-6f8dd54b60f6.png)
+
 ## Details:
 
-* The following ELISA plate layout must be used:
+The following ELISA plate layout must be used:
 
-<img src='https://raw.githubusercontent.com/oroscow/phageDisplayAnalysis/main/2_bindingAnalysis/gui/source/images/plateLayout.png?token=ANHQT3E6IYSNWQTJDIPROSTBMX3P4'>
+![plateLayout](https://user-images.githubusercontent.com/55511532/137400418-06778a2a-5f08-410c-a0de-a90e7cab77b0.png)
+
 
 **Input:** ELISA data (xlsx; formatting dependent on the plate reader, please see _/sampleInputs_ for an example), amino
 acid alignment data (fasta; generic formatting), and nucleotide alignment data (fasta; generic formatting).
@@ -23,7 +26,7 @@ _phageDisplay/2_bindingAnalysis/sampleInputs_ to see the desired layout. In summ
 upon the emission absorbance stated on the right side of the table of raw data; this is used to determine which data to
 extract from the file.  
 * Any assumptions that were made in previous code will be retained. If using the output from the Sequencing Analysis
-program, **the following will apply**:
+program, the following will apply:
 
     a) Sequences that are not full length are excluded.
 
@@ -51,9 +54,9 @@ desktop.
 5. The first time the program is run, Windows may try to prevent you from opening the file in order to protect your PC
 (see below). Click on 'More info' and then click on 'Run anyway'. Once you've done this once, it won't ask again.
 
-<img src='https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fmonstersocial.net%2Fwp-content%2Fuploads%2F2015%2F08%2Fwindowsprotectedyourpc.jpg&f=1&nofb=1'>
+![warning](https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fmonstersocial.net%2Fwp-content%2Fuploads%2F2015%2F08%2Fwindowsprotectedyourpc.jpg&f=1&nofb=1)
 
-######Image credit to [monstersocial.net](https://monstersocial.net/).
+###### Image credit to [monstersocial.net](https://monstersocial.net/).
 
 Note: Only do this for trusted sources. Be very careful about opening executables sent by strangers and make sure to do
 your due diligence and carefully examine all sources online.
