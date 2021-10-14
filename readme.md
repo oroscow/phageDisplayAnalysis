@@ -1,24 +1,18 @@
-# Binding Analysis
- 
-Analyses ELISA binding results along with corresponding sequence data. Calculates the average
-of duplicate absorbances for each protein and normalizes them against the average of the negative controls/blanks.
-ELISA results that don't have corresponding sequencing results are excluded from the final results. Final output is in
-xlsx format.
+# Phage Display Analysis
 
-## Details:
+This Phage Display Analysis repository is a collection of programs made for analysing large datasets from phage display experiment. Specifically, these are optimised for analysing sequencing data returned by the University of Guelph's Advanced Analytics Centre (AAC) and for analysing the outputs of the program used prior to it. 
 
-* Program is dependent on the style of the worksheet used as the ELISA data source. See
-_phageDisplay/3_conservationAnalysis/sampleInputs_ to see an example. This format is the same as the output from the
-Binding Analysis program.
-* Any assumptions that were made in previous code will be retained. If using the output from the Sequencing Analysis
-program, the following will apply:
+In order of suggested use, the set of programs includes:
 
-    a) Sequences that are not full length are excluded.
+1. Sequence Analysis
+2. Binding Analysis
+3. Conservation Analysis
 
-    b) Sequences that have premature stop codons are excluded. 
+Each program can be run either as an executable or a terminal program. For further details on each program (e.g. how to run, input/ouput file types, and so on), please look at their respective reademe's in their folders.
 
-    c) Sequences with uncalled residues/base pairs (Xs and Ns,
-respectively) are included.
+![gui](https://user-images.githubusercontent.com/55511532/137403048-8bcf8260-fd92-4608-b5a6-d2ffbee08f24.png)
+
+###### GUIs for each program.
 
 ## Compatibility:
 * PyCharm is the recommended IDE to use for running terminal scripts. If using Spyder, avoid version 5 as this version
@@ -27,29 +21,12 @@ for has conflicts with the xlsxwriter package and may get stuck on importing mod
 * Confirmed to work in Windows and unconfirmed in Macs and Linux. Path names may need to be changed to suit Macs
 and Linux' formats.
 
-## Usage:
+## Updates
 
-### GUI/executable
+I try to update these regularly as I discover more bugs. It is unrealistic to expect these programs to be fool-proof but I try to make them as close as possible to it.
 
-1. Go to _phageDisplayAnalysis/3_conservationAnalysis/gui/executable_ and download the entire folder as a zip file.
-2. Extract to _C:\Program Files_ (give administrator permission if necessary).
-3. Right click '_gui_conservationAnalysis.exe_' and click 'Create shortcut'. The shortcut will likely relocate to your
-desktop.
-4. Open the program with the shortcut.
-5. The first time the program is run, Windows may try to prevent you from opening the file in order to protect your PC
-(see below). Click on 'More info' and then click on 'Run anyway'. Once you've done this once, it won't ask again.
+## Issues & Requests
 
-<img src='https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fmonstersocial.net%2Fwp-content%2Fuploads%2F2015%2F08%2Fwindowsprotectedyourpc.jpg&f=1&nofb=1'>
+If you experience any issues running the program, please either create an issue in GitHub or email me directly at oroscow@uoguelph.ca.
 
-######Image credit to [monstersocial.net](https://monstersocial.net/).
-
-Note: Only do this for trusted sources. Be very careful about opening executables sent by strangers and make sure to do
-your due diligence and carefully examine all sources online.
-
-6. 
-
-### Terminal
-
-1. Go to _phageDisplayAnalysis/3_conservationAnalysis/terminal/_ and download '_terminal_conservationAnalysis.py_'.
-2. Run in IDE of choice (PyCharm recommended).
-3. Follow the prompts.
+Additionally, if these programs don't work for your data set but you would like a program that does, please send me an email and run your idea past me. We can discuss whether you want a similar program or something new altogether (don't be afraid to challenge me either)!
