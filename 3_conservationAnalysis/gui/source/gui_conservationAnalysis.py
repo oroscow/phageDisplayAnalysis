@@ -256,21 +256,20 @@ while True:
 
         if values['-FORMAT1-']:
             inputFormat = '1'
-            elisaFilePath = str(values['-FILEINPUT-'])
-            elisaFilePath = elisaFilePath.replace('\\', '/')
+            inFilePath = str(values['-FILEINPUT-'])
+            inFilePath = inFilePath.replace('\\', '/')
             # Stops user if no file is found in the working directory.
-            if not os.path.exists(elisaFilePath):
+            if not os.path.exists(inFilePath):
                 Sg.Popup('''The entered ELISA file does not exist in this location.
 Please choose the file again.''',
                          title='File Not Found',
                          grab_anywhere=True,
                          text_color='#4276ac')
                 continue
-            path = re.sub(r'[a-zA-Z0-9_]+\.xlsx$', '', elisaFilePath)
+            path = re.sub(r'[a-zA-Z0-9_]+\.xlsx$', '', inFilePath)
             os.chdir(path)
-            elisaFileName = re.findall(r'[a-zA-Z0-9_]+\.xlsx$', elisaFilePath)
-            elisaFileName = elisaFileName[0]
-            logging.info('%s chosen as ELISA data source.' % elisaFileName)
+            inFileName = re.findall(r'[a-zA-Z0-9_]+\.xlsx$', inFilePath)
+            inFileName = inFileName[0]
 
             if consensusSeqInput is None:
                 Sg.Popup('''Invalid input for consensus sequence.
@@ -284,21 +283,20 @@ Please enter a valid IUPAC amino acid sequence at least 10 digits long.''',
 
         if values['-FORMAT2-']:
             inputFormat = '2'
-            aaAlignFilePath = str(values['-FILEINPUT-'])
-            aaAlignFilePath = aaAlignFilePath.replace('\\', '/')
+            inFilePath = str(values['-FILEINPUT-'])
+            inFilePath = inFilePath.replace('\\', '/')
             # Stops user if no file is found in the working directory.
-            if not os.path.exists(aaAlignFilePath):
+            if not os.path.exists(inFilePath):
                 Sg.Popup('''The entered amino acid alignment file does not exist in this location.
 Please choose the file again.''',
                          title='File Not Found',
                          grab_anywhere=True,
                          text_color='#4276ac')
                 continue
-            path = re.sub(r'[a-zA-Z0-9_]+\.fasta$', '', aaAlignFilePath)
+            path = re.sub(r'[a-zA-Z0-9_]+\.fasta$', '', inFilePath)
             os.chdir(path)
-            aaAlignFileName = re.findall(r'[a-zA-Z0-9_]+\.fasta$', aaAlignFilePath)
-            aaAlignFileName = aaAlignFileName[0]
-            logging.info('%s chosen as amino acid alignment data source.' % aaAlignFileName)
+            inFileName = re.findall(r'[a-zA-Z0-9_]+\.fasta$', inFilePath)
+            inFileName = inFileName[0]
 
             if consensusSeqInput is None:
                 Sg.Popup('''Invalid input for consensus sequence.
@@ -331,25 +329,24 @@ if event == Sg.WIN_CLOSED:
     pass
 # Carry on with code otherwise.
 else:
-    # Logging setup.
-    if inputFormat == '1':
-        elisaName = elisaFileName.replace('_analysed.xlsx', '')
-        logging.basicConfig(filename=path + '/' + elisaName + '.log',
-                            level=logging.INFO,
-                            format='%(asctime)s - %(message)s',
-                            filemode='w'
-                            )
-        logging.info('%s chosen as data source.' % elisaFileName)
+    # Setup logging file.
+    inFileNameShort = re.sub(r'_a.*[.].*',
+                             '_conservation',
+                             inFileName
+                             )
 
-    elif inputFormat == '2':
-        aaAlignShortName = re.sub(r'_aaTrimmed_aligned.fasta', '', aaAlignFileName)
-        logging.basicConfig(filename=path + '/' + aaAlignShortName + '.log',
-                            level=logging.INFO,
-                            format='%(asctime)s - %(message)s',
-                            filemode='w'
-                            )
-        logging.info('%s chosen as data source.' % aaAlignFileName)
+    logging.basicConfig(filename=path + '/' + inFileNameShort + '.log',
+                        level=logging.INFO,
+                        format='%(asctime)s - %(message)s',
+                        filemode='w'
+                        )
+
     logging.info('Working directory changed to %s.' % path)
+    logging.info('Option %s chosen, analysing %s data.' % (inputFormat,
+                                                           inputOptions[inputFormat]
+                                                           )
+                 )
+    logging.info('%s chosen as the data source.' % inFileName)
 
     ##################
     # Select input format and retrieve/parse data.
@@ -358,14 +355,14 @@ else:
     # ELISA and sequencing data.
     if inputFormat == '1':
         # Read ELISA file.
-        allCells = pandas.read_excel(elisaFileName,
+        allCells = pandas.read_excel(inFileName,
                                      sheet_name=1
                                      )
         # Remove useless rows.
         # TODO: Try to make this more adaptable to different input formats (e.g. remove rows that surpass NaN
         #  threshold).
         allCells = allCells.iloc[:-4, :]
-        logging.info('%s data read.' % elisaFileName)
+        logging.info('%s data read.' % inFileName)
 
         # Retrieve statistical data.
         countListFloat = list(allCells['Count'])
@@ -373,27 +370,27 @@ else:
         countList = []
         for count in countListFloat:
             countList.append(int(count))
-        logging.info('Count values extracted from %s.' % elisaFileName)
+        logging.info('Count values extracted from %s.' % inFileName)
         maxList = list(allCells['Max.'])
         maxList = maxList[1:]
-        logging.info('Maximum values extracted from %s.' % elisaFileName)
+        logging.info('Maximum values extracted from %s.' % inFileName)
         minList = list(allCells['Min.'])
         minList = minList[1:]
-        logging.info('Minimum values extracted from %s.' % elisaFileName)
+        logging.info('Minimum values extracted from %s.' % inFileName)
         medianList = list(allCells['Median'])
         medianList = medianList[1:]
-        logging.info('Median values extracted from %s.' % elisaFileName)
+        logging.info('Median values extracted from %s.' % inFileName)
         meanList = list(allCells['Mean'])
         meanList = meanList[1:]
-        logging.info('Mean values extracted from %s.' % elisaFileName)
+        logging.info('Mean values extracted from %s.' % inFileName)
         devList = list(allCells['St. Dev.'])
         devList = devList[1:]
-        logging.info('Standard deviation values extracted from %s.' % elisaFileName)
+        logging.info('Standard deviation values extracted from %s.' % inFileName)
 
         # Retrieve well data.
         countID = list(allCells['Wells'])
         countID = countID[1:]
-        logging.info('Wells extracted from %s.' % elisaFileName)
+        logging.info('Wells extracted from %s.' % inFileName)
 
         # Retrieve amino acid sequences from ELISA file.
         trimCells = allCells.iloc[1:, 1:]
@@ -406,7 +403,7 @@ else:
 
     elif inputFormat == '2':
         stopRegex = re.compile(r'([*]+[A-Z]*)')
-        with open(aaAlignFileName, 'r') as alignFile:
+        with open(inFileName, 'r') as alignFile:
             allData = alignFile.read()
             # Retrieve amino acid sequences.
             seqClean = allData.replace('\n',
@@ -416,7 +413,7 @@ else:
                                      seqClean
                                      )
             aaList = seqRegex.findall(seqClean)
-            logging.info('Amino acid sequences retrieved from %s.' % aaAlignFileName)
+            logging.info('Amino acid sequences retrieved from %s.' % inFileName)
             alignFile.close()
 
         # Retrieve well data.
@@ -483,12 +480,8 @@ else:
     ##################
 
     # Create workbook.
-    if inputFormat == '1':
-        workbook = xlsxwriter.Workbook(path + '/' + elisaName + '_conservation.xlsx')
-        logging.info('''Excel spreadsheet created as '%s_conservation.xlsx'.''' % elisaName)
-    elif inputFormat == '2':
-        workbook = xlsxwriter.Workbook(path + '/' + aaAlignShortName + '_conservation.xlsx')
-        logging.info('''Excel spreadsheet created as '%s_conservation.xlsx'.''' % aaAlignShortName)
+    workbook = xlsxwriter.Workbook(path + '/' + inFileNameShort + '.xlsx')
+    logging.info('''Excel spreadsheet created as '%s.xlsx'.''' % inFileNameShort)
 
     #########
     # Cell formatting rules.
@@ -815,12 +808,8 @@ else:
     ##################
 
     workbook.close()
-    if inputFormat == '1':
-        logging.info('Excel file exported as %s_conservation.xlsx.' % elisaFileName)
-        logging.info('Program finished running.')
-    elif inputFormat == '2':
-        logging.info('Excel file exported as %s_conservation.xlsx.' % aaAlignShortName)
-        logging.info('Program finished running.')
+    logging.info('Excel file exported as %s_conservation.xlsx.' % inFileName)
+    logging.info('Program finished running.')
     logging.info('Program finished running.')
     logging.shutdown()
     # TODO: Change what the popup says and have earlier popups that address this if the code fails. The code won't even

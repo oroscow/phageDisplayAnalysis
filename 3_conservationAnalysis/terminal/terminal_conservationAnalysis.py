@@ -54,7 +54,7 @@ class OrderedCounter(Counter, OrderedDict):
 # Set up working directory.
 ##################
 
-greenprint('\nAnalysis started.')
+greenprint('\nProgram started.')
 cyanprint('''\n\nEnter parent folder location/path where files are located:
 * This will also be the location for the output files.'''
           )
