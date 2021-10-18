@@ -71,13 +71,13 @@ cyanprint('''\nEnter the raw ELISA data file name:
 * This location will also be the location of the output files.'''
           )
 while True:
-    rawElisaFileName = input()
-    rawElisaFilePath = path + '/' + rawElisaFileName
-    if os.path.exists(rawElisaFileName):
-        rawElisaFileNameShort = re.sub(r'[.].*',
+    elisaInFile = input()
+    elisaInFilePath = path + '/' + elisaInFile
+    if os.path.exists(elisaInFile):
+        elisaInFileName = re.sub(r'[.].*',
                                        '',
-                                       rawElisaFileName
-                                       )
+                                 elisaInFile
+                                 )
         break
     # Redirect user to input file name again if path doesn't exist.
     else:
@@ -87,13 +87,13 @@ Please try again.'''
                   )
 
 # Logging setup.
-logging.basicConfig(filename=path + '/' + rawElisaFileNameShort + '.log',
+logging.basicConfig(filename=path + '/' + elisaInFileName + '.log',
                     level=logging.INFO,
                     format='%(asctime)s - %(message)s',
                     filemode='w'
                     )
 logging.info('Working directory changed to %s.' % path)
-logging.info('%s chosen as raw ELISA data source.' % rawElisaFileName)
+logging.info('%s chosen as raw ELISA data source.' % elisaInFile)
 
 ##################
 # Retrieve and parse raw ELISA data.
@@ -102,7 +102,7 @@ logging.info('%s chosen as raw ELISA data source.' % rawElisaFileName)
 # TODO: Add workaround for overflow cells (e.g. find OVRFLW, replace with 4, continue with code; find nan, replace
 #  with 0, continue with code).
 # TODO: Make code to read sequences from excel file without need for fasta files.
-allCells = pandas.read_excel(rawElisaFilePath)
+allCells = pandas.read_excel(elisaInFilePath)
 logging.info('Raw data read from ELISA file.')
 # Remove rows where the last column isn't equal to the emission absorbance.
 lastColName = 'Unnamed: ' + str(allCells.shape[1] - 1)
@@ -112,7 +112,7 @@ dataCellsRaw = allCells[allCells[lastColName] == emissionAbs]
 dataCellsRaw = dataCellsRaw.iloc[:, :-1]
 dataCellsRaw = dataCellsRaw.dropna(axis=0, thresh=2)
 dataCellsRaw = dataCellsRaw.dropna(axis=1, how='all')
-# Remove rows that contain fewer than two non-NaN values.
+# Remove rows that contain more than two NaN values.
 dataCellsClean = dataCellsRaw.dropna(axis=0, thresh=2)
 # Remove designation column.
 dataCellsClean = dataCellsClean.iloc[:, 1:]
@@ -209,9 +209,9 @@ cyanprint('''\nEnter amino acid alignment file name:
 * Must be in .fasta format.
 * Include the file extension in the name.''')
 while True:
-    aaAlignFileName = input()
-    aaAlignFilePath = path + '/' + aaAlignFileName
-    if os.path.exists(aaAlignFilePath):
+    aaInFile = input()
+    aaInFilePath = path + '/' + aaInFile
+    if os.path.exists(aaInFilePath):
         break
     # Redirect user to input the name again if path doesn't exist.
     else:
@@ -219,11 +219,11 @@ while True:
 The entered file does not exist in this location.
 Please try again.'''
                   )
-logging.info('%s chosen as the amino acid sequence source.' % aaAlignFilePath)
+logging.info('%s chosen as the amino acid sequence source.' % aaInFilePath)
 
 # Retrieve amino acid sequence names.
 aaSeqRegex = re.compile(r'([ARNDCEQGHILKMFPSTWYVX]{10,})')
-with open(aaAlignFilePath, 'r') as file:
+with open(aaInFilePath, 'r') as file:
     aaAllLines = file.read()
     # Remove primer name and 'aaTrimmed' from fasta name.
     aaAllLinesTrim = re.sub(r'([_][M][\w]*)',
@@ -233,17 +233,17 @@ with open(aaAlignFilePath, 'r') as file:
     aaNameList = re.findall(r'>(.*)',
                             aaAllLinesTrim
                             )
-logging.info('Amino acid sequence names retrieved from %s.' % aaAlignFileName)
+logging.info('Amino acid sequence names retrieved from %s.' % aaInFile)
 
 # Retrieve amino acid sequences.
 aaAllLinesClean = aaAllLines.replace('\n',
                                      ''
                                      )
 aaSeqList = aaSeqRegex.findall(aaAllLinesClean)
-logging.info('Amino acid sequences retrieved from %s.' % aaAlignFileName)
+logging.info('Amino acid sequences retrieved from %s.' % aaInFile)
 
 # Retrieve amino acid alignment length.
-aaAlignment = AlignIO.read(aaAlignFilePath,
+aaAlignment = AlignIO.read(aaInFilePath,
                            'fasta'
                            )
 aaAlignLen = aaAlignment.get_alignment_length()
@@ -260,19 +260,19 @@ cyanprint('''\nEnter nucleotide alignment file name:
 * Include the file extension in the name.'''
           )
 while True:
-    ntAlignFile = input()
-    ntAlignFilePath = path + '/' + ntAlignFile
-    if os.path.exists(ntAlignFilePath):
+    ntInFile = input()
+    ntInFilePath = path + '/' + ntInFile
+    if os.path.exists(ntInFilePath):
         break
     else:
         cyanprint('''\nInvalid input.
 The entered file does not exist in this location.
 Please try again.'''
                   )
-logging.info('%s chosen as the nucleotide sequence source.' % ntAlignFilePath)
+logging.info('%s chosen as the nucleotide sequence source.' % ntInFilePath)
 
 # Retrieve nucleotide sequence names.
-with open(ntAlignFilePath, 'r') as file:
+with open(ntInFilePath, 'r') as file:
     ntAllLines = file.read()
     # Remove primer name and 'aaTrimmed' from fasta name.
     ntAllLines = re.sub(r'([_][M][\w]*)',
@@ -282,7 +282,7 @@ with open(ntAlignFilePath, 'r') as file:
     ntNameList = re.findall(r'>(.*)',
                             ntAllLines
                             )
-logging.info('Nucleotide sequence names retrieved from %s.' % ntAlignFile)
+logging.info('Nucleotide sequence names retrieved from %s.' % ntInFile)
 
 # Retrieve nucleotide sequences.
 ntSeqRegex = re.compile('[AGTCURYNWSMKBHDV]{10,}')
@@ -290,10 +290,10 @@ ntAllLinesClean = ntAllLines.replace('\n',
                                      ''
                                      )
 ntSeqList = ntSeqRegex.findall(ntAllLinesClean)
-logging.info('Nucleotide sequences retrieved from %s.' % ntAlignFile)
+logging.info('Nucleotide sequences retrieved from %s.' % ntInFile)
 
 # Retrieve nucleotide alignment length.
-ntAlignment = AlignIO.read(ntAlignFilePath,
+ntAlignment = AlignIO.read(ntInFilePath,
                            'fasta'
                            )
 ntAlignLen = ntAlignment.get_alignment_length()
@@ -617,8 +617,8 @@ logging.info('List of unique nucleotide absorbance standard deviations created.'
 ##################
 
 # Create workbook.
-workbook = xlsxwriter.Workbook(path + '/' + rawElisaFileNameShort + '_analysed.xlsx')
-logging.info('Excel spreadsheet created as "%s.xlsx".' % rawElisaFileNameShort)
+workbook = xlsxwriter.Workbook(path + '/' + elisaInFileName + '_analysed.xlsx')
+logging.info('Excel spreadsheet created as "%s.xlsx".' % elisaInFileName)
 
 #########
 # Cell formatting rules. 
@@ -1112,7 +1112,7 @@ worksheet4.add_table(1, 0, len(OrderedCounter(ntSeqList)) + 1, ntAlignLen + 7,
 
 workbook.close()
 greenprint('\nExcel alignment with ELISA absorbances created.')
-logging.info('Excel file exported as %s_analysed.xlsx.' % rawElisaFileNameShort)
+logging.info('Excel file exported as %s_analysed.xlsx.' % elisaInFileName)
 # TODO: Change what the popup says and have earlier popups that address this if the code fails. The code won't even
 #  get to this popup if any of these issues arise.
 cyanprint('''\nProgram finished. See log file for details.

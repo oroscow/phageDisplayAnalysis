@@ -210,13 +210,13 @@ while True:
 
     # If 'Enter' is pressed, updates variables with input values.
     elif event == 'Enter':
-        rawElisaFilePath = str(values['-ELISAINPUT-'])
+        elisaInFilePath = str(values['-ELISAINPUT-'])
         blankWells = str(values['-BLANKINPUT-'])
         emissionAbs = str(values['-EMISSIONINPUT-'])
-        aaAlignFilePath = str(values['-AAINPUT-'])
-        ntAlignFilePath = str(values['-NTINPUT-'])
+        aaInFilePath = str(values['-AAINPUT-'])
+        ntInFilePath = str(values['-NTINPUT-'])
         # Stops user if no file is found in the working directory.
-        if not os.path.exists(rawElisaFilePath):
+        if not os.path.exists(elisaInFilePath):
             Sg.Popup('''The entered raw ELISA xlsx file does not exist in this location.
 Please enter it again.''',
                      title='File Not Found',
@@ -227,7 +227,7 @@ Please enter it again.''',
         else:
             path = re.sub(r'[a-zA-Z0-9_]+\.xlsx$',
                           '',
-                          rawElisaFilePath
+                          elisaInFilePath
                           )
             os.chdir(path)
 
@@ -261,7 +261,7 @@ Please make sure there three digits.''',
             continue
 
         # Stops user if no file is not found in the working directory.
-        if not os.path.exists(aaAlignFilePath):
+        if not os.path.exists(aaInFilePath):
             Sg.Popup('''The entered amino acid alignment fasta file does not exist in this location.
 Please enter it again.''',
                      title='File Not Found',
@@ -271,7 +271,7 @@ Please enter it again.''',
             continue
 
         # Stops user if no file is not found in the working directory.
-        if not os.path.exists(ntAlignFilePath):
+        if not os.path.exists(ntInFilePath):
             Sg.Popup('''The entered nucleotide alignment fasta file does not exist in this location.
 Please enter it again.''',
                      title='File Not Found',
@@ -280,16 +280,16 @@ Please enter it again.''',
                      )
             continue
         else:
-            rawElisaFileName = re.findall(r'[a-zA-Z0-9_]+\.xlsx$',
-                                          rawElisaFilePath
-                                          )
-            rawElisaFileName = rawElisaFileName[0]
-            aaAlignFileName = re.findall(r'[a-zA-Z0-9]+\.xlsx$',
-                                         aaAlignFilePath
+            elisaInFileName = re.findall(r'[a-zA-Z0-9_]+\.xlsx$',
+                                         elisaInFilePath
                                          )
-            ntAlignFile = re.findall(r'[a-zA-Z0-9]+\.xlsx$',
-                                     ntAlignFilePath
-                                     )
+            elisaInFileName = elisaInFileName[0]
+            aaInFileName = re.findall(r'[a-zA-Z0-9]+\.fasta$',
+                                      aaInFilePath
+                                      )
+            ntInFileName = re.findall(r'[a-zA-Z0-9]+\.fasta$',
+                                      ntInFilePath
+                                      )
             emissionAbs = int(emissionAbs)
             break
 
@@ -307,16 +307,16 @@ if event == Sg.WIN_CLOSED:
 
 else:
     # Logging setup.
-    rawElisaFileNameShort = re.sub(r'[.].*', '', rawElisaFileName)
-    logging.basicConfig(filename=path + '/' + rawElisaFileNameShort + '.log',
+    elisaInFileNameShort = re.sub(r'[.].*', '', elisaInFileName)
+    logging.basicConfig(filename=path + '/' + elisaInFileNameShort + '.log',
                         level=logging.INFO,
                         format='%(asctime)s - %(message)s',
                         filemode='w'
                         )
     logging.info('Working directory changed to %s.' % path)
-    logging.info('%s chosen as raw ELISA data source.' % rawElisaFileName)
-    logging.info('%s chosen as the amino acid sequence source.' % aaAlignFilePath)
-    logging.info('%s chosen as the nucleotide sequence source.' % ntAlignFilePath)
+    logging.info('%s chosen as raw ELISA data source.' % elisaInFileName)
+    logging.info('%s chosen as the amino acid sequence source.' % aaInFilePath)
+    logging.info('%s chosen as the nucleotide sequence source.' % ntInFilePath)
 
     ##################
     # Retrieve and parse raw ELISA data.
@@ -325,7 +325,7 @@ else:
     # TODO: Add workaround for overflow cells (e.g. find OVRFLW, replace with 4, continue with code; find nan, replace
     #  with 0, continue with code).
     # TODO: Make code to read sequences from excel file without need for fasta files.
-    allCells = pandas.read_excel(rawElisaFilePath)
+    allCells = pandas.read_excel(elisaInFilePath)
     logging.info('Raw data read from ELISA file.')
     # Remove rows where the last column isn't equal to the emission absorbance.
     lastColName = 'Unnamed: ' + str(allCells.shape[1] - 1)
@@ -412,7 +412,7 @@ else:
 
     # Retrieve amino acid sequence names.
     aaSeqRegex = re.compile(r'([ARNDCEQGHILKMFPSTWYVX]{10,})')
-    with open(aaAlignFilePath, 'r') as file:
+    with open(aaInFilePath, 'r') as file:
         aaAllLines = file.read()
         # Remove primer name and 'aaTrimmed' from fasta name.
         aaAllLinesTrim = re.sub(r'([_][M][\w]*)',
@@ -422,17 +422,17 @@ else:
         aaNameList = re.findall(r'>(.*)',
                                 aaAllLinesTrim
                                 )
-    logging.info('Amino acid sequence names retrieved from %s.' % aaAlignFileName)
+    logging.info('Amino acid sequence names retrieved from %s.' % aaInFileName)
 
     # Retrieve amino acid sequences.
     aaAllLinesClean = aaAllLines.replace('\n',
                                          ''
                                          )
     aaSeqList = aaSeqRegex.findall(aaAllLinesClean)
-    logging.info('Amino acid sequences retrieved from %s.' % aaAlignFileName)
+    logging.info('Amino acid sequences retrieved from %s.' % aaInFileName)
 
     # Retrieve amino acid alignment length.
-    aaAlignment = AlignIO.read(aaAlignFilePath,
+    aaAlignment = AlignIO.read(aaInFilePath,
                                'fasta'
                                )
     aaAlignLen = aaAlignment.get_alignment_length()
@@ -443,7 +443,7 @@ else:
     ##################
 
     # Retrieve nucleotide sequence names.
-    with open(ntAlignFilePath, 'r') as file:
+    with open(ntInFilePath, 'r') as file:
         ntAllLines = file.read()
         # Remove primer name and 'aaTrimmed' from fasta name.
         ntAllLines = re.sub(r'([_][M][\w]*)',
@@ -453,7 +453,7 @@ else:
         ntNameList = re.findall(r'>(.*)',
                                 ntAllLines
                                 )
-    logging.info('Nucleotide sequence names retrieved from %s.' % ntAlignFile)
+    logging.info('Nucleotide sequence names retrieved from %s.' % ntInFileName)
 
     # Retrieve nucleotide sequences.
     ntSeqRegex = re.compile('[AGTCURYNWSMKBHDV]{10,}')
@@ -461,10 +461,10 @@ else:
                                          ''
                                          )
     ntSeqList = ntSeqRegex.findall(ntAllLinesClean)
-    logging.info('Nucleotide sequences retrieved from %s.' % ntAlignFile)
+    logging.info('Nucleotide sequences retrieved from %s.' % ntInFileName)
 
     # Retrieve nucleotide alignment length.
-    ntAlignment = AlignIO.read(ntAlignFilePath,
+    ntAlignment = AlignIO.read(ntInFilePath,
                                'fasta'
                                )
     ntAlignLen = ntAlignment.get_alignment_length()
@@ -788,8 +788,8 @@ else:
     ##################
 
     # Create workbook.
-    workbook = xlsxwriter.Workbook(path + '/' + rawElisaFileNameShort + '_analysed.xlsx')
-    logging.info('Excel spreadsheet created as "%s.xlsx".' % rawElisaFileNameShort)
+    workbook = xlsxwriter.Workbook(path + '/' + elisaInFileNameShort + '_analysed.xlsx')
+    logging.info('Excel spreadsheet created as "%s.xlsx".' % elisaInFileNameShort)
 
     #########
     # Cell formatting rules. 
@@ -1282,7 +1282,7 @@ else:
     ##################
 
     workbook.close()
-    logging.info('Excel file exported as %s_analysed.xlsx.' % rawElisaFileNameShort)
+    logging.info('Excel file exported as %s_analysed.xlsx.' % elisaInFileNameShort)
     # TODO: Change what the popup says and have earlier popups that address this if the code fails. The code won't even
     #  get to this popup if any of these issues arise.
     Sg.Popup('''Program finished. See log file for details.

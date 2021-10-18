@@ -359,9 +359,7 @@ else:
                                      sheet_name=1
                                      )
         # Remove useless rows.
-        # TODO: Try to make this more adaptable to different input formats (e.g. remove rows that surpass NaN
-        #  threshold).
-        allCells = allCells.iloc[:-4, :]
+        allCells = allCells.dropna(axis=0, thresh=8)
         logging.info('%s data read.' % inFileName)
 
         # Retrieve statistical data.
@@ -476,7 +474,7 @@ else:
     logging.info('List of conserved sequences created.')
 
     ##################
-    # Export as .xlsx.
+    # Export data as a single xlsx file.
     ##################
 
     # Create workbook.

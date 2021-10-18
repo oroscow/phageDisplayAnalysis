@@ -151,9 +151,8 @@ if inputFormat == '1':
     allCells = pandas.read_excel(inFileName,
                                  sheet_name=1
                                  )
-    # Remove useless rows.
-    # TODO: Try to make this more adaptable to different input formats (e.g. remove rows that surpass NaN threshold).
-    allCells = allCells.iloc[:-4, :]
+    # Remove rows with more than eight NaN values.
+    allCells = allCells.dropna(axis=0, thresh=8)
     logging.info('%s data read.' % inFileNameShort)
 
     # Retrieve statistical data.
@@ -273,16 +272,12 @@ for ubvSeq in aaShortList:
 logging.info('List of conserved sequences created.')
 
 ##################
-# Export as .xlsx.
+# Export data as a single xlsx file.
 ##################
 
 # Create workbook.
-if inputFormat == '1':
-    workbook = xlsxwriter.Workbook(path + '/' + inFileNameShort + '_conservation.xlsx')
-    logging.info('''Excel spreadsheet created as '%s_conservation.xlsx'.''' % inFileNameShort)
-elif inputFormat == '2':
-    workbook = xlsxwriter.Workbook(path + '/' + inFileNameShort + '_conservation.xlsx')
-    logging.info('''Excel spreadsheet created as '%s_conservation.xlsx'.''' % inFileNameShort)
+workbook = xlsxwriter.Workbook(path + '/' + inFileNameShort + '.xlsx')
+logging.info('''Excel spreadsheet created as '%s.xlsx'.''' % inFileNameShort)
 
 #########
 # Cell formatting rules.
