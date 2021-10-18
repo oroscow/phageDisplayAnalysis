@@ -151,8 +151,8 @@ greenprint('''\nData retrieved from raw ELISA file.''')
 # User prompt.
 cyanprint('''\nEnter well IDs that contain ELISA blanks/negative controls:
 * Not case-sensitive.
-* Separate with commas (no spaces) if more than one.
-E.g. 'p22,p23,p24'.'''
+* For multiple wells, use any kind of separator between them.
+  E.g. p22,p23,p24 and P22-P23-P24 both work'''
           )
 while True:
     blankWells = input()
@@ -188,14 +188,14 @@ logging.info('Blank values averaged.')
 ##################
 
 # Average paired values and append to a new list.
-cellAve = []
+cellAveList = []
 for value in range(0, len(cellValues), 2):
-    cellAve.append(statistics.mean([cellValues[value], cellValues[value + 1]]))
+    cellAveList.append(statistics.mean([cellValues[value], cellValues[value + 1]]))
 logging.info('Paired ELISA absorbances averaged.')
 
 # Normalise ELISA scores to the blank/negative control average.
 relAveList = []
-for value in cellAve:
+for value in cellAveList:
     relAve = value / blankAve
     relAveList.append(relAve)
 logging.info('Averaged absorbances normalised to the blanks/negative control average.')
@@ -332,6 +332,10 @@ for sublist in plateIDs:
         seqPlateIDs.append(ID)
 
 # Retrieve ELISA absorbances for only the IDs present in the sequencing data.
+aaRawListShort = []
+for ID in seqPlateIDs:
+    well = wellListConversion.get(ID)
+    aaRawListShort.append(cellAveList[well])
 aaRelAveListShort = []
 for ID in seqPlateIDs:
     well = wellListConversion.get(ID)
@@ -383,6 +387,10 @@ for sublist in plateIDs:
         seqPlateIDs.append(item)
 
 # Retrieve ELISA absorbances for only the IDs present in the sequencing data.
+ntRawListShort = []
+for ID in seqPlateIDs:
+    well = wellListConversion.get(ID)
+    ntRawListShort.append(cellAveList[well])
 ntReducedRelAveList = []
 for ID in seqPlateIDs:
     well = wellListConversion.get(ID)
@@ -664,6 +672,7 @@ worksheet1.hide_gridlines(option=2)
 idColWidth = round(len(aaShortNameList[0]) * 1.4)
 worksheet1.set_column(0, 0, idColWidth)
 worksheet1.set_column(1, aaAlignLen, 2)
+worksheet1.set_column(aaAlignLen + 1, aaAlignLen + 2, 12)
 worksheet1.freeze_panes(0, 1)
 logging.info('%s worksheet created.' % worksheet1Name)
 
@@ -688,14 +697,24 @@ for aa in aaSeqList:
     seqCol = 1
 logging.info('All Amino acid sequences written to %s worksheet.' % worksheet1Name)
 
-# Write ELISA absorbances.
+# Write raw ELISA absorbances.
 absRow = 2
 absCol = aaAlignLen + 1
-worksheet1.write(0, absCol, 'Normalized Absorbance', title_format)
-for result in aaRelAveListShort:
-    worksheet1.write(absRow, absCol, result, stats_format)
+worksheet1.merge_range(0, absCol, 0, absCol + 1, 'Absorbance', title_format)
+worksheet1.write(1, absCol, 'Raw', title_format)
+for absorbance in aaRawListShort:
+    worksheet1.write(absRow, absCol, absorbance, stats_format)
     absRow += 1
-logging.info('All relative absorbances written to %s worksheet.' % worksheet1Name)
+logging.info('All raw absorbances written to %s worksheet.' % worksheet1Name)
+
+# Write averaged ELISA absorbances.
+absRow = 2
+absCol = aaAlignLen + 2
+worksheet1.write(1, absCol, 'Normalised', title_format)
+for absorbance in aaRelAveListShort:
+    worksheet1.write(absRow, absCol, absorbance, stats_format)
+    absRow += 1
+logging.info('All normalised absorbances written to %s worksheet.' % worksheet1Name)
 
 # Write amino acid residue numbers above sequences.
 aaResList = list(range(1,
@@ -837,6 +856,7 @@ worksheet3 = workbook.add_worksheet(worksheet3Name)
 worksheet3.hide_gridlines(option=2)
 worksheet3.set_column(0, 0, idColWidth)
 worksheet3.set_column(1, ntAlignLen, 3)
+worksheet3.set_column(ntAlignLen + 1, ntAlignLen + 2, 12)
 worksheet3.freeze_panes(0, 1)
 logging.info('%s worksheet created.' % worksheet3Name)
 
@@ -861,14 +881,24 @@ for nt in ntSeqList:
     seqCol = 1
 logging.info('All nucleotide sequences written to %s worksheet.' % worksheet3Name)
 
-# Write ELISA absorbances.
+# Write raw ELISA absorbances.
 absRow = 2
 absCol = ntAlignLen + 1
-worksheet3.write(0, absCol, 'Normalized Absorbance', title_format)
+worksheet3.merge_range(0, absCol, 0, absCol + 1, 'Absorbance', title_format)
+worksheet3.write(1, absCol, 'Raw', title_format)
+for absorbance in ntRawListShort:
+    worksheet3.write(absRow, absCol, absorbance, stats_format)
+    absRow += 1
+logging.info('All raw absorbances written to %s worksheet.' % worksheet1Name)
+
+# Write averaged ELISA absorbances.
+absRow = 2
+absCol = ntAlignLen + 2
+worksheet3.write(1, absCol, 'Normalised', title_format)
 for result in ntReducedRelAveList:
     worksheet3.write(absRow, absCol, result, stats_format)
     absRow += 1
-logging.info('All relative absorbances written to %s worksheet.' % worksheet3Name)
+logging.info('All normalised absorbances written to %s worksheet.' % worksheet3Name)
 
 # Write nucleotide base pair numbers above sequences.
 ntBpList = list(range(1,
@@ -979,7 +1009,7 @@ worksheet4.set_column(ntAlignLen + 7, ntAlignLen + 7, wellColWidth)
 worksheet4.write(0, ntAlignLen + 7, 'Wells', wellTitle_format)
 wellRow = 2
 wellCol = ntAlignLen + 7
-countIDregex = re.compile(r"([A-Z][0-1][0-9])")
+countIDregex = re.compile(r'([A-Z][0-1][0-9])')
 sep = ', '
 for wellList in ntCountID:
     wellList = countIDregex.findall(str(wellList))
@@ -1003,15 +1033,27 @@ logging.info('Arbitrary unique nucleotide sequence IDs written to %s worksheet.'
 # Final workbook formatting.
 ##################
 
-# Info about how the values were normalised.
-blankInfo = 'Normalised against the average absorbance (%s) of %i blanks.' % (round(blankAve, 2), len(blankValues))
+# Info about how the values were obtained.
+blankInfo = 'Normalised against the average absorbance of %i blanks (%s).' % (len(blankValues), round(blankAve, 2))
 worksheet1.write(len(aaShortNameList) + 3, 1, blankInfo, info_format)
 worksheet2.write(len(aaUnique) + 3, 1, blankInfo, info_format)
 worksheet3.write(len(ntNameListShort) + 3, 1, blankInfo, info_format)
 worksheet4.write(len(uniqueNt) + 3, 1, blankInfo, info_format)
+calcInfo = 'Values were rounded after calculation, not before. As a result, manual calculation will produce slightly ' \
+           'different results.'
+worksheet1.write(len(aaShortNameList) + 5, 1, calcInfo, info_format)
+worksheet2.write(len(aaUnique) + 5, 1, calcInfo, info_format)
+worksheet3.write(len(ntNameListShort) + 5, 1, calcInfo, info_format)
+worksheet4.write(len(uniqueNt) + 5, 1, calcInfo, info_format)
 
-# Conditionally format statistics columns.
+# Conditionally format columns.
 worksheet1.conditional_format(1, aaAlignLen + 1, len(aaShortNameList) + 1, aaAlignLen + 1,
+                              {'type': '2_color_scale',
+                               'min_color': '#FAFAFA',
+                               'max_color': '#008000'
+                               }
+                              )
+worksheet1.conditional_format(1, aaAlignLen + 2, len(aaShortNameList) + 1, aaAlignLen + 2,
                               {'type': '2_color_scale',
                                'min_color': '#FAFAFA',
                                'max_color': '#008000'
@@ -1029,6 +1071,12 @@ worksheet3.conditional_format(1, ntAlignLen + 1, len(ntNameListShort) + 1, ntAli
                                'max_color': '#008000'
                                }
                               )
+worksheet3.conditional_format(1, ntAlignLen + 1, len(ntNameListShort) + 1, ntAlignLen + 2,
+                              {'type': '2_color_scale',
+                               'min_color': '#FAFAFA',
+                               'max_color': '#008000'
+                               }
+                              )
 worksheet4.conditional_format(1, ntAlignLen + 2, len(uniqueNt) + 1, ntAlignLen + 6,
                               {'type': '2_color_scale',
                                'min_color': '#FAFAFA',
@@ -1037,7 +1085,7 @@ worksheet4.conditional_format(1, ntAlignLen + 2, len(uniqueNt) + 1, ntAlignLen +
                               )
 
 # Transform data into proper Excel-formatted tables without any design style applied.
-worksheet1.add_table(1, 0, len(aaShortNameList) + 1, aaAlignLen + 1,
+worksheet1.add_table(1, 0, len(aaShortNameList) + 1, aaAlignLen + 2,
                      {'header_row': False,
                       'style': None
                       }
@@ -1047,7 +1095,7 @@ worksheet2.add_table(1, 0, len(OrderedCounter(aaSeqList)) + 1, aaAlignLen + 7,
                       'style': None
                       }
                      )
-worksheet3.add_table(1, 0, len(ntNameList) + 1, ntAlignLen + 1,
+worksheet3.add_table(1, 0, len(ntNameList) + 1, ntAlignLen + 2,
                      {'header_row': False,
                       'style': None
                       }
@@ -1074,8 +1122,8 @@ Post-analysis help:
 
     a) Statistical error.
 Statistics will encounter an error if 'overflow' cells are in the raw ELISA data. This is reflected in the number of
-averaged ELISA scores (i.e. the length of cellAve) being less than the total number of sequences. Replace 'OVFLW' wells
-with '4'.
+averaged ELISA scores (i.e. the length of cellAveList) being less than the total number of sequences. Replace 'OVFLW'
+wells with '4'.
 
     b) Indexing error.
 If you encounter an error involving index values being out of range, this is because the sum of all unique sequence

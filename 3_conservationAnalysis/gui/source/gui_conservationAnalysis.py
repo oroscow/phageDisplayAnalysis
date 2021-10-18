@@ -362,7 +362,9 @@ else:
                                      sheet_name=1
                                      )
         # Remove useless rows.
-        allCells = allCells.iloc[:-2, :]
+        # TODO: Try to make this more adaptable to different input formats (e.g. remove rows that surpass NaN
+        #  threshold).
+        allCells = allCells.iloc[:-4, :]
         logging.info('%s data read.' % elisaFileName)
 
         # Retrieve statistical data.
@@ -815,37 +817,25 @@ else:
     workbook.close()
     if inputFormat == '1':
         logging.info('Excel file exported as %s_conservation.xlsx.' % elisaFileName)
-        Sg.Popup('''Analysis finished. See log file for details.
-        \n\nPost-analysis help:
-        \nNon-trimmed files are in the 'noTrim' folder and couldn't be trimmed because of one of the following reasons:
-        \n      a) Statistical error.
-        Statistics will encounter an error if 'overflow' cells are in the raw ELISA data. This is reflected in the'''
-                 ''' number of averaged ELISA scores (i.e. the length of cellAve) being less than the total number of'''
-                 ''' sequences retrieved from the alignment files. Replace 'OVFLW' wells with '4' to fix.
-    \n      b) Indexing error.
-    If you encounter an error involving index values being out of range, this is because the sum of all the'''
-                 ''' unique sequence counts does not match the total number of ELISA scores. Check the original'''
-                 ''' alignment files to make sure sequences aren't repeated.''',
-                 title='Analysis Finished',
-                 grab_anywhere=True,
-                 text_color='#4276ac')
-        logging.info('phageDisplayElisaAnalysis.py finished running.')
+        logging.info('Program finished running.')
     elif inputFormat == '2':
         logging.info('Excel file exported as %s_conservation.xlsx.' % aaAlignShortName)
-        Sg.Popup('''Analysis finished. See log file for details.
-        \n\nPost-analysis help:
-        \nNon-trimmed files are in the 'noTrim' folder and couldn't be trimmed because of one of the following reasons:
-        \n      a) Statistical error.
-        Statistics will encounter an error if 'overflow' cells are in the raw ELISA data. This is reflected in the'''
-                 ''' number of averaged ELISA scores (i.e. the length of cellAve) being less than the total number of'''
-                 ''' sequences retrieved from the alignment files. Replace 'OVFLW' wells with '4' to fix.
-    \n      b) Indexing error.
-    If you encounter an error involving index values being out of range, this is because the sum of all the'''
-                 ''' unique sequence counts does not match the total number of ELISA scores. Check the original'''
-                 ''' alignment files to make sure sequences aren't repeated.''',
-                 title='Analysis Finished',
-                 grab_anywhere=True,
-                 text_color='#4276ac')
-        logging.info('phageDisplayElisaAnalysis.py finished running.')
-    logging.info('ubvTrims.py finished running.')
+        logging.info('Program finished running.')
+    logging.info('Program finished running.')
     logging.shutdown()
+    # TODO: Change what the popup says and have earlier popups that address this if the code fails. The code won't even
+    #  get to this popup if any of these issues arise.
+    Sg.Popup('''Analysis finished. See log file for details.
+\n\nPost-analysis help:
+\nNon-trimmed files are in the 'noTrim' folder and couldn't be trimmed because of one of the following reasons:
+\n      a) Statistical error.
+Statistics will encounter an error if 'overflow' cells are in the raw ELISA data. This is reflected in the'''
+             ''' number of averaged ELISA scores (i.e. the length of cellAveList) being less than the total'''
+             ''' number of sequences retrieved from the alignment files. Replace 'OVFLW' wells with '4' to fix.
+\n      b) Indexing error.
+If you encounter an error involving index values being out of range, this is because the sum of all the'''
+             ''' unique sequence counts does not match the total number of ELISA scores. Check the original'''
+             ''' alignment files to make sure sequences aren't repeated.''',
+             title='Analysis Finished',
+             grab_anywhere=True,
+             text_color='#4276ac')

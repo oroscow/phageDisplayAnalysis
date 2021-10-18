@@ -51,10 +51,9 @@ class OrderedCounter(Counter, OrderedDict):
 ##################
 
 ##################
-# Set up working directory and logging file.
+# Set up working directory.
 ##################
 
-# Working directory setup. User Prompt.
 greenprint('\nAnalysis started.')
 cyanprint('''\n\nEnter parent folder location/path where files are located:
 * This will also be the location for the output files.'''
@@ -68,19 +67,10 @@ while True:
         os.chdir(path)
         break
     else:
-        cyanprint('\nThe entered path does not exist.'
-                  'Please try again.')
-
-# Logging setup.
-pathRegex = re.compile(r'[^/]*$')
-pathList = pathRegex.findall(path)
-folderName = str(pathList[0])
-logging.basicConfig(filename=path + '/' + folderName + '.log',
-                    level=logging.INFO,
-                    format='%(asctime)s - %(message)s',
-                    filemode='w'
-                    )
-logging.info('Working directory changed to %s.' % path)
+        cyanprint('''\nInvalid input.
+The entered path does not exist.
+Please try again.'''
+                  )
 
 ##################
 # Select data input format.
@@ -89,9 +79,9 @@ logging.info('Working directory changed to %s.' % path)
 # Choose whether to analyse ELISA and sequencing data or just sequencing data. User prompt.
 cyanprint('''\nChoose input format by typing the corresponding number:
 \n[1] ELISA and sequencing data
-    Requires xlsx output from phageDisplayElisaAnalysis.py.
+    Requires xlsx output from Binding Analysis program.
 \n[2] Sequencing data only
-    Requires fasta alignment output from phageDisplaySeqAnalysis.py.'''
+    Requires amino acid alignment fasta output from Sequence Analysis program.'''
           )
 inputOptions = {'1': 'ELISA and sequencing',
                 '2': 'sequencing'
@@ -103,39 +93,68 @@ while True:
                                                               inputOptions[inputFormat]
                                                               )
                   )
-        logging.info('Option %s chosen, analysing %s data.' % (inputFormat,
-                                                               inputOptions[inputFormat]
-                                                               )
-                     )
         break
     else:
         cyanprint('\nInvalid option.'
                   'Please try again.')
 
 ##################
-# Select input format and retrieve/parse data.
+# Select input files.
 ##################
 
-# ELISA and sequencing data.
+# ELISA input format.
 if inputFormat == '1':
     # Select ELISA data source. User prompt.
     cyanprint('''\nEnter the analysed ELISA data file name:
 * Must be in xlsx format.
 * Include the file extension in the name.'''
               )
-    elisaFileInput = input()
-    logging.info('%s chosen as ELISA absorbance data source.' % elisaFileInput)
-    elisaFileName = re.sub(r'_analysed.xlsx',
-                           '',
-                           elisaFileInput
-                           )
+    inFileName = input()
+
+# Alignment input format.
+elif inputFormat == '2':
+    # Select amino acid alignment file. User prompt.
+    cyanprint('''\nEnter amino acid alignment file name:
+    * Must be in fasta format.
+    * Include the file extension in the name.'''
+              )
+    inFileName = input()
+
+##################
+# Setup logging file.
+##################
+
+inFileNameShort = re.sub(r'_a.*[.].*',
+                         '_conservation',
+                         inFileName
+                         )
+
+logging.basicConfig(filename=path + '/' + inFileNameShort + '.log',
+                    level=logging.INFO,
+                    format='%(asctime)s - %(message)s',
+                    filemode='w'
+                    )
+
+logging.info('Working directory changed to %s.' % path)
+logging.info('Option %s chosen, analysing %s data.' % (inputFormat,
+                                                       inputOptions[inputFormat]
+                                                       )
+             )
+logging.info('%s chosen as the data source.' % inFileName)
+
+##################
+# Retrieve and parse data.
+##################
+
+if inputFormat == '1':
     # Read ELISA file.
-    allCells = pandas.read_excel(elisaFileInput,
+    allCells = pandas.read_excel(inFileName,
                                  sheet_name=1
                                  )
     # Remove useless rows.
-    allCells = allCells.iloc[:-2, :]
-    logging.info('%s data read.' % elisaFileName)
+    # TODO: Try to make this more adaptable to different input formats (e.g. remove rows that surpass NaN threshold).
+    allCells = allCells.iloc[:-4, :]
+    logging.info('%s data read.' % inFileNameShort)
 
     # Retrieve statistical data.
     countListFloat = list(allCells['Count'])
@@ -143,27 +162,27 @@ if inputFormat == '1':
     countList = []
     for count in countListFloat:
         countList.append(int(count))
-    logging.info('Count values extracted from %s.' % elisaFileName)
+    logging.info('Count values extracted from %s.' % inFileNameShort)
     maxList = list(allCells['Max.'])
     maxList = maxList[1:]
-    logging.info('Maximum values extracted from %s.' % elisaFileName)
+    logging.info('Maximum values extracted from %s.' % inFileNameShort)
     minList = list(allCells['Min.'])
     minList = minList[1:]
-    logging.info('Minimum values extracted from %s.' % elisaFileName)
+    logging.info('Minimum values extracted from %s.' % inFileNameShort)
     medianList = list(allCells['Median'])
     medianList = medianList[1:]
-    logging.info('Median values extracted from %s.' % elisaFileName)
+    logging.info('Median values extracted from %s.' % inFileNameShort)
     meanList = list(allCells['Mean'])
     meanList = meanList[1:]
-    logging.info('Mean values extracted from %s.' % elisaFileName)
+    logging.info('Mean values extracted from %s.' % inFileNameShort)
     devList = list(allCells['St. Dev.'])
     devList = devList[1:]
-    logging.info('Standard deviation values extracted from %s.' % elisaFileName)
+    logging.info('Standard deviation values extracted from %s.' % inFileNameShort)
 
     # Retrieve well data.
     countID = list(allCells['Wells'])
     countID = countID[1:]
-    logging.info('Wells extracted from %s.' % elisaFileName)
+    logging.info('Wells extracted from %s.' % inFileNameShort)
 
     # Retrieve amino acid sequences from ELISA file.
     trimCells = allCells.iloc[1:, 1:]
@@ -176,21 +195,10 @@ if inputFormat == '1':
     uniqueDict = dict(zip(aaList, countList))
 
 elif inputFormat == '2':
-    # Select amino acid alignment file. User prompt.
-    cyanprint('''\nEnter amino acid alignment file name:
-* Must be in fasta format.
-* Include the file extension in the name.'''
-              )
-    aaAlignFileName = input()
-    aaAlignFileNameShort = re.sub(r'_aaTrimmed_aligned.fasta',
-                                  '',
-                                  aaAlignFileName
-                                  )
-    logging.info('%s chosen as the amino acid sequence data source.' % aaAlignFileName)
-
+    # Read alignment file.
     seqRegex = re.compile(r'[ARNDCEQGHILKMFPSTWYVX]{10,}')
     stopRegex = re.compile(r'([*]+[A-Z]*)')
-    with open(aaAlignFileName, 'r') as alignFile:
+    with open(inFileName, 'r') as alignFile:
         allData = alignFile.read()
         # Retrieve amino acid sequences.
         seqClean = allData.replace('\n',
@@ -200,7 +208,7 @@ elif inputFormat == '2':
                                  seqClean
                                  )
         aaList = seqRegex.findall(seqClean)
-        logging.info('Amino acid sequences retrieved from %s.' % aaAlignFileName)
+        logging.info('Amino acid sequences retrieved from %s.' % inFileName)
         alignFile.close()
 
     # Retrieve well data.
@@ -270,11 +278,11 @@ logging.info('List of conserved sequences created.')
 
 # Create workbook.
 if inputFormat == '1':
-    workbook = xlsxwriter.Workbook(path + '/' + elisaFileName + '_conservation.xlsx')
-    logging.info('''Excel spreadsheet created as '%s_conservation.xlsx'.''' % elisaFileName)
+    workbook = xlsxwriter.Workbook(path + '/' + inFileNameShort + '_conservation.xlsx')
+    logging.info('''Excel spreadsheet created as '%s_conservation.xlsx'.''' % inFileNameShort)
 elif inputFormat == '2':
-    workbook = xlsxwriter.Workbook(path + '/' + aaAlignFileNameShort + '_conservation.xlsx')
-    logging.info('''Excel spreadsheet created as '%s_conservation.xlsx'.''' % aaAlignFileNameShort)
+    workbook = xlsxwriter.Workbook(path + '/' + inFileNameShort + '_conservation.xlsx')
+    logging.info('''Excel spreadsheet created as '%s_conservation.xlsx'.''' % inFileNameShort)
 
 #########
 # Cell formatting rules.
@@ -635,11 +643,11 @@ elif inputFormat == '2':
 
 workbook.close()
 if inputFormat == '1':
-    greenprint('\nExcel conserved alignment with ELISA scores saved as %s_conservation.xlsx.' % elisaFileName)
-    logging.info('Excel file exported as %s_conservation.xlsx.' % elisaFileName)
+    greenprint('\nExcel conserved alignment with ELISA scores saved as %s_conservation.xlsx.' % inFileNameShort)
+    logging.info('Excel file exported as %s_conservation.xlsx.' % inFileNameShort)
 elif inputFormat == '2':
-    greenprint('\nExcel conserved alignment saved as %s_conservation.xlsx.' % aaAlignFileNameShort)
-    logging.info('Excel file exported as %s_conservation.xlsx.' % aaAlignFileNameShort)
+    greenprint('\nExcel conserved alignment saved as %s_conservation.xlsx.' % inFileNameShort)
+    logging.info('Excel file exported as %s_conservation.xlsx.' % inFileNameShort)
 greenprint('\nAnalysis finished. See log file for details.')
 logging.info('Conservation Analysis program finished running.')
 logging.shutdown()
