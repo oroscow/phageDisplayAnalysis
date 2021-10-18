@@ -322,8 +322,6 @@ else:
     # Retrieve and parse raw ELISA data.
     ##################
 
-    # TODO: Add workaround for overflow cells (e.g. find OVRFLW, replace with 4, continue with code; find nan, replace
-    #  with 0, continue with code).
     # TODO: Make code to read sequences from excel file without need for fasta files.
     allCells = pandas.read_excel(elisaInFilePath)
     logging.info('Raw data read from ELISA file.')
@@ -334,8 +332,10 @@ else:
     dataCellsRaw = dataCellsRaw.iloc[:, :-1]
     dataCellsRaw = dataCellsRaw.dropna(axis=0, thresh=2)
     dataCellsRaw = dataCellsRaw.dropna(axis=1, how='all')
-    # Remove rows that contain fewer than two non-NaN values.
+    # Remove rows that contain more than two NaN values.
     dataCellsClean = dataCellsRaw.dropna(axis=0, thresh=2)
+    # Replace 'OVRFLW' wells with a float of 4.
+    dataCellsClean = dataCellsClean.replace('OVRFLW', float(4))
     # Remove designation column.
     dataCellsClean = dataCellsClean.iloc[:, 1:]
     # TODO: Have a while loop that asks for input again or breaks script.
