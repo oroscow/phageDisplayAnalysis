@@ -75,7 +75,7 @@ while True:
     elisaInFilePath = path + '/' + elisaInFile
     if os.path.exists(elisaInFile):
         elisaInFileName = re.sub(r'[.].*',
-                                       '',
+                                 '',
                                  elisaInFile
                                  )
         break
@@ -99,7 +99,6 @@ logging.info('%s chosen as raw ELISA data source.' % elisaInFile)
 # Retrieve and parse raw ELISA data.
 ##################
 
-# TODO: Make code to read sequences from excel file without need for fasta files.
 allCells = pandas.read_excel(elisaInFilePath)
 logging.info('Raw data read from ELISA file.')
 # Remove rows where the last column isn't equal to the emission absorbance.
@@ -201,8 +200,27 @@ for value in cellAveList:
 logging.info('Averaged absorbances normalised to the blanks/negative control average.')
 
 ##################
-# Retrieve and parse amino acid sequence data.
+# Retrieve and parse sequence data.
 ##################
+
+#########
+# Amino acids
+#########
+
+# TODO: Make code to read sequences from excel file without need for fasta files.
+# seqRegex = re.compile(r'[ARNDCEQGHILKMFPSTWYVX]{10,}')
+#
+# aaCells = pandas.read_excel(elisaInFilePath, sheet_name=0)
+# aaSeqCells = aaCells.iloc[1:, 1:]
+# aaSeqCells = aaSeqCells.to_string(index=False)
+# aaList = aaSeqCells.replace(' ', '')
+# aaList = seqRegex.findall(aaList)
+#
+# ntCells = pandas.read_excel(elisaInFilePath, sheet_name=2)
+# ntSeqCells = ntCells.iloc[1:, 1:]
+# ntSeqCells = ntSeqCells.to_string(index=False)
+# ntList = ntSeqCells.replace(' ', '')
+# ntList = seqRegex.findall(ntList)
 
 # User prompt.
 cyanprint('''\nEnter amino acid alignment file name:
@@ -250,9 +268,9 @@ aaAlignLen = aaAlignment.get_alignment_length()
 greenprint('''\nData retrieved from amino acid alignment file.''')
 logging.info('Amino acid alignment length calculated to be %s.' % aaAlignLen)
 
-##################
-# Retrieve and parse nucleotide sequence data.
-##################
+#########
+# Nucleotides
+#########
 
 # User prompt.
 cyanprint('''\nEnter nucleotide alignment file name:
@@ -1122,7 +1140,7 @@ Post-analysis help:
 
     a) Statistical error.
 Statistics will encounter an error if 'overflow' cells are in the raw ELISA data. This is reflected in the number of
-averaged ELISA scores (i.e. the length of cellAveList) being less than the total number of sequences. Replace 'OVFLW'
+averaged ELISA scores (i.e. the length of cellAveList) being less than the total number of sequences. Replace 'OVRFLW'
 wells with '4'.
 
     b) Indexing error.

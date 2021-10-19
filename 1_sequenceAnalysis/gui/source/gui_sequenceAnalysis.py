@@ -196,12 +196,12 @@ Please enter a valid IUPAC nucleotide sequence.''',
             continue
 
         # Stops user if 3' trim input isn't valid and prompts to retry.
-        endSiteInput = re.search('[0-9]{10,}',
-                                   startSite,
+        endSiteInput = re.search('[0-9]{2,}',
+                                   endSite,
                                    re.IGNORECASE)
         if endSiteInput is None:
             Sg.Popup('''Invalid input for 3' trim site.
-Please enter a number.''',
+Please enter a number greater than or equal to ten.''',
                      title='Invalid End Site Input',
                      grab_anywhere=True,
                      text_color='#4276ac',

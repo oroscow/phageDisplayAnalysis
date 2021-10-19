@@ -184,9 +184,9 @@ if inputFormat == '1':
     logging.info('Wells extracted from %s.' % inFileNameShort)
 
     # Retrieve amino acid sequences from ELISA file.
-    trimCells = allCells.iloc[1:, 1:]
-    trimCells = trimCells.to_string(index=False)
-    aaList = trimCells.replace(' ', '')
+    seqCells = allCells.iloc[1:, 1:]
+    seqCells = seqCells.to_string(index=False)
+    aaList = seqCells.replace(' ', '')
     seqRegex = re.compile(r'[ARNDCEQGHILKMFPSTWYVX]{10,}')
     aaList = seqRegex.findall(aaList)
 
