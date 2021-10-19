@@ -115,16 +115,17 @@ dataCellsClean = dataCellsRaw.dropna(axis=0, thresh=2)
 dataCellsClean = dataCellsClean.replace('OVRFLW', float(4))
 # Remove designation column.
 dataCellsClean = dataCellsClean.iloc[:, 1:]
-# TODO: Have a while loop that asks for input again or breaks script.
+
 # Rename rows to make parsing easier
 # For dataframes that include empty rows.
 if dataCellsClean.shape[0] == 16:
     dataCellsClean.index = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P']
     # Remove empty rows from the dataframe.
     dataCellsClean = dataCellsClean.drop(['B', 'D', 'F', 'H', 'J', 'L', 'N'], axis=0)
-# For dataframes that don't include empty rows.
+    # For dataframes that don't include empty rows.
 elif dataCellsClean.shape[0] == 9:
     dataCellsClean.index = ['A', 'C', 'E', 'G', 'I', 'K', 'M', 'O', 'P']
+
 # Create a dictionary of all the blank values and their corresponding well IDs.
 blankCells = {'P1': dataCellsClean.iloc[8][0], 'P2': dataCellsClean.iloc[8][1], 'P3': dataCellsClean.iloc[8][2],
               'P4': dataCellsClean.iloc[8][3], 'P5': dataCellsClean.iloc[8][4], 'P6': dataCellsClean.iloc[8][5],
@@ -136,6 +137,7 @@ blankCells = {'P1': dataCellsClean.iloc[8][0], 'P2': dataCellsClean.iloc[8][1], 
               'P22': dataCellsClean.iloc[8][21], 'P23': dataCellsClean.iloc[8][22], 'P24': dataCellsClean.iloc[8][23]
               }
 logging.info('Blank absorbances retrieved from raw data file.')
+
 # Create a list of all the data absorbances.
 cellValues = list(dataCellsClean.iloc[0]) + list(dataCellsClean.iloc[1]) + list(dataCellsClean.iloc[2]) + \
              list(dataCellsClean.iloc[3]) + list(dataCellsClean.iloc[4]) + list(dataCellsClean.iloc[5]) + \
@@ -150,8 +152,9 @@ greenprint('''\nData retrieved from raw ELISA file.''')
 # User prompt.
 cyanprint('''\nEnter well IDs that contain ELISA blanks/negative controls:
 * Not case-sensitive.
+* Blank wells not associated with any absorbance value will be ignored.
 * For multiple wells, use any kind of separator between them.
-  E.g. p22,p23,p24 and P22-P23-P24 both work'''
+  E.g. p22,p23,p24    or    P22-P23-P24'''
           )
 while True:
     blankWells = input()
@@ -175,7 +178,6 @@ blankValues = []
 for well in blankWells:
     if well in blankCells:
         blankValues.append(blankCells.get(well))
-# TODO: Find a way to let the user know that inputted blank wells were excluded from the data for not having a value.
 # Remove values that contain no data in the excel cell.
 blankValues = [value for value in blankValues if not (pandas.isna(value))]
 # Average blanks.
@@ -200,123 +202,204 @@ for value in cellAveList:
 logging.info('Averaged absorbances normalised to the blanks/negative control average.')
 
 ##################
-# Retrieve and parse sequence data.
+# Select data input format.
 ##################
 
-#########
-# Amino acids
-#########
+# Choose whether to analyse ELISA and sequencing data or just sequencing data. User prompt.
+cyanprint('''\nChoose input format by typing the corresponding number:
+\n[1] Xlsx (one file)
+* Requires xlsx output from Sequence Analysis program
+\n[2] Fasta (two files)
+* Requires fasta alignment output from sequence analysis program or elsewhere.'''
+          )
+inputOptions = {'1': 'xlsx file',
+                '2': 'fasta files'
+                }
+while True:
+    inputFormat = input()
+    if inputFormat in inputOptions:
+        cyanprint('\nOption %s chosen, analysing %s.' % (inputFormat,
+                                                         inputOptions[inputFormat]
+                                                         )
+                  )
+        break
+    else:
+        cyanprint('''\nInvalid option.
+Please try again.''')
 
-# TODO: Make code to read sequences from excel file without need for fasta files.
-# seqRegex = re.compile(r'[ARNDCEQGHILKMFPSTWYVX]{10,}')
-#
-# aaCells = pandas.read_excel(elisaInFilePath, sheet_name=0)
-# aaSeqCells = aaCells.iloc[1:, 1:]
-# aaSeqCells = aaSeqCells.to_string(index=False)
-# aaList = aaSeqCells.replace(' ', '')
-# aaList = seqRegex.findall(aaList)
-#
-# ntCells = pandas.read_excel(elisaInFilePath, sheet_name=2)
-# ntSeqCells = ntCells.iloc[1:, 1:]
-# ntSeqCells = ntSeqCells.to_string(index=False)
-# ntList = ntSeqCells.replace(' ', '')
-# ntList = seqRegex.findall(ntList)
+##################
+# Retrieve and parse amino acid/nucleotide sequence data.
+##################
 
-# User prompt.
-cyanprint('''\nEnter amino acid alignment file name:
+if inputFormat == '1':
+
+    # User prompt.
+    cyanprint('''\nEnter xlsx alignment file name:
+* Must be in xlsx format.
+* Include the file extension in the name.''')
+    while True:
+        xlsxInFile = input()
+        xlsxInFilePath = path + '/' + xlsxInFile
+        if os.path.exists(xlsxInFilePath):
+            break
+        # Redirect user to input the name again if path doesn't exist.
+        else:
+            cyanprint('''\nInvalid input.
+The entered file does not exist in this location.
+Please try again.'''
+                      )
+    logging.info('%s chosen as the amino acid and nucleotide sequence source.' % xlsxInFilePath)
+
+    aaCells = pandas.read_excel(xlsxInFilePath, sheet_name=0)
+    ntCells = pandas.read_excel(xlsxInFilePath, sheet_name=2)
+
+    aaSeqRegex = re.compile(r'[ARNDCEQGHILKMFPSTWYVX]{10,}')
+    ntSeqRegex = re.compile('[AGTCURYNWSMKBHDV]{10,}')
+
+    # Retrieve amino acid sequences.
+    aaSeqCells = aaCells.iloc[1:, 1:]
+    aaSeqCells = aaSeqCells.to_string(index=False)
+    aaSeqList = aaSeqCells.replace(' ', '')
+    aaSeqList = aaSeqRegex.findall(aaSeqList)
+    logging.info('Amino acid sequences retrieved from %s.' % xlsxInFilePath)
+    aaAlignLen = len(aaSeqList[0])
+    logging.info('Amino acid alignment length calculated to be %s.' % aaAlignLen)
+
+    # Retrieve nucleotide sequences.
+    ntSeqCells = ntCells.iloc[1:, 1:]
+    ntSeqCells = ntSeqCells.to_string(index=False)
+    ntSeqList = ntSeqCells.replace(' ', '')
+    ntSeqList = ntSeqRegex.findall(ntSeqList)
+    logging.info('Nucleotide sequences retrieved from %s.' % xlsxInFilePath)
+    ntAlignLen = len(ntSeqList[0])
+    logging.info('Nucleotide alignment length calculated to be %s.' % ntAlignLen)
+
+    wellRegex = re.compile(r'([A-Z][0-1][0-9])')
+    # Retrieve amino acid sequence names.
+    aaNameCells = aaCells.iloc[1:, 0:1]
+    aaNameCells = aaNameCells.to_string(index=False)
+    aaNameList = re.sub(r'([_][M][\w]*)',
+                        '',
+                        aaNameCells
+                        )
+    aaNameList = aaNameList.replace(' ', '')
+    aaNameList = aaNameList.split('\n')
+    aaNameList = aaNameList[1:]
+    logging.info('Amino acid sequence names retrieved from %s.' % xlsxInFilePath)
+
+    # Retrieve nucleotide sequence names.
+    ntNameCells = ntCells.iloc[1:, 0:1]
+    ntNameCells = ntNameCells.to_string(index=False)
+    ntNameList = re.sub(r'([_][M][\w]*)',
+                        '',
+                        ntNameCells
+                        )
+    ntNameList = ntNameList.replace(' ', '')
+    ntNameList = ntNameList.split('\n')
+    ntNameList = ntNameList[1:]
+    logging.info('Nucleotide sequence names retrieved from %s.' % xlsxInFilePath)
+
+elif inputFormat == '2':
+
+    # User prompt.
+    cyanprint('''\nEnter amino acid alignment file name:
 * Must be in .fasta format.
 * Include the file extension in the name.''')
-while True:
-    aaInFile = input()
-    aaInFilePath = path + '/' + aaInFile
-    if os.path.exists(aaInFilePath):
-        break
-    # Redirect user to input the name again if path doesn't exist.
-    else:
-        cyanprint('''\nInvalid input.
+    while True:
+        aaInFile = input()
+        aaInFilePath = path + '/' + aaInFile
+        if os.path.exists(aaInFilePath):
+            break
+        # Redirect user to input the name again if path doesn't exist.
+        else:
+            cyanprint('''\nInvalid input.
 The entered file does not exist in this location.
 Please try again.'''
-                  )
-logging.info('%s chosen as the amino acid sequence source.' % aaInFilePath)
+                      )
+    logging.info('%s chosen as the amino acid sequence source.' % aaInFilePath)
 
-# Retrieve amino acid sequence names.
-aaSeqRegex = re.compile(r'([ARNDCEQGHILKMFPSTWYVX]{10,})')
-with open(aaInFilePath, 'r') as file:
-    aaAllLines = file.read()
-    # Remove primer name and 'aaTrimmed' from fasta name.
-    aaAllLinesTrim = re.sub(r'([_][M][\w]*)',
-                            '',
-                            aaAllLines
-                            )
-    aaNameList = re.findall(r'>(.*)',
-                            aaAllLinesTrim
-                            )
-logging.info('Amino acid sequence names retrieved from %s.' % aaInFile)
+    #########
+    # Amino Acids
+    #########
 
-# Retrieve amino acid sequences.
-aaAllLinesClean = aaAllLines.replace('\n',
-                                     ''
-                                     )
-aaSeqList = aaSeqRegex.findall(aaAllLinesClean)
-logging.info('Amino acid sequences retrieved from %s.' % aaInFile)
+    # Retrieve amino acid sequence names.
+    aaSeqRegex = re.compile(r'([ARNDCEQGHILKMFPSTWYVX]{10,})')
+    with open(aaInFilePath, 'r') as file:
+        aaAllLines = file.read()
+        # Remove primer name and 'aaTrimmed' from fasta name.
+        aaAllLinesTrim = re.sub(r'([_][M][\w]*)',
+                                '',
+                                aaAllLines
+                                )
+        aaNameList = re.findall(r'>(.*)',
+                                aaAllLinesTrim
+                                )
+    logging.info('Amino acid sequence names retrieved from %s.' % aaInFile)
 
-# Retrieve amino acid alignment length.
-aaAlignment = AlignIO.read(aaInFilePath,
-                           'fasta'
-                           )
-aaAlignLen = aaAlignment.get_alignment_length()
-greenprint('''\nData retrieved from amino acid alignment file.''')
-logging.info('Amino acid alignment length calculated to be %s.' % aaAlignLen)
+    # Retrieve amino acid sequences.
+    aaAllLinesClean = aaAllLines.replace('\n',
+                                         ''
+                                         )
+    aaSeqList = aaSeqRegex.findall(aaAllLinesClean)
+    logging.info('Amino acid sequences retrieved from %s.' % aaInFile)
 
-#########
-# Nucleotides
-#########
+    # Retrieve amino acid alignment length.
+    aaAlignment = AlignIO.read(aaInFilePath,
+                               'fasta'
+                               )
+    aaAlignLen = aaAlignment.get_alignment_length()
+    greenprint('''\nData retrieved from amino acid alignment file.''')
+    logging.info('Amino acid alignment length calculated to be %s.' % aaAlignLen)
 
-# User prompt.
-cyanprint('''\nEnter nucleotide alignment file name:
+    #########
+    # Nucleotides
+    #########
+
+    # User prompt.
+    cyanprint('''\nEnter nucleotide alignment file name:
 * Must be in fasta format.
 * Include the file extension in the name.'''
-          )
-while True:
-    ntInFile = input()
-    ntInFilePath = path + '/' + ntInFile
-    if os.path.exists(ntInFilePath):
-        break
-    else:
-        cyanprint('''\nInvalid input.
+              )
+    while True:
+        ntInFile = input()
+        ntInFilePath = path + '/' + ntInFile
+        if os.path.exists(ntInFilePath):
+            break
+        else:
+            cyanprint('''\nInvalid input.
 The entered file does not exist in this location.
 Please try again.'''
-                  )
-logging.info('%s chosen as the nucleotide sequence source.' % ntInFilePath)
+                      )
+    logging.info('%s chosen as the nucleotide sequence source.' % ntInFilePath)
 
-# Retrieve nucleotide sequence names.
-with open(ntInFilePath, 'r') as file:
-    ntAllLines = file.read()
-    # Remove primer name and 'aaTrimmed' from fasta name.
-    ntAllLines = re.sub(r'([_][M][\w]*)',
-                        '',
-                        ntAllLines
-                        )
-    ntNameList = re.findall(r'>(.*)',
+    # Retrieve nucleotide sequence names.
+    with open(ntInFilePath, 'r') as file:
+        ntAllLines = file.read()
+        # Remove primer name and 'aaTrimmed' from fasta name.
+        ntAllLines = re.sub(r'([_][M][\w]*)',
+                            '',
                             ntAllLines
                             )
-logging.info('Nucleotide sequence names retrieved from %s.' % ntInFile)
+        ntNameList = re.findall(r'>(.*)',
+                                ntAllLines
+                                )
+    logging.info('Nucleotide sequence names retrieved from %s.' % ntInFile)
 
-# Retrieve nucleotide sequences.
-ntSeqRegex = re.compile('[AGTCURYNWSMKBHDV]{10,}')
-ntAllLinesClean = ntAllLines.replace('\n',
-                                     ''
-                                     )
-ntSeqList = ntSeqRegex.findall(ntAllLinesClean)
-logging.info('Nucleotide sequences retrieved from %s.' % ntInFile)
+    # Retrieve nucleotide sequences.
+    ntSeqRegex = re.compile('[AGTCURYNWSMKBHDV]{10,}')
+    ntAllLinesClean = ntAllLines.replace('\n',
+                                         ''
+                                         )
+    ntSeqList = ntSeqRegex.findall(ntAllLinesClean)
+    logging.info('Nucleotide sequences retrieved from %s.' % ntInFile)
 
-# Retrieve nucleotide alignment length.
-ntAlignment = AlignIO.read(ntInFilePath,
-                           'fasta'
-                           )
-ntAlignLen = ntAlignment.get_alignment_length()
-greenprint('''\nData retrieved from nucleotide alignment file.''')
-logging.info('Nucleotide alignment length calculated to be %s.' % ntAlignLen)
+    # Retrieve nucleotide alignment length.
+    ntAlignment = AlignIO.read(ntInFilePath,
+                               'fasta'
+                               )
+    ntAlignLen = ntAlignment.get_alignment_length()
+    greenprint('''\nData retrieved from nucleotide alignment file.''')
+    logging.info('Nucleotide alignment length calculated to be %s.' % ntAlignLen)
 
 ##################
 # Correlate sequence data with ELISA data and remove ELISA data that don't have sequencing counterparts.
@@ -1133,7 +1216,7 @@ greenprint('\nExcel alignment with ELISA absorbances created.')
 logging.info('Excel file exported as %s_analysed.xlsx.' % elisaInFileName)
 # TODO: Change what the popup says and have earlier popups that address this if the code fails. The code won't even
 #  get to this popup if any of these issues arise.
-cyanprint('''\nProgram finished. See log file for details.
+cyanprint('''\nBinding Analysis program finished running. See log file for details.
 
 
 Post-analysis help:

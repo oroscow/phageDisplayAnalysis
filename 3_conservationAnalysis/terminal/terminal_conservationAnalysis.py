@@ -79,9 +79,9 @@ Please try again.'''
 # Choose whether to analyse ELISA and sequencing data or just sequencing data. User prompt.
 cyanprint('''\nChoose input format by typing the corresponding number:
 \n[1] ELISA and sequencing data
-    Requires xlsx output from Binding Analysis program.
+* Requires xlsx output from Binding Analysis program.
 \n[2] Sequencing data only
-    Requires amino acid alignment fasta output from Sequence Analysis program.'''
+* Requires amino acid alignment fasta output from Sequence Analysis program.'''
           )
 inputOptions = {'1': 'ELISA and sequencing',
                 '2': 'sequencing'
@@ -643,6 +643,6 @@ if inputFormat == '1':
 elif inputFormat == '2':
     greenprint('\nExcel conserved alignment saved as %s_conservation.xlsx.' % inFileNameShort)
     logging.info('Excel file exported as %s_conservation.xlsx.' % inFileNameShort)
-greenprint('\nAnalysis finished. See log file for details.')
+greenprint('\n Conservation Analysis program finished running. See log file for details.')
 logging.info('Conservation Analysis program finished running.')
 logging.shutdown()

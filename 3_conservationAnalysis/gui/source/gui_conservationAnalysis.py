@@ -69,7 +69,7 @@ layout = [
     [Sg.Radio('ELISA and sequencing data',
               'FORMAT',
               default=True,
-              key='-FORMAT1-',
+              key='-ELISA_SEQ_DATA-',
               text_color='#bfbfbf',
               font=('Segoe UI Bold', 10),
               enable_events=True
@@ -77,16 +77,16 @@ layout = [
      Sg.Radio('Sequencing data only',
               'FORMAT',
               default=False,
-              key='-FORMAT2-',
+              key='-SEQ_DATA-',
               text_color='#bfbfbf',
               font=('Segoe UI Bold', 10),
               enable_events=True
               )
      ],
-    [Sg.Text('''    * Requires xlsx output from binding analysis program.\n''',
+    [Sg.Text('''    * Requires xlsx output from Binding Analysis program.\n''',
              text_color='#bfbfbf',
              font=('Segoe UI', 10),
-             key='-FILEMIDDLETEXT-'
+             key='-RADIO_TEXT-'
              )
      ],
 
@@ -94,13 +94,14 @@ layout = [
     [Sg.Text('2. Enter the full path of the ELISA file:',
              text_color='white',
              font=('Segoe UI Bold', 10),
-             key='-FILEBEGINNINGTEXT-'
+             key='-INFILE_BEGIN_TEXT-'
              )
      ],
     [Sg.Input(key='-FILEINPUT-',
               size=70,
               pad=(25, 0),
-              font=('Segoe UI', 10)
+              font=('Segoe UI', 10),
+              focus=True
               ),
      Sg.FileBrowse(font=('Segoe UI Bold', 10),
                    size=(10, 0),
@@ -110,7 +111,7 @@ layout = [
     [Sg.Text('''    * Must be in xlsx format.\n''',
              text_color='#bfbfbf',
              font=('Segoe UI', 10),
-             key='-FILEENDTEXT-'
+             key='-INFILE_END_TEXT-'
              )
      ],
 
@@ -160,7 +161,7 @@ layout = [
      Sg.Radio('N/A',
               'LIBRARY',
               default=False,
-              key='-LIBRARY0-',
+              key='-NO_LIBRARY-',
               text_color='#bfbfbf',
               font=('Segoe UI Bold', 10),
               enable_events=True
@@ -173,7 +174,7 @@ layout = [
         (Region 3) 62-64, 66, 68, 70-72\n''',
              text_color='#bfbfbf',
              font=('Segoe UI', 10),
-             key='-LIBRARYENDTEXT-'
+             key='-LIBRARY_END_TEXT-'
              )
      ],
 
@@ -207,36 +208,35 @@ while True:
         window.close()
         break
 
-    elif event == '-FORMAT1-':
-        window['-FILEBEGINNINGTEXT-'].update('''2. Enter the full path of the ELISA file:''')
-        window['-FILEMIDDLETEXT-'].update('''    * Requires xlsx output from binding analysis program.\n''')
-        window['-FILEENDTEXT-'].update('''    * Must be in xlsx format.\n''')
+    elif event == '-ELISA_SEQ_DATA-':
+        window['-INFILE_BEGIN_TEXT-'].update('2. Enter the full path of the ELISA file:')
+        window['-RADIO_TEXT-'].update('    * Requires xlsx output from Binding Analysis program.\n')
+        window['-INFILE_END_TEXT-'].update('    * Must be in xlsx format.\n')
         continue
 
-    elif event == '-FORMAT2-':
-        window['-FILEBEGINNINGTEXT-'].update('''2. Enter the full path of the amino acid alignment file:''')
-        window['-FILEBEGINNINGTEXT-'].update('''2. Enter the full path of the amino acid alignment file:''')
-        window['-FILEMIDDLETEXT-'].update('''    * Requires fasta alignment output from sequence analysis program.
-''')
-        window['-FILEENDTEXT-'].update('''    * Must be in fasta format.\n''')
+    elif event == '-SEQ_DATA-':
+        window['-INFILE_BEGIN_TEXT-'].update('2. Enter the full path of the amino acid alignment file:')
+        window['-RADIO_TEXT-'].update('    * Requires fasta alignment output from Sequence Analysis program or'
+                                      ' elsewhere.')
+        window['-INFILE_END_TEXT-'].update('    * Must be in fasta format.\n')
         continue
 
     elif event == '-LIBRARY1-':
-        window['-LIBRARYENDTEXT-'].update('''    Diversified residues:
+        window['-LIBRARY_END_TEXT-'].update('''    Diversified residues:
         (Region 1) 2, 4, 6, 8-12, 14
         (Region 2) 35, 37, 39-40, 42, 44, 46-49
         (Region 3) 62-64, 66, 68, 70-72\n''')
         continue
 
     elif event == '-LIBRARY2-':
-        window['-LIBRARYENDTEXT-'].update('''    Diversified residues:
+        window['-LIBRARY_END_TEXT-'].update('''    Diversified residues:
         (Region 1) 2, 4, 6, 8-12, 14
         (Region 2) 42, 44, 46-49
         (Region 3) 62-64, 66, 68, 70-78\n''')
         continue
 
-    elif event == '-LIBRARY0-':
-        window['-LIBRARYENDTEXT-'].update('''    Diversified residues:
+    elif event == '-NO_LIBRARY-':
+        window['-LIBRARY_END_TEXT-'].update('''    Diversified residues:
         N/A\n\n\n''')
         continue
 
@@ -254,7 +254,7 @@ while True:
         seqRegex = re.compile(r'[ARNDCEQGHILKMFPSTWYVX]{10,}')
         consensusSeqInput = seqRegex.search(consensusSeq, re.IGNORECASE)
 
-        if values['-FORMAT1-']:
+        if values['-ELISA_SEQ_DATA-']:
             inputFormat = '1'
             inFilePath = str(values['-FILEINPUT-'])
             inFilePath = inFilePath.replace('\\', '/')
@@ -281,7 +281,7 @@ Please enter a valid IUPAC amino acid sequence at least 10 digits long.''',
                          )
                 continue
 
-        if values['-FORMAT2-']:
+        if values['-SEQ_DATA-']:
             inputFormat = '2'
             inFilePath = str(values['-FILEINPUT-'])
             inFilePath = inFilePath.replace('\\', '/')
@@ -314,7 +314,7 @@ Please enter a valid IUPAC amino acid sequence at least 10 digits long.''',
         if values['-LIBRARY2-']:
             libraryInput = '2'
 
-        if values['-LIBRARY0-']:
+        if values['-NO_LIBRARY-']:
             libraryInput = 'pass'
 
         else:
@@ -807,12 +807,11 @@ else:
 
     workbook.close()
     logging.info('Excel file exported as %s_conservation.xlsx.' % inFileName)
-    logging.info('Program finished running.')
-    logging.info('Program finished running.')
+    logging.info('Conservation Analysis program finished running.')
     logging.shutdown()
     # TODO: Change what the popup says and have earlier popups that address this if the code fails. The code won't even
     #  get to this popup if any of these issues arise.
-    Sg.Popup('''Analysis finished. See log file for details.
+    Sg.Popup(''' Conservation Analysis program finished running. See log file for details.
 \n\nPost-analysis help:
 \nNon-trimmed files are in the 'noTrim' folder and couldn't be trimmed because of one of the following reasons:
 \n      a) Statistical error.

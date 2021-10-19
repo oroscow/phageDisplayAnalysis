@@ -32,26 +32,25 @@ class OrderedCounter(Counter, OrderedDict):
 Sg.theme('DarkGrey13')
 
 # Create window layout.
-layout = [
-
+infoLayout = [
     # Title and introduction.
-    [Sg.Text('Phage Display - Binding Analysis',
+    [Sg.Text('\nPhage Display - Binding Analysis',
              text_color='#8294cc',
-             font=('Segoe UI Semibold', 16),
-             expand_x=True)
+             font=('Segoe UI Semibold', 16)
+             )
      ],
     [Sg.Text('''        Analyses ELISA binding data along with corresponding sequence data.
         Calculates the average of duplicate absorbances for each protein and
         normalizes them against the average of the negative controls/blanks.
         ELISA data that don't have corresponding sequencing data are excluded
-        from the final results.''',
+        from the final results.\n\n''',
              text_color='#8294cc',
              font=('Segoe UI', 12)
              )
      ],
 
     # 'Plate layout' button.
-    [Sg.Text('        Click the button below to see the required plate layout for this program.',
+    [Sg.Text('        Click the button below to see the required plate layout for this program.\n',
              text_color='#8294cc',
              font=('Segoe UI', 12)
              )
@@ -62,22 +61,55 @@ layout = [
                pad=(40, 0),
                use_ttk_buttons=True
                )
-     ],
+     ]
+]
 
-    # ELISA file input prompt.
-    [Sg.Text('\n1. Enter the full path of the raw ELISA data file:',
+inFileLayout = [
+
+    # Input format prompt.
+    [Sg.Text('1. Choose input format:',
              text_color='white',
              font=('Segoe UI Bold', 10)
              )
      ],
-    [Sg.Input(key='-ELISAINPUT-',
+    [Sg.Radio('Xlsx (one file)',
+              'FORMAT',
+              default=True,
+              key='-XLSX_FORMAT-',
+              text_color='#bfbfbf',
+              font=('Segoe UI Bold', 10),
+              enable_events=True
+              ),
+     Sg.Radio('Fasta (two files)',
+              'FORMAT',
+              default=False,
+              key='-FASTA_FORMAT-',
+              text_color='#bfbfbf',
+              font=('Segoe UI Bold', 10),
+              enable_events=True
+              )
+     ],
+    [Sg.Text('''    * Requires xlsx output from Sequence Analysis program.\n''',
+             text_color='#bfbfbf',
+             font=('Segoe UI', 10),
+             key='-RADIO_TEXT-'
+             )
+     ],
+
+    # ELISA file input prompt.
+    [Sg.Text('2. Enter the full path of the raw ELISA data file:',
+             text_color='white',
+             font=('Segoe UI Bold', 10)
+             )
+     ],
+    [Sg.Input(key='-ELISA_INPUT-',
               size=60,
               pad=(25, 0),
               font=('Segoe UI', 10)
               ),
      Sg.FileBrowse(font=('Segoe UI Bold', 10),
                    size=(10, 0),
-                   file_types=(('Excel/Fasta Files', '*.xlsx;*.fasta'), ('All Files', '*.*'),)
+                   file_types=(('Excel Files', '*.xlsx'), ('All Files', '*.*'),),
                    )
      ],
     [Sg.Text('''    * Must be in xlsx format.
@@ -88,33 +120,89 @@ layout = [
              )
      ],
 
+    # Xlsx alignment file input prompt (changes to amino acid alignment input prompt depending on radio buttons).
+    [Sg.Text('3. Enter the full path of the excel alignment file:',
+             text_color='white',
+             font=('Segoe UI Bold', 10),
+             key='-XLSX_INPUT_START_TEXT-'
+             )
+     ],
+    [Sg.Input(key='-SWITCH_INPUT-',
+              size=60,
+              pad=(25, 0),
+              font=('Segoe UI', 10),
+              ),
+     Sg.FileBrowse(font=('Segoe UI Bold', 10),
+                   size=(10, 0),
+                   file_types=(('Excel/Fasta Files', '*.xlsx;*.fasta'), ('All Files', '*.*'),),
+                   )
+     ],
+    [Sg.Text('''    * Must be in fasta format.\n''',
+             text_color='#bfbfbf',
+             font=('Segoe UI', 10),
+             key='-XLSX_INPUT_END_TEXT-'
+             )
+     ],
+
+    # Nucleotide alignment file input prompt.
+    [Sg.Text('4. Enter the full path of the nucleotide alignment file:',
+             text_color='#464646',
+             font=('Segoe UI Bold', 10),
+             key='-NT_INPUT_START_TEXT-',
+             )
+     ],
+    [Sg.Input(key='-NT_INPUT-',
+              size=60,
+              pad=(25, 0),
+              font=('Segoe UI', 10),
+              disabled_readonly_background_color='#161616',
+              disabled=True
+              ),
+     Sg.FileBrowse(key='-NT_BROWSE-',
+                   font=('Segoe UI Bold', 10),
+                   size=(10, 0),
+                   file_types=(('Fasta Files', '*.fasta'), ('All Files', '*.*'),),
+                   disabled=True
+                   )
+     ],
+    [Sg.Text('''    * Must be in fasta format.\n''',
+             text_color='#464646',
+             font=('Segoe UI', 10),
+             key='-NT_INPUT_END_TEXT-'
+             )
+     ]
+]
+
+settingsLayout = [
+
     # Blank well ID input prompt.
-    [Sg.Text('2. Enter well IDs that contain ELISA blanks/negative controls:',
+    [Sg.Text('1. Enter well IDs that contain ELISA blanks/negative controls:',
              text_color='white',
              font=('Segoe UI Bold', 10)
              )
      ],
-    [Sg.Input(key='-BLANKINPUT-',
+    [Sg.Input(key='-BLANK_INPUT-',
               size=20,
               pad=(25, 0),
               font=('Segoe UI', 10)
               )
      ],
     [Sg.Text('''    * Not case-sensitive.
+    * Blank wells not associated with any absorbance value will be ignored.
     * For multiple wells, use any kind of separator between them.
-      E.g. p22,p23,p24 and P22-P23-P24 both work\n''',
+      E.g. p22,p23,p24    or    P22-P23-P24\n''',
              text_color='#bfbfbf',
              font=('Segoe UI', 10)
              )
      ],
 
     # Emission absorbance input prompt.
-    [Sg.Text('3. Enter the wavelength of the emission peak (nm):',
+    [Sg.Text('2. Enter the wavelength of the emission peak (nm):',
              text_color='white',
              font=('Segoe UI Bold', 10)
              )
      ],
-    [Sg.Input(key='-EMISSIONINPUT-',
+    [Sg.Input(key='-EMISSION_INPUT-',
               size=5,
               pad=(25, 0),
               default_text='450',
@@ -126,68 +214,49 @@ layout = [
              font=('Segoe UI', 10)
              )
      ],
-
-    # Amino acid alignment file input prompt.
-    [Sg.Text('4. Enter the full path of the amino acid alignment file:',
-             text_color='white',
-             font=('Segoe UI Bold', 10)
-             )
-     ],
-    [Sg.Input(key='-AAINPUT-',
-              size=60,
-              pad=(25, 0),
-              font=('Segoe UI', 10)
-              ),
-     Sg.FileBrowse(font=('Segoe UI Bold', 10),
-                   size=(10, 0),
-                   file_types=(('Fasta Files', '*.fasta'), ('All Files', '*.*'),)
-                   )
-     ],
-    [Sg.Text('''    * Must be in fasta format.\n''',
-             text_color='#bfbfbf',
-             font=('Segoe UI', 10)
-             )
-     ],
-
-    # Nucleotide alignment file input prompt.
-    [Sg.Text('5. Enter the full path of the nucleotide alignment file:',
-             text_color='white',
-             font=('Segoe UI Bold', 10)
-             )
-     ],
-    [Sg.Input(key='-NTINPUT-',
-              size=60,
-              pad=(25, 0),
-              font=('Segoe UI', 10)
-              ),
-     Sg.FileBrowse(font=('Segoe UI Bold', 10),
-                   size=(10, 0),
-                   file_types=(('Fasta Files', '*.fasta'), ('All Files', '*.*'),)
-                   )
-     ],
-    [Sg.Text('''    * Must be in fasta format.\n''',
-             text_color='#bfbfbf',
-             font=('Segoe UI', 10)
-             )
-     ],
-
-    # 'Enter' button.
     [Sg.Button('Enter',
                bind_return_key=True,
                font=('Segoe UI Bold', 16),
                size=(10, 0),
-               pad=(30, 0),
+               pad=(30, 25),
                use_ttk_buttons=True
                )
      ]
 ]
 
-# Name window, assign layout, and change window behaviour.
+# Create tab layout.
+tabGroup = [
+    [Sg.TabGroup(
+        [
+            [Sg.Tab('Info',
+                    infoLayout,
+                    border_width=40
+                    ),
+             Sg.Tab('Input Files',
+                    inFileLayout,
+                    border_width=40
+                    ),
+             Sg.Tab('Settings',
+                    settingsLayout,
+                    border_width=40
+                    )
+             ]
+        ],
+        tab_location='topleft',
+        border_width=1,
+        font=('Segoe UI Bold', 10),
+        title_color='#bfbfbf',
+        selected_title_color='#8294cc',
+        size=(650, 550)
+    )
+    ]
+]
+
+# Set up window behaviour..
 window = Sg.Window('Phage Display - Binding Analysis',
-                   layout,
+                   tabGroup,
                    alpha_channel=0.95,
                    grab_anywhere=True,
-                   size=(600, 880),
                    ttk_theme='clam'
                    )
 
@@ -208,20 +277,43 @@ while True:
                  grab_anywhere=True
                  )
 
+    elif event == '-XLSX_FORMAT-':
+        window['-RADIO_TEXT-'].update('    * Requires xlsx output from Sequence Analysis program.\n')
+        window['-XLSX_INPUT_START_TEXT-'].update('2. Enter the full path of the excel alignment file:')
+        window['-XLSX_INPUT_END_TEXT-'].update('    * Must be in xlsx format.\n')
+        window['-NT_INPUT_START_TEXT-'].update(text_color='#464646')
+        window['-NT_BROWSE-'].update(disabled=True)
+        window['-NT_INPUT-'].update(disabled=True)
+        window['-NT_INPUT_END_TEXT-'].update(text_color='#464646')
+        continue
+
+    elif event == '-FASTA_FORMAT-':
+        window['-RADIO_TEXT-'].update('    * Requires fasta alignment output from sequence analysis program or'
+                                      ' elsewhere.\n')
+        window['-XLSX_INPUT_START_TEXT-'].update('2. Enter the full path of the amino acid alignment file:')
+        window['-XLSX_INPUT_END_TEXT-'].update('    * Must be in fasta format.\n')
+        window['-NT_INPUT_START_TEXT-'].update(text_color='white')
+        window['-NT_BROWSE-'].update(disabled=False)
+        window['-NT_INPUT-'].update(disabled=False)
+        window['-NT_INPUT_END_TEXT-'].update(text_color='#bfbfbf')
+        continue
+
     # If 'Enter' is pressed, updates variables with input values.
     elif event == 'Enter':
-        elisaInFilePath = str(values['-ELISAINPUT-'])
-        blankWells = str(values['-BLANKINPUT-'])
-        emissionAbs = str(values['-EMISSIONINPUT-'])
-        aaInFilePath = str(values['-AAINPUT-'])
-        ntInFilePath = str(values['-NTINPUT-'])
-        # Stops user if no file is found in the working directory.
+        inputOptions = {'1': 'xlsx file',
+                        '2': 'fasta files'
+                        }
+        elisaInFilePath = str(values['-ELISA_INPUT-'])
+        blankWells = str(values['-BLANK_INPUT-'])
+        emissionAbs = str(values['-EMISSION_INPUT-'])
+
+        # Stops user if no ELISA file is found in the working directory.
         if not os.path.exists(elisaInFilePath):
             Sg.Popup('''The entered raw ELISA xlsx file does not exist in this location.
 Please enter it again.''',
                      title='File Not Found',
                      grab_anywhere=True,
-                     text_color='#4276ac'
+                     text_color='#8294cc'
                      )
             continue
         else:
@@ -231,7 +323,44 @@ Please enter it again.''',
                           )
             os.chdir(path)
 
-        # TODO: Stop user if emission absorbance input isn't the correct format.
+        if values['-XLSX_FORMAT-']:
+            inputFormat = '1'
+            xlsxInFilePath = str(values['-SWITCH_INPUT-'])
+            if not os.path.exists(xlsxInFilePath):
+                Sg.Popup('''The entered xlsx alignment file does not exist in this location.
+Please choose the file again.''',
+                         title='File Not Found',
+                         grab_anywhere=True,
+                         text_color='#4276ac')
+                continue
+
+        if values['-FASTA_FORMAT-']:
+            inputFormat = '2'
+            # Stops user if no amino acid alignment file is found in the working directory.
+            aaInFilePath = str(values['-SWITCH_INPUT-'])
+            if not os.path.exists(aaInFilePath):
+                Sg.Popup('''The entered amino acid alignment file does not exist in this location.
+Please choose the file again.''',
+                         title='File Not Found',
+                         grab_anywhere=True,
+                         text_color='#4276ac')
+                continue
+            aaInFileName = re.findall(r'[a-zA-Z0-9]+\.fasta$',
+                                      aaInFilePath
+                                      )
+
+            # Stops user if no nucleotide alignment file is found in the working directory.
+            ntInFilePath = str(values['-NT_INPUT-'])
+            if not os.path.exists(ntInFilePath):
+                Sg.Popup('''The entered nucleotide alignment file does not exist in this location.
+Please choose the file again.''',
+                         title='File Not Found',
+                         grab_anywhere=True,
+                         text_color='#4276ac')
+                continue
+            ntInFileName = re.findall(r'[a-zA-Z0-9]+\.fasta$',
+                                      ntInFilePath
+                                      )
 
         # Stops user if well formatting is incorrect.
         blankWellsInput = re.match(r'[pP]\d{2}[,]*',
@@ -239,11 +368,10 @@ Please enter it again.''',
                                    )
         if blankWellsInput is None:
             Sg.Popup('''Invalid input for blank wells.
-Please make sure there are commas (no spaces) between each'''
-                     ' entry.',
+Please make sure there are commas (no spaces) between each entry and try again.''',
                      title='Invalid Blank Wells Input',
                      grab_anywhere=True,
-                     text_color='#4276ac'
+                     text_color='#8294cc'
                      )
             continue
 
@@ -253,43 +381,18 @@ Please make sure there are commas (no spaces) between each'''
                                     )
         if emissionAbsInput is None:
             Sg.Popup('''Invalid input for emission absorbance.
-Please make sure there three digits.''',
+Please make sure there are three digits and try again.''',
                      title='Invalid Emission Absorbance Input',
                      grab_anywhere=True,
-                     text_color='#4276ac'
+                     text_color='#8294cc'
                      )
             continue
 
-        # Stops user if no file is not found in the working directory.
-        if not os.path.exists(aaInFilePath):
-            Sg.Popup('''The entered amino acid alignment fasta file does not exist in this location.
-Please enter it again.''',
-                     title='File Not Found',
-                     grab_anywhere=True,
-                     text_color='#4276ac'
-                     )
-            continue
-
-        # Stops user if no file is not found in the working directory.
-        if not os.path.exists(ntInFilePath):
-            Sg.Popup('''The entered nucleotide alignment fasta file does not exist in this location.
-Please enter it again.''',
-                     title='File Not Found',
-                     grab_anywhere=True,
-                     text_color='#4276ac'
-                     )
-            continue
         else:
             elisaInFileName = re.findall(r'[a-zA-Z0-9_]+\.xlsx$',
                                          elisaInFilePath
                                          )
             elisaInFileName = elisaInFileName[0]
-            aaInFileName = re.findall(r'[a-zA-Z0-9]+\.fasta$',
-                                      aaInFilePath
-                                      )
-            ntInFileName = re.findall(r'[a-zA-Z0-9]+\.fasta$',
-                                      ntInFilePath
-                                      )
             emissionAbs = int(emissionAbs)
             break
 
@@ -315,14 +418,18 @@ else:
                         )
     logging.info('Working directory changed to %s.' % path)
     logging.info('%s chosen as raw ELISA data source.' % elisaInFileName)
-    logging.info('%s chosen as the amino acid sequence source.' % aaInFilePath)
-    logging.info('%s chosen as the nucleotide sequence source.' % ntInFilePath)
+
+    if inputFormat == '1':
+        logging.info('%s chosen as the amino acid and nucleotide sequence source.' % xlsxInFilePath)
+
+    elif inputFormat == '2':
+        logging.info('%s chosen as the amino acid sequence source.' % aaInFilePath)
+        logging.info('%s chosen as the nucleotide sequence source.' % ntInFilePath)
 
     ##################
     # Retrieve and parse raw ELISA data.
     ##################
 
-    # TODO: Make code to read sequences from excel file without need for fasta files.
     allCells = pandas.read_excel(elisaInFilePath)
     logging.info('Raw data read from ELISA file.')
     # Remove rows where the last column isn't equal to the emission absorbance.
@@ -338,7 +445,6 @@ else:
     dataCellsClean = dataCellsClean.replace('OVRFLW', float(4))
     # Remove designation column.
     dataCellsClean = dataCellsClean.iloc[:, 1:]
-    # TODO: Have a while loop that asks for input again or breaks script.
     # Rename rows to make parsing easier
     # For dataframes that include empty rows.
     if dataCellsClean.shape[0] == 16:
@@ -381,8 +487,6 @@ else:
     for well in blankWells:
         if well in blankCells:
             blankValues.append(blankCells.get(well))
-    # TODO: Find a way to let the user know that inputted blank wells were excluded from the data for not having a
-    #  value.
     # Remove values that contain no data in the excel cell.
     blankValues = [value for value in blankValues if not (pandas.isna(value))]
     # Average blanks.
@@ -407,68 +511,120 @@ else:
     logging.info('Averaged absorbances normalised to the blanks/negative control average.')
 
     ##################
-    # Retrieve and parse amino acid sequence data.
+    # Retrieve and parse amino acid/nucleotide sequence data.
     ##################
 
-    # Retrieve amino acid sequence names.
-    aaSeqRegex = re.compile(r'([ARNDCEQGHILKMFPSTWYVX]{10,})')
-    with open(aaInFilePath, 'r') as file:
-        aaAllLines = file.read()
-        # Remove primer name and 'aaTrimmed' from fasta name.
-        aaAllLinesTrim = re.sub(r'([_][M][\w]*)',
-                                '',
-                                aaAllLines
-                                )
-        aaNameList = re.findall(r'>(.*)',
-                                aaAllLinesTrim
-                                )
-    logging.info('Amino acid sequence names retrieved from %s.' % aaInFileName)
+    if inputFormat == '1':
+        aaCells = pandas.read_excel(xlsxInFilePath, sheet_name=0)
+        ntCells = pandas.read_excel(xlsxInFilePath, sheet_name=2)
 
-    # Retrieve amino acid sequences.
-    aaAllLinesClean = aaAllLines.replace('\n',
-                                         ''
-                                         )
-    aaSeqList = aaSeqRegex.findall(aaAllLinesClean)
-    logging.info('Amino acid sequences retrieved from %s.' % aaInFileName)
+        aaSeqRegex = re.compile(r'[ARNDCEQGHILKMFPSTWYVX]{10,}')
+        ntSeqRegex = re.compile('[AGTCURYNWSMKBHDV]{10,}')
 
-    # Retrieve amino acid alignment length.
-    aaAlignment = AlignIO.read(aaInFilePath,
-                               'fasta'
-                               )
-    aaAlignLen = aaAlignment.get_alignment_length()
-    logging.info('Amino acid alignment length calculated to be %s.' % aaAlignLen)
+        # Retrieve amino acid sequences.
+        aaSeqCells = aaCells.iloc[1:, 1:]
+        aaSeqCells = aaSeqCells.to_string(index=False)
+        aaSeqList = aaSeqCells.replace(' ', '')
+        aaSeqList = aaSeqRegex.findall(aaSeqList)
+        logging.info('Amino acid sequences retrieved from %s.' % xlsxInFilePath)
+        aaAlignLen = len(aaSeqList[0])
+        logging.info('Amino acid alignment length calculated to be %s.' % aaAlignLen)
 
-    ##################
-    # Retrieve and parse nucleotide sequence data.
-    ##################
+        # Retrieve nucleotide sequences.
+        ntSeqCells = ntCells.iloc[1:, 1:]
+        ntSeqCells = ntSeqCells.to_string(index=False)
+        ntSeqList = ntSeqCells.replace(' ', '')
+        ntSeqList = ntSeqRegex.findall(ntSeqList)
+        logging.info('Nucleotide sequences retrieved from %s.' % xlsxInFilePath)
+        ntAlignLen = len(ntSeqList[0])
+        logging.info('Nucleotide alignment length calculated to be %s.' % ntAlignLen)
 
-    # Retrieve nucleotide sequence names.
-    with open(ntInFilePath, 'r') as file:
-        ntAllLines = file.read()
-        # Remove primer name and 'aaTrimmed' from fasta name.
-        ntAllLines = re.sub(r'([_][M][\w]*)',
+        wellRegex = re.compile(r'([A-Z][0-1][0-9])')
+        # Retrieve amino acid sequence names.
+        aaNameCells = aaCells.iloc[1:, 0:1]
+        aaNameCells = aaNameCells.to_string(index=False)
+        aaNameList = re.sub(r'([_][M][\w]*)',
                             '',
-                            ntAllLines
+                            aaNameCells
                             )
-        ntNameList = re.findall(r'>(.*)',
+        aaNameList = aaNameList.replace(' ', '')
+        aaNameList = aaNameList.split('\n')
+        aaNameList = aaNameList[1:]
+        logging.info('Amino acid sequence names retrieved from %s.' % xlsxInFilePath)
+
+        # Retrieve nucleotide sequence names.
+        ntNameCells = ntCells.iloc[1:, 0:1]
+        ntNameCells = ntNameCells.to_string(index=False)
+        ntNameList = re.sub(r'([_][M][\w]*)',
+                            '',
+                            ntNameCells
+                            )
+        ntNameList = ntNameList.replace(' ', '')
+        ntNameList = ntNameList.split('\n')
+        ntNameList = ntNameList[1:]
+        logging.info('Nucleotide sequence names retrieved from %s.' % xlsxInFilePath)
+
+    elif inputFormat == '2':
+
+        #########
+        # Amino Acids
+        #########
+
+        # Retrieve amino acid sequence names.
+        aaSeqRegex = re.compile(r'([ARNDCEQGHILKMFPSTWYVX]{10,})')
+        with open(aaInFilePath, 'r') as file:
+            aaAllLines = file.read()
+            # Remove primer name and 'aaTrimmed' from fasta name.
+            aaAllLinesTrim = re.sub(r'([_][M][\w]*)',
+                                    '',
+                                    aaAllLines
+                                    )
+            aaNameList = re.findall(r'>(.*)',
+                                    aaAllLinesTrim
+                                    )
+        logging.info('Amino acid sequence names retrieved from %s.' % aaInFileName)
+        # Retrieve amino acid sequences.
+        aaAllLinesClean = aaAllLines.replace('\n',
+                                             ''
+                                             )
+        aaSeqList = aaSeqRegex.findall(aaAllLinesClean)
+        logging.info('Amino acid sequences retrieved from %s.' % aaInFileName)
+        # Retrieve amino acid alignment length.
+        aaAlignment = AlignIO.read(aaInFilePath,
+                                   'fasta'
+                                   )
+        aaAlignLen = aaAlignment.get_alignment_length()
+        logging.info('Amino acid alignment length calculated to be %s.' % aaAlignLen)
+
+        #########
+        # Nucleotides
+        #########
+
+        # Retrieve nucleotide sequence names.
+        with open(ntInFilePath, 'r') as file:
+            ntAllLines = file.read()
+            # Remove primer name and 'aaTrimmed' from fasta name.
+            ntAllLines = re.sub(r'([_][M][\w]*)',
+                                '',
                                 ntAllLines
                                 )
-    logging.info('Nucleotide sequence names retrieved from %s.' % ntInFileName)
-
-    # Retrieve nucleotide sequences.
-    ntSeqRegex = re.compile('[AGTCURYNWSMKBHDV]{10,}')
-    ntAllLinesClean = ntAllLines.replace('\n',
-                                         ''
-                                         )
-    ntSeqList = ntSeqRegex.findall(ntAllLinesClean)
-    logging.info('Nucleotide sequences retrieved from %s.' % ntInFileName)
-
-    # Retrieve nucleotide alignment length.
-    ntAlignment = AlignIO.read(ntInFilePath,
-                               'fasta'
-                               )
-    ntAlignLen = ntAlignment.get_alignment_length()
-    logging.info('Nucleotide alignment length calculated to be %s.' % ntAlignLen)
+            ntNameList = re.findall(r'>(.*)',
+                                    ntAllLines
+                                    )
+        logging.info('Nucleotide sequence names retrieved from %s.' % ntInFileName)
+        # Retrieve nucleotide sequences.
+        ntSeqRegex = re.compile('[AGTCURYNWSMKBHDV]{10,}')
+        ntAllLinesClean = ntAllLines.replace('\n',
+                                             ''
+                                             )
+        ntSeqList = ntSeqRegex.findall(ntAllLinesClean)
+        logging.info('Nucleotide sequences retrieved from %s.' % ntInFileName)
+        # Retrieve nucleotide alignment length.
+        ntAlignment = AlignIO.read(ntInFilePath,
+                                   'fasta'
+                                   )
+        ntAlignLen = ntAlignment.get_alignment_length()
+        logging.info('Nucleotide alignment length calculated to be %s.' % ntAlignLen)
 
     ##################
     # Correlate sequence data with ELISA data and remove ELISA data that don't have sequencing counterparts.
@@ -1285,7 +1441,7 @@ else:
     logging.info('Excel file exported as %s_analysed.xlsx.' % elisaInFileNameShort)
     # TODO: Change what the popup says and have earlier popups that address this if the code fails. The code won't even
     #  get to this popup if any of these issues arise.
-    Sg.Popup('''Program finished. See log file for details.
+    Sg.Popup('''Binding Analysis program finished running. See log file for details.
 \n\nPost-analysis help:
 \nNon-trimmed files are in the 'noTrim' folder and couldn't be trimmed because of one of the following reasons:
 \n      a) Statistical error.

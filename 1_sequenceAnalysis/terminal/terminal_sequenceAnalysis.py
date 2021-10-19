@@ -1033,7 +1033,7 @@ worksheet4.add_table(1, 0, len(uniqueNt) + 1, ntAlignLen + 2,
 workbook.close()
 greenprint('\nExcel alignment created')
 logging.info('Excel alignment exported as %s_aaTrimmed_aligned.xlsx.' % folderName)
-cyanprint('''\nProgram finished, see log file for details.
+cyanprint('''\nSequence Analysis program finished running, see log file for details.
 \n\nPost-analysis help:
 \nNon-trimmed files are in the 'noTrim' folder and couldn't be trimmed because of one of the following reasons:
 \n      a) There's no sequence.

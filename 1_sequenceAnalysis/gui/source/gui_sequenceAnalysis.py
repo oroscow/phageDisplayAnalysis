@@ -71,7 +71,8 @@ layout = [
     [Sg.Input(key='-FOLDERINPUT-',
               size=60,
               pad=(25, 0),
-              font=('Segoe UI', 10)
+              font=('Segoe UI', 10),
+              focus=True
               ),
      Sg.FolderBrowse(font=('Segoe UI Bold', 10),
                      size=(10, 0)
@@ -1144,7 +1145,7 @@ else:
 
     workbook.close()
     logging.info('Excel alignment exported as %s_aaTrimmed_aligned.xlsx.' % folderName)
-    Sg.Popup('''Program finished, see log file for details.
+    Sg.Popup('''Sequence Analysis program finished running, see log file for details.
 \n\nPost-analysis help:
 \nNon-trimmed files are in the 'noTrim' folder and couldn't be trimmed because of one of the following reasons:
 \n      a) There's no sequence.
