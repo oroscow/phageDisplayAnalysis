@@ -10,7 +10,7 @@ In order of suggested use, the set of programs includes:
 
 Each program can be run either as an executable or a terminal program. For further details on each program (e.g. how to run, input/ouput file types, and so on), please look at their respective reademe's in their folders.
 
-![gui](https://user-images.githubusercontent.com/55511532/137403048-8bcf8260-fd92-4608-b5a6-d2ffbee08f24.png)
+![gui](https://user-images.githubusercontent.com/55511532/137997288-9e4361ce-2b86-4ff0-93fd-0b49a7d2e495.png)
 
 ###### GUIs for each program.
 
