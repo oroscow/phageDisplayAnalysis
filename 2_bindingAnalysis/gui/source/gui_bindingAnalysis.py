@@ -131,10 +131,11 @@ inFileLayout = [
               size=60,
               pad=(25, 0),
               font=('Segoe UI', 10),
+              do_not_clear=False
               ),
      Sg.FileBrowse(font=('Segoe UI Bold', 10),
                    size=(10, 0),
-                   file_types=(('Excel/Fasta Files', '*.xlsx;*.fasta'), ('All Files', '*.*'),),
+                   file_types=(('Excel/Fasta Files', '*.xlsx;*.fasta'), ('All Files', '*.*'),)
                    )
      ],
     [Sg.Text('''    * Must be in fasta format.\n''',
@@ -156,7 +157,8 @@ inFileLayout = [
               pad=(25, 0),
               font=('Segoe UI', 10),
               disabled_readonly_background_color='#161616',
-              disabled=True
+              disabled=True,
+              do_not_clear=False
               ),
      Sg.FileBrowse(key='-NT_BROWSE-',
                    font=('Segoe UI Bold', 10),

@@ -43,6 +43,7 @@ class OrderedCounter(Counter, OrderedDict):
 
 # Choose window theme.
 Sg.theme('DarkGrey13')
+
 # Create window layout.
 layout = [
 
@@ -101,11 +102,12 @@ layout = [
               size=70,
               pad=(25, 0),
               font=('Segoe UI', 10),
-              focus=True
+              focus=True,
+              do_not_clear=False
               ),
      Sg.FileBrowse(font=('Segoe UI Bold', 10),
                    size=(10, 0),
-                   file_types=(('All Files', '*.*'),)
+                   file_types=(('Excel/Fasta Files', '*.xlsx;*.fasta'), ('All Files', '*.*'),),
                    )
      ],
     [Sg.Text('''    * Must be in xlsx format.\n''',
@@ -216,8 +218,8 @@ while True:
 
     elif event == '-SEQ_DATA-':
         window['-INFILE_BEGIN_TEXT-'].update('2. Enter the full path of the amino acid alignment file:')
-        window['-RADIO_TEXT-'].update('    * Requires fasta alignment output from Sequence Analysis program or'
-                                      ' elsewhere.')
+        window['-RADIO_TEXT-'].update('    * Requires amino acid fasta alignment output from Sequence Analysis program'
+                                      ' or elsewhere.\n')
         window['-INFILE_END_TEXT-'].update('    * Must be in fasta format.\n')
         continue
 
