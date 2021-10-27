@@ -117,27 +117,7 @@ dataCellsClean = dataCellsClean.replace('OVRFLW', float(4))
 dataCellsClean = dataCellsClean.iloc[:, 1:]
 
 # Rename rows to make parsing easier.
-# For dataframes that include empty rows.
-if dataCellsClean.shape[0] == 16:
-    dataCellsClean.index = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P']
-    # Remove empty rows from the dataframe.
-    dataCellsClean = dataCellsClean.drop(['B', 'D', 'F', 'H', 'J', 'L', 'N'], axis=0)
-    # For dataframes that don't include empty rows.
-elif dataCellsClean.shape[0] == 9:
-    dataCellsClean.index = ['A', 'C', 'E', 'G', 'I', 'K', 'M', 'O', 'P']
-
-# TODO: Update formatting.
-# Create a dictionary of all the blank values and their corresponding well IDs.
-blankCells = {'P1': dataCellsClean.iloc[8][0], 'P2': dataCellsClean.iloc[8][1], 'P3': dataCellsClean.iloc[8][2],
-              'P4': dataCellsClean.iloc[8][3], 'P5': dataCellsClean.iloc[8][4], 'P6': dataCellsClean.iloc[8][5],
-              'P7': dataCellsClean.iloc[8][6], 'P8': dataCellsClean.iloc[8][7], 'P9': dataCellsClean.iloc[8][8],
-              'P10': dataCellsClean.iloc[8][9], 'P11': dataCellsClean.iloc[8][10], 'P12': dataCellsClean.iloc[8][11],
-              'P13': dataCellsClean.iloc[8][12], 'P14': dataCellsClean.iloc[8][13], 'P15': dataCellsClean.iloc[8][14],
-              'P16': dataCellsClean.iloc[8][15], 'P17': dataCellsClean.iloc[8][16], 'P18': dataCellsClean.iloc[8][17],
-              'P19': dataCellsClean.iloc[8][18], 'P20': dataCellsClean.iloc[8][19], 'P21': dataCellsClean.iloc[8][20],
-              'P22': dataCellsClean.iloc[8][21], 'P23': dataCellsClean.iloc[8][22], 'P24': dataCellsClean.iloc[8][23]
-              }
-logging.info('Blank absorbances retrieved from raw data file.')
+dataCellsClean.index = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P']
 
 # TODO: Update formatting.
 # Create a list of all the data absorbances.
@@ -147,44 +127,49 @@ cellValues = list(dataCellsClean.iloc[0]) + list(dataCellsClean.iloc[1]) + list(
 logging.info('Data absorbances retrieved from raw data file.')
 greenprint('''\nData retrieved from raw ELISA file.''')
 
+# Retrieve control wells.
+controlCells = [dataCellsClean.loc['B'][value] for value in range(1, 24, 2)] +\
+               [dataCellsClean.loc['D'][value] for value in range(1, 24, 2)] +\
+               [dataCellsClean.loc['F'][value] for value in range(1, 24, 2)] +\
+               [dataCellsClean.loc['H'][value] for value in range(1, 24, 2)] +\
+               [dataCellsClean.loc['J'][value] for value in range(1, 24, 2)] +\
+               [dataCellsClean.loc['L'][value] for value in range(1, 24, 2)] +\
+               [dataCellsClean.loc['N'][value] for value in range(1, 24, 2)] +\
+               [dataCellsClean.loc['P'][value] for value in range(1, 24, 2)]
+
 ##################
-# Extract blank/negative control values.
+# Extract blank values.
 ##################
 
-# User prompt.
-cyanprint('''\nEnter well IDs that contain ELISA blanks/negative controls:
-* Not case-sensitive.
-* Blank wells not associated with any absorbance value will be ignored.
-* For multiple wells, use any kind of separator between them.
-  E.g. p22,p23,p24    or    P22-P23-P24'''
-          )
-while True:
-    blankWells = input()
-    blankWellsInput = re.match(r'([pP]\d{2})+',
-                               blankWells
-                               )
-    if blankWellsInput is not None:
-        blankWells = blankWells.upper()
-        blankWells = blankWells.split(',')
-        break
-    # Redirect user to input blanks again if regex doesn't match.
-    else:
-        cyanprint('''\nInvalid input.
-Make sure the well(s) are typed correctly, have commas to separate them, and are in the P row.
-Please try again.'''
-                  )
-logging.info('"%s" used as negative controls/blanks.' % blankWells)
-
-# Create a list of ELISA absorbances corresponding to user-inputted blank IDs.
-blankValues = []
-for well in blankWells:
-    if well in blankCells:
-        blankValues.append(blankCells.get(well))
+# Retrieve blank wells and average.
+blankCells = [dataCellsClean.loc['B'][value] for value in range(0, 23, 2)] +\
+             [dataCellsClean.loc['D'][value] for value in range(0, 23, 2)] +\
+             [dataCellsClean.loc['F'][value] for value in range(0, 23, 2)] +\
+             [dataCellsClean.loc['H'][value] for value in range(0, 23, 2)] +\
+             [dataCellsClean.loc['J'][value] for value in range(0, 23, 2)] +\
+             [dataCellsClean.loc['L'][value] for value in range(0, 23, 2)] +\
+             [dataCellsClean.loc['N'][value] for value in range(0, 23, 2)] +\
+             [dataCellsClean.loc['P'][value] for value in range(0, 23, 2)]
 # Remove values that contain no data in the excel cell.
-blankValues = [value for value in blankValues if not (pandas.isna(value))]
+blankValues = [absorbance for absorbance in blankCells if not (pandas.isna(absorbance))]
 # Average blanks.
-blankAve = statistics.mean(blankValues)
+blankAve = statistics.mean(blankCells)
+logging.info('Blank absorbances retrieved from raw data file.')
 logging.info('Blank values averaged.')
+
+##################
+# Extract control values.
+##################
+
+elisaPlateIDs = ['A01', 'A02', 'A03', 'A04', 'A05', 'A06', 'A07', 'A08', 'A09', 'A10', 'A11', 'A12', 'B01', 'B02',
+                 'B03', 'B04', 'B05', 'B06', 'B07', 'B08', 'B09', 'B10', 'B11', 'B12', 'C01', 'C02', 'C03', 'C04',
+                 'C05', 'C06', 'C07', 'C08', 'C09', 'C10', 'C11', 'C12', 'D01', 'D02', 'D03', 'D04', 'D05', 'D06',
+                 'D07', 'D08', 'D09', 'D10', 'D11', 'D12', 'E01', 'E02', 'E03', 'E04', 'E05', 'E06', 'E07', 'E08',
+                 'E09', 'E10', 'E11', 'E12', 'F01', 'F02', 'F03', 'F04', 'F05', 'F06', 'F07', 'F08', 'F09', 'F10',
+                 'F11', 'F12', 'G01', 'G02', 'G03', 'G04', 'G05', 'G06', 'G07', 'G08', 'G09', 'G10', 'G11', 'G12',
+                 'H01', 'H02', 'H03', 'H04', 'H05', 'H06', 'H07', 'H08', 'H09', 'H10', 'H11', 'H12'
+                 ]
+controlDict = {key: value for key, value in zip(elisaPlateIDs, controlCells)}
 
 ##################
 # Average paired ELISA values for each sequence and normalise to the blank/negative control average.
@@ -411,36 +396,28 @@ Please try again.'''
 # Amino acids
 #########
 
-# Create a list of all possible ELISA IDs and assign corresponding numbers for indexing.
-elisaPlateIDs = ['A01', 'A02', 'A03', 'A04', 'A05', 'A06', 'A07', 'A08', 'A09', 'A10', 'A11', 'A12', 'B01', 'B02',
-                 'B03', 'B04', 'B05', 'B06', 'B07', 'B08', 'B09', 'B10', 'B11', 'B12', 'C01', 'C02', 'C03', 'C04',
-                 'C05', 'C06', 'C07', 'C08', 'C09', 'C10', 'C11', 'C12', 'D01', 'D02', 'D03', 'D04', 'D05', 'D06',
-                 'D07', 'D08', 'D09', 'D10', 'D11', 'D12', 'E01', 'E02', 'E03', 'E04', 'E05', 'E06', 'E07', 'E08',
-                 'E09', 'E10', 'E11', 'E12', 'F01', 'F02', 'F03', 'F04', 'F05', 'F06', 'F07', 'F08', 'F09', 'F10',
-                 'F11', 'F12', 'G01', 'G02', 'G03', 'G04', 'G05', 'G06', 'G07', 'G08', 'G09', 'G10', 'G11', 'G12',
-                 'H01', 'H02', 'H03', 'H04', 'H05', 'H06', 'H07', 'H08', 'H09', 'H10', 'H11', 'H12'
-                 ]
+# Create a dictionary of all possible ELISA IDs and assign corresponding numbers for indexing.
 wellDict = {key: value for key, value in zip(elisaPlateIDs, range(0, 96))}
 
 # Determine the amino acid IDs present in the sequencing data.
 seqPlateRegex = re.compile(r'[A-H][0-9]{2}')
-plateIDs = list()
+aaPlateIDs = []
 for name in aaNameList:
     seqID = seqPlateRegex.findall(name)
-    plateIDs.append(seqID)
+    aaPlateIDs.append(seqID)
 # Turn list of lists into a flat list.
-seqPlateIDs = []
-for sublist in plateIDs:
+aaSeqPlateIDs = []
+for sublist in aaPlateIDs:
     for ID in sublist:
-        seqPlateIDs.append(ID)
+        aaSeqPlateIDs.append(ID)
 
 # Retrieve ELISA absorbances for only the IDs present in the sequencing data.
 aaRawListShort = []
-for ID in seqPlateIDs:
+for ID in aaSeqPlateIDs:
     well = wellDict.get(ID)
     aaRawListShort.append(cellAveList[well])
 aaRelAveListShort = []
-for ID in seqPlateIDs:
+for ID in aaSeqPlateIDs:
     well = wellDict.get(ID)
     aaRelAveListShort.append(relAveList[well])
 logging.info('ELISA results without corresponding amino acid sequences removed from analysis.')
@@ -474,28 +451,38 @@ aaUnique = aaUnique.most_common()
 aaUniqueDict = dict(aaUnique)
 logging.info('Dictionary of unique amino acid sequences created.')
 
+# TODO: Find a way to relate this to unique sequences.
+# Remove controls that don't have sequencing counterparts.
+aaControlListRaw = []
+for well in aaSeqPlateIDs:
+    aaControlListRaw.append(controlDict[well])
+aaControlListRel = []
+for absorbance in aaControlListRaw:
+    relAve = absorbance / blankAve
+    aaControlListRel.append(relAve)
+
 #########
 # Nucleotides
 #########
 
 # Determine the nucleotide IDs present in the sequencing data.
-plateIDs = list()
+ntPlateIDs = list()
 for name in ntNameList:
     seqID = seqPlateRegex.findall(name)
-    plateIDs.append(seqID)
+    ntPlateIDs.append(seqID)
 # Turn list of lists into a flat list.
-seqPlateIDs = []
-for sublist in plateIDs:
+ntSeqPlateIDs = []
+for sublist in ntPlateIDs:
     for item in sublist:
-        seqPlateIDs.append(item)
+        ntSeqPlateIDs.append(item)
 
 # Retrieve ELISA absorbances for only the IDs present in the sequencing data.
 ntRawListShort = []
-for ID in seqPlateIDs:
+for ID in ntSeqPlateIDs:
     well = wellDict.get(ID)
     ntRawListShort.append(cellAveList[well])
 ntReducedRelAveList = []
-for ID in seqPlateIDs:
+for ID in ntSeqPlateIDs:
     well = wellDict.get(ID)
     ntReducedRelAveList.append(relAveList[well])
 logging.info('ELISA results without corresponding nucleotide sequences removed from analysis.')
@@ -526,6 +513,16 @@ uniqueNt = OrderedCounter(ntSeqList)
 uniqueNt = uniqueNt.most_common()
 uniqueNtDict = dict(uniqueNt)
 logging.info('Dictionary of unique nucleotide sequences created.')
+
+# TODO: Write this to the worksheet.
+# Remove ELISA data that don't have sequencing counterparts.
+ntControlListRaw = []
+for well in ntSeqPlateIDs:
+    ntControlListRaw.append(controlDict[well])
+ntControlListRel = []
+for absorbance in ntControlListRaw:
+    relAve = absorbance / blankAve
+    ntControlListRel.append(relAve)
 
 ##################
 # Order sequences and wells so they can be attributed to unique sequences. Necessary for subsequent statistics.
@@ -743,7 +740,7 @@ wellTitle_format = workbook.add_format({'bold': True,
                                        )
 wellTitle_format.set_align('left')
 # Statistics.
-stats_format = workbook.add_format({'num_format': '#,##0.0'})
+stats_format = workbook.add_format({'num_format': '#,##0.000'})
 stats_format.set_align('center')
 stats_format.set_align('vcenter')
 # Wells.
@@ -775,7 +772,7 @@ worksheet1.hide_gridlines(option=2)
 idColWidth = round(len(aaShortNameList[0]) * 1.4)
 worksheet1.set_column(0, 0, idColWidth)
 worksheet1.set_column(1, aaAlignLen, 2)
-worksheet1.set_column(aaAlignLen + 1, aaAlignLen + 2, 12)
+worksheet1.set_column(aaAlignLen + 1, aaAlignLen + 4, 12)
 worksheet1.freeze_panes(0, 1)
 logging.info('%s worksheet created.' % worksheet1Name)
 
@@ -800,24 +797,43 @@ for aa in aaSeqList:
     seqCol = 1
 logging.info('All Amino acid sequences written to %s worksheet.' % worksheet1Name)
 
-# Write raw ELISA absorbances.
+# Write raw binder absorbances.
 absRow = 2
 absCol = aaAlignLen + 1
-worksheet1.merge_range(0, absCol, 0, absCol + 1, 'Absorbance', title_format)
-worksheet1.write(1, absCol, 'Raw', title_format)
+worksheet1.merge_range(0, absCol, 0, absCol + 1, 'Raw', title_format)
+worksheet1.merge_range(0, absCol + 2, 0, absCol + 3, 'Normalised', title_format)
+worksheet1.write(1, absCol, 'Binder', title_format)
 for absorbance in aaRawListShort:
     worksheet1.write(absRow, absCol, absorbance, stats_format)
     absRow += 1
-logging.info('All raw absorbances written to %s worksheet.' % worksheet1Name)
+logging.info('All raw binder absorbances written to %s worksheet.' % worksheet1Name)
 
-# Write averaged ELISA absorbances.
+# Write raw control absorbances.
 absRow = 2
 absCol = aaAlignLen + 2
-worksheet1.write(1, absCol, 'Normalised', title_format)
+worksheet1.write(1, absCol, 'Control', title_format)
+for absorbance in aaControlListRaw:
+    worksheet1.write(absRow, absCol, absorbance, stats_format)
+    absRow += 1
+logging.info('All raw control absorbances written to %s worksheet.' % worksheet1Name)
+
+# Write averaged binder absorbances.
+absRow = 2
+absCol = aaAlignLen + 3
+worksheet1.write(1, absCol, 'Binder', title_format)
 for absorbance in aaRelAveListShort:
     worksheet1.write(absRow, absCol, absorbance, stats_format)
     absRow += 1
-logging.info('All normalised absorbances written to %s worksheet.' % worksheet1Name)
+logging.info('All normalised binder absorbances written to %s worksheet.' % worksheet1Name)
+
+# Write normalised control absorbances.
+absRow = 2
+absCol = aaAlignLen + 4
+worksheet1.write(1, absCol, 'Control', title_format)
+for absorbance in aaControlListRel:
+    worksheet1.write(absRow, absCol, absorbance, stats_format)
+    absRow += 1
+logging.info('All normalised control absorbances written to %s worksheet.' % worksheet1Name)
 
 # Write amino acid residue numbers above sequences.
 aaResList = list(range(1,
@@ -1150,13 +1166,13 @@ worksheet3.write(len(ntNameListShort) + 5, 1, calcInfo, info_format)
 worksheet4.write(len(uniqueNt) + 5, 1, calcInfo, info_format)
 
 # Conditionally format columns.
-worksheet1.conditional_format(1, aaAlignLen + 1, len(aaShortNameList) + 1, aaAlignLen + 1,
+worksheet1.conditional_format(1, aaAlignLen + 1, len(aaShortNameList) + 1, aaAlignLen + 2,
                               {'type': '2_color_scale',
                                'min_color': '#FAFAFA',
                                'max_color': '#008000'
                                }
                               )
-worksheet1.conditional_format(1, aaAlignLen + 2, len(aaShortNameList) + 1, aaAlignLen + 2,
+worksheet1.conditional_format(1, aaAlignLen + 2, len(aaShortNameList) + 3, aaAlignLen + 4,
                               {'type': '2_color_scale',
                                'min_color': '#FAFAFA',
                                'max_color': '#008000'
@@ -1188,7 +1204,7 @@ worksheet4.conditional_format(1, ntAlignLen + 2, len(uniqueNt) + 1, ntAlignLen +
                               )
 
 # Transform data into proper Excel-formatted tables without any design style applied.
-worksheet1.add_table(1, 0, len(aaShortNameList) + 1, aaAlignLen + 2,
+worksheet1.add_table(1, 0, len(aaShortNameList) + 1, aaAlignLen + 4,
                      {'header_row': False,
                       'style': None
                       }
