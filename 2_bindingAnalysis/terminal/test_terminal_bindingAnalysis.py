@@ -67,8 +67,7 @@ Please try again.'''
 
 # Choose the ELISA data source. User Prompt.
 cyanprint('''\nEnter the raw ELISA data file name:
-* Must be in xlsx format. Include the file extension in the name.
-* This location will also be the location of the output files.'''
+* Must be in xlsx format. Include the file extension in the name.'''
           )
 while True:
     elisaInFile = input()
@@ -119,11 +118,15 @@ dataCellsClean = dataCellsClean.iloc[:, 1:]
 # Rename rows to make parsing easier.
 dataCellsClean.index = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P']
 
-# TODO: Update formatting.
 # Create a list of all the data absorbances.
-cellValues = list(dataCellsClean.iloc[0]) + list(dataCellsClean.iloc[1]) + list(dataCellsClean.iloc[2]) + \
-             list(dataCellsClean.iloc[3]) + list(dataCellsClean.iloc[4]) + list(dataCellsClean.iloc[5]) + \
-             list(dataCellsClean.iloc[6]) + list(dataCellsClean.iloc[7])
+cellValues = [dataCellsClean.loc['A'][value] for value in range(0, 24)] +\
+             [dataCellsClean.loc['C'][value] for value in range(0, 24)] +\
+             [dataCellsClean.loc['E'][value] for value in range(0, 24)] +\
+             [dataCellsClean.loc['G'][value] for value in range(0, 24)] +\
+             [dataCellsClean.loc['I'][value] for value in range(0, 24)] +\
+             [dataCellsClean.loc['K'][value] for value in range(0, 24)] +\
+             [dataCellsClean.loc['M'][value] for value in range(0, 24)] +\
+             [dataCellsClean.loc['O'][value] for value in range(0, 24)]
 logging.info('Data absorbances retrieved from raw data file.')
 greenprint('''\nData retrieved from raw ELISA file.''')
 
@@ -451,7 +454,6 @@ aaUnique = aaUnique.most_common()
 aaUniqueDict = dict(aaUnique)
 logging.info('Dictionary of unique amino acid sequences created.')
 
-# TODO: Find a way to relate this to unique sequences.
 # Remove controls that don't have sequencing counterparts.
 aaControlListRaw = []
 for well in aaSeqPlateIDs:
@@ -481,10 +483,10 @@ ntRawListShort = []
 for ID in ntSeqPlateIDs:
     well = wellDict.get(ID)
     ntRawListShort.append(cellAveList[well])
-ntReducedRelAveList = []
+ntRelAveListShort = []
 for ID in ntSeqPlateIDs:
     well = wellDict.get(ID)
-    ntReducedRelAveList.append(relAveList[well])
+    ntRelAveListShort.append(relAveList[well])
 logging.info('ELISA results without corresponding nucleotide sequences removed from analysis.')
 
 # Relate IDs to their respective ELISA absorbances.
@@ -505,7 +507,7 @@ ntDict = dict(zip(ntNameListShort,
                   ntSeqList)
               )
 ntAveCellsDict = dict(zip(ntNameListShort,
-                          ntReducedRelAveList)
+                          ntRelAveListShort)
                       )
 
 # Create a list of unique amino acid sequences ordered by frequency.
@@ -514,7 +516,6 @@ uniqueNt = uniqueNt.most_common()
 uniqueNtDict = dict(uniqueNt)
 logging.info('Dictionary of unique nucleotide sequences created.')
 
-# TODO: Write this to the worksheet.
 # Remove ELISA data that don't have sequencing counterparts.
 ntControlListRaw = []
 for well in ntSeqPlateIDs:
@@ -523,6 +524,13 @@ ntControlListRel = []
 for absorbance in ntControlListRaw:
     relAve = absorbance / blankAve
     ntControlListRel.append(relAve)
+
+##################
+# Compare binder and control absorbances with binder:control absorbance ratios.
+##################
+
+aaBinderControlRatio = [binder / control for binder, control in zip(aaRawListShort, aaControlListRaw)]
+ntBinderControlRatio = [binder / control for binder, control in zip(ntRawListShort, ntControlListRaw)]
 
 ##################
 # Order sequences and wells so they can be attributed to unique sequences. Necessary for subsequent statistics.
@@ -543,6 +551,7 @@ for seq in aaOrderedSeq:
             aaOrderedNames.append(key)
 logging.info('Ordered index of amino acid well IDs created.')
 
+# TODO: Duplicate this for control wells and see which descriptive stats are most helpful.
 # Create ordered list of absorbances that correspond to unique sequences.
 aaOrderedAbs = []
 for index in aaOrderedNames:
@@ -564,7 +573,7 @@ logging.info('List of specific well IDs associated with amino acid sequences cre
 # Nucleotides
 #########
 
-# Get ordered list of wells that correspond to unique sequences; necessary for subsequent statistics.
+# Get ordered list of wells that correspond to unique sequences.
 ntOrderedSeq = []
 for key in uniqueNtDict.keys():
     ntOrderedSeq.append(key)
@@ -593,7 +602,7 @@ for uniqueSeq, count in uniqueNtDict.items():
 logging.info('List of specific well IDs associated with nucleotide sequences created.')
 
 ##################
-# Perform statistical analyses for unique sequences.
+# Statistical analyses for unique sequences.
 ##################
 
 #########
@@ -724,6 +733,7 @@ logging.info('Excel spreadsheet created as "%s.xlsx".' % elisaInFileName)
 # Cell formatting rules. 
 #########
 
+# TODO: Clean up formatting.
 # General.
 general_format = workbook.add_format()
 general_format.set_align('center')
@@ -734,22 +744,30 @@ title_format = workbook.add_format({'bold': True,
                                     }
                                    )
 title_format.set_align('center')
+title_format.set_align('vcenter')
 wellTitle_format = workbook.add_format({'bold': True,
                                         'font_size': 12
                                         }
                                        )
 wellTitle_format.set_align('left')
+wellTitle_format.set_align('vcenter')
 # Statistics.
 stats_format = workbook.add_format({'num_format': '#,##0.000'})
 stats_format.set_align('center')
 stats_format.set_align('vcenter')
+# Binder:control ratio format.
+ratio_format = workbook.add_format({'num_format': '#,##0.000', 'left': 5})
+ratio_format.set_align('center')
+ratio_format.set_align('vcenter')
 # Wells.
 wellList_format = workbook.add_format({'font_size': 11})
 wellID_format = workbook.add_format({'font_size': 12})
 wellID_format.set_align('center')
+wellID_format.set_align('vcenter')
 # Residue numbers.
 residue_format = workbook.add_format({'font_size': 10})
 residue_format.set_align('center')
+residue_format.set_align('vcenter')
 # Sequences.
 sequence_format = workbook.add_format({'font_size': 10})
 sequence_format.set_align('center')
@@ -773,12 +791,13 @@ idColWidth = round(len(aaShortNameList[0]) * 1.4)
 worksheet1.set_column(0, 0, idColWidth)
 worksheet1.set_column(1, aaAlignLen, 2)
 worksheet1.set_column(aaAlignLen + 1, aaAlignLen + 4, 12)
+worksheet1.set_column(aaAlignLen + 5, aaAlignLen + 5, 15)
 worksheet1.freeze_panes(0, 1)
 logging.info('%s worksheet created.' % worksheet1Name)
 
 # Write well IDs.
 idRow = 2
-worksheet1.write(0, 0, 'ID', title_format)
+worksheet1.merge_range(0, 0, 1, 0, 'ID', title_format)
 for name in aaShortNameList:
     worksheet1.write(idRow, 0, name, wellID_format)
     idRow += 1
@@ -835,6 +854,15 @@ for absorbance in aaControlListRel:
     absRow += 1
 logging.info('All normalised control absorbances written to %s worksheet.' % worksheet1Name)
 
+# Write binder:control absorbance ratios.
+absRow = 2
+absCol = aaAlignLen + 5
+worksheet1.merge_range(0, absCol, 1, absCol, 'Binder:Control', title_format)
+for absorbance in aaBinderControlRatio:
+    worksheet1.write(absRow, absCol, absorbance, ratio_format)
+    absRow += 1
+logging.info('All binder:control absorbance ratios written to %s worksheet.' % worksheet1Name)
+
 # Write amino acid residue numbers above sequences.
 aaResList = list(range(1,
                        aaAlignLen + 1)
@@ -875,7 +903,7 @@ logging.info('Unique amino acid sequences written to %s worksheet.' % worksheet2
 # Add counts for each unique amino acid sequence.
 countRow = 2
 countCol = aaAlignLen + 1
-worksheet2.write(0, aaAlignLen + 1, 'Count', title_format)
+worksheet2.merge_range(0, aaAlignLen + 1, 1, aaAlignLen + 1, 'Count', title_format)
 count = list(aaUniqueDict.values())
 for number in count:
     worksheet2.write_number(countRow, countCol, number, general_format)
@@ -896,7 +924,7 @@ logging.info('Residue numbers written to %s worksheet.' % worksheet2Name)
 # Max.
 maxRow = 2
 maxCol = aaAlignLen + 2
-worksheet2.write(0, aaAlignLen + 2, 'Max.', title_format)
+worksheet2.merge_range(0, aaAlignLen + 2, 1, aaAlignLen + 2, 'Max.', title_format)
 for seq in aaUniqueMaxList:
     worksheet2.write(maxRow, maxCol, seq, stats_format)
     maxRow += 1
@@ -905,7 +933,7 @@ logging.info('List of unique amino acid maximum absorbances written to %s worksh
 # Min.
 minRow = 2
 minCol = aaAlignLen + 3
-worksheet2.write(0, aaAlignLen + 3, 'Min.', title_format)
+worksheet2.merge_range(0, aaAlignLen + 3, 1, aaAlignLen + 3, 'Min.', title_format)
 for seq in aaUniqueMinList:
     worksheet2.write(minRow, minCol, seq, stats_format)
     minRow += 1
@@ -914,7 +942,7 @@ logging.info('List of unique amino acid minimum absorbances written to %s worksh
 # Median.
 medianRow = 2
 medianCol = aaAlignLen + 4
-worksheet2.write(0, aaAlignLen + 4, 'Median', title_format)
+worksheet2.merge_range(0, aaAlignLen + 4, 1, aaAlignLen + 4, 'Median', title_format)
 for seq in aaUniqueMedianList:
     worksheet2.write(medianRow, medianCol, seq, stats_format)
     medianRow += 1
@@ -923,7 +951,7 @@ logging.info('List of unique amino acid median absorbances written to %s workshe
 # Mean.
 meanRow = 2
 meanCol = aaAlignLen + 5
-worksheet2.write(0, aaAlignLen + 5, 'Mean', title_format)
+worksheet2.merge_range(0, aaAlignLen + 5, 1, aaAlignLen + 5, 'Mean', title_format)
 for seq in aaUniqueMeanList:
     worksheet2.write(meanRow, meanCol, seq, stats_format)
     meanRow += 1
@@ -932,7 +960,7 @@ logging.info('List of unique amino acid mean absorbances written to %s worksheet
 # Standard deviation.    
 stdevRow = 2
 stdevCol = aaAlignLen + 6
-worksheet2.write(0, aaAlignLen + 6, 'St. Dev.', title_format)
+worksheet2.merge_range(0, aaAlignLen + 6, 1, aaAlignLen + 6, 'St. Dev.', title_format)
 for seq in aaUniqueStdevList:
     worksheet2.write(stdevRow, stdevCol, seq, stats_format)
     stdevRow += 1
@@ -942,7 +970,7 @@ logging.info('List of unique amino acid absorbance standard deviations written t
 wellColWidth = round((len(aaCountID[0]) * 3) * 1.4)
 worksheet2.set_column(aaAlignLen + 7, aaAlignLen + 7, wellColWidth)
 # Write IDs to worksheet.
-worksheet2.write(0, aaAlignLen + 7, 'Wells', wellTitle_format)
+worksheet2.merge_range(0, aaAlignLen + 7, 1, aaAlignLen + 7, 'Wells', wellTitle_format)
 wellRow = 2
 wellCol = aaAlignLen + 7
 countIDregex = re.compile(r"([A-Z][0-1][0-9])")
@@ -955,7 +983,7 @@ for wellList in aaCountID:
 logging.info('Amino acid sequence-specific well IDs written to %s worksheet.' % worksheet2Name)
 
 # Assign arbitrary IDs to each unique amino acid sequence.
-worksheet2.write(0, 0, 'ID', title_format)
+worksheet2.merge_range(0, 0, 1, 0, 'ID', title_format)
 aaIdList = list(range(1,
                       len(aaUniqueDict) + 1)
                 )
@@ -975,12 +1003,13 @@ worksheet3 = workbook.add_worksheet(worksheet3Name)
 worksheet3.hide_gridlines(option=2)
 worksheet3.set_column(0, 0, idColWidth)
 worksheet3.set_column(1, ntAlignLen, 3)
-worksheet3.set_column(ntAlignLen + 1, ntAlignLen + 2, 12)
+worksheet3.set_column(ntAlignLen + 1, ntAlignLen + 4, 12)
+worksheet3.set_column(ntAlignLen + 5, ntAlignLen + 5, 15)
 worksheet3.freeze_panes(0, 1)
 logging.info('%s worksheet created.' % worksheet3Name)
 
 # Write IDs.
-worksheet3.write(0, 0, 'ID', title_format)
+worksheet3.merge_range(0, 0, 1, 0, 'ID', title_format)
 idRow = 2
 for name in ntNameList:
     worksheet3.write(idRow, 0, name, wellID_format)
@@ -1000,24 +1029,52 @@ for nt in ntSeqList:
     seqCol = 1
 logging.info('All nucleotide sequences written to %s worksheet.' % worksheet3Name)
 
-# Write raw ELISA absorbances.
+# Write raw binder absorbances.
 absRow = 2
 absCol = ntAlignLen + 1
-worksheet3.merge_range(0, absCol, 0, absCol + 1, 'Absorbance', title_format)
-worksheet3.write(1, absCol, 'Raw', title_format)
+worksheet3.merge_range(0, absCol, 0, absCol + 1, 'Raw', title_format)
+worksheet3.merge_range(0, absCol + 2, 0, absCol + 3, 'Normalised', title_format)
+worksheet3.write(1, absCol, 'Binder', title_format)
 for absorbance in ntRawListShort:
     worksheet3.write(absRow, absCol, absorbance, stats_format)
     absRow += 1
-logging.info('All raw absorbances written to %s worksheet.' % worksheet1Name)
+logging.info('All raw binder absorbances written to %s worksheet.' % worksheet3Name)
 
-# Write averaged ELISA absorbances.
+# Write raw control absorbances.
 absRow = 2
 absCol = ntAlignLen + 2
-worksheet3.write(1, absCol, 'Normalised', title_format)
-for result in ntReducedRelAveList:
-    worksheet3.write(absRow, absCol, result, stats_format)
+worksheet3.write(1, absCol, 'Control', title_format)
+for absorbance in ntControlListRaw:
+    worksheet3.write(absRow, absCol, absorbance, stats_format)
     absRow += 1
-logging.info('All normalised absorbances written to %s worksheet.' % worksheet3Name)
+logging.info('All raw control absorbances written to %s worksheet.' % worksheet3Name)
+
+# Write averaged binder absorbances.
+absRow = 2
+absCol = ntAlignLen + 3
+worksheet3.write(1, absCol, 'Binder', title_format)
+for absorbance in ntRelAveListShort:
+    worksheet3.write(absRow, absCol, absorbance, stats_format)
+    absRow += 1
+logging.info('All normalised binder absorbances written to %s worksheet.' % worksheet3Name)
+
+# Write normalised control absorbances.
+absRow = 2
+absCol = ntAlignLen + 4
+worksheet3.write(1, absCol, 'Control', title_format)
+for absorbance in ntControlListRel:
+    worksheet3.write(absRow, absCol, absorbance, stats_format)
+    absRow += 1
+logging.info('All normalised control absorbances written to %s worksheet.' % worksheet3Name)
+
+# Write binder:control absorbance ratios.
+absRow = 2
+absCol = ntAlignLen + 5
+worksheet3.merge_range(0, absCol, 1, absCol, 'Binder:Control', title_format)
+for absorbance in ntBinderControlRatio:
+    worksheet3.write(absRow, absCol, absorbance, ratio_format)
+    absRow += 1
+logging.info('All binder:control absorbance ratios written to %s worksheet.' % worksheet1Name)
 
 # Write nucleotide base pair numbers above sequences.
 ntBpList = list(range(1,
@@ -1059,7 +1116,7 @@ logging.info('Unique nucleotide sequences written to %s worksheet.' % worksheet4
 # Add counts for each unique sequence.
 countRow = 2
 countCol = ntAlignLen + 1
-worksheet4.write(0, ntAlignLen + 1, 'Count', title_format)
+worksheet4.merge_range(0, ntAlignLen + 1, 1, ntAlignLen + 1, 'Count', title_format)
 count = list(uniqueNtDict.values())
 for number in count:
     worksheet4.write_number(countRow, countCol, number, general_format)
@@ -1080,7 +1137,7 @@ logging.info('Base pair numbers written to %s worksheet.' % worksheet4Name)
 # Max.
 maxRow = 2
 maxCol = ntAlignLen + 2
-worksheet4.write(0, ntAlignLen + 2, 'Max.', title_format)
+worksheet4.merge_range(0, ntAlignLen + 2, 1, ntAlignLen + 2, 'Max.', title_format)
 for seq in ntUniqueMaxList:
     worksheet4.write(maxRow, maxCol, seq, stats_format)
     maxRow += 1
@@ -1089,7 +1146,7 @@ logging.info('List of unique nucleotide maximum absorbances written to %s worksh
 # Min.
 minRow = 2
 minCol = ntAlignLen + 3
-worksheet4.write(0, ntAlignLen + 3, 'Min.', title_format)
+worksheet4.merge_range(0, ntAlignLen + 3, 1, ntAlignLen + 3, 'Min.', title_format)
 for seq in ntUniqueMinList:
     worksheet4.write(minRow, minCol, seq, stats_format)
     minRow += 1
@@ -1098,7 +1155,7 @@ logging.info('List of unique nucleotide minimum absorbances written to %s worksh
 # Median.
 medianRow = 2
 medianCol = ntAlignLen + 4
-worksheet4.write(0, ntAlignLen + 4, 'Median', title_format)
+worksheet4.merge_range(0, ntAlignLen + 4, 1, ntAlignLen + 4, 'Median', title_format)
 for seq in ntUniqueMedianList:
     worksheet4.write(medianRow, medianCol, seq, stats_format)
     medianRow += 1
@@ -1107,7 +1164,7 @@ logging.info('List of unique nucleotide median absorbances written to %s workshe
 # Mean.
 meanRow = 2
 meanCol = ntAlignLen + 5
-worksheet4.write(0, ntAlignLen + 5, 'Mean', title_format)
+worksheet4.merge_range(0, ntAlignLen + 5, 1, ntAlignLen + 5, 'Mean', title_format)
 for seq in ntUniqueMeanList:
     worksheet4.write(meanRow, meanCol, seq, stats_format)
     meanRow += 1
@@ -1116,7 +1173,7 @@ logging.info('List of unique nucleotide mean absorbances written to %s worksheet
 # Standard deviation.
 stdevRow = 2
 stdevCol = ntAlignLen + 6
-worksheet4.write(0, ntAlignLen + 6, 'St. Dev.', title_format)
+worksheet4.merge_range(0, ntAlignLen + 6, 1, ntAlignLen + 6, 'St. Dev.', title_format)
 for seq in ntUniqueStdevList:
     worksheet4.write(stdevRow, stdevCol, seq, stats_format)
     stdevRow += 1
@@ -1125,7 +1182,7 @@ logging.info('List of unique nucleotide absorbance standard deviations written t
 # Change column width to fit all IDs.
 worksheet4.set_column(ntAlignLen + 7, ntAlignLen + 7, wellColWidth)
 # Write IDs to worksheet.
-worksheet4.write(0, ntAlignLen + 7, 'Wells', wellTitle_format)
+worksheet4.merge_range(0, ntAlignLen + 7, 1, ntAlignLen + 7, 'Wells', wellTitle_format)
 wellRow = 2
 wellCol = ntAlignLen + 7
 countIDregex = re.compile(r'([A-Z][0-1][0-9])')
@@ -1138,7 +1195,7 @@ for wellList in ntCountID:
 logging.info('Nucleotide sequence-specific well IDs written to %s worksheet.' % worksheet4Name)
 
 # Assign arbitrary IDs to each unique nucleotide sequence.
-worksheet4.write(0, 0, 'ID', title_format)
+worksheet4.merge_range(0, 0, 1, 0, 'ID', title_format)
 ntIdList = list(range(1,
                       len(uniqueNtDict) + 1)
                 )
@@ -1178,19 +1235,31 @@ worksheet1.conditional_format(1, aaAlignLen + 2, len(aaShortNameList) + 3, aaAli
                                'max_color': '#008000'
                                }
                               )
+worksheet1.conditional_format(1, aaAlignLen + 5, len(aaShortNameList) + 3, aaAlignLen + 5,
+                              {'type': '2_color_scale',
+                               'min_color': '#FAFAFA',
+                               'max_color': '#008000'
+                               }
+                              )
 worksheet2.conditional_format(1, aaAlignLen + 2, len(aaUnique) + 1, aaAlignLen + 6,
                               {'type': '2_color_scale',
                                'min_color': '#FAFAFA',
                                'max_color': '#008000'
                                }
                               )
-worksheet3.conditional_format(1, ntAlignLen + 1, len(ntNameListShort) + 1, ntAlignLen + 1,
+worksheet3.conditional_format(1, ntAlignLen + 1, len(ntNameListShort) + 1, ntAlignLen + 2,
                               {'type': '2_color_scale',
                                'min_color': '#FAFAFA',
                                'max_color': '#008000'
                                }
                               )
-worksheet3.conditional_format(1, ntAlignLen + 1, len(ntNameListShort) + 1, ntAlignLen + 2,
+worksheet3.conditional_format(1, ntAlignLen + 1, len(ntNameListShort) + 3, ntAlignLen + 4,
+                              {'type': '2_color_scale',
+                               'min_color': '#FAFAFA',
+                               'max_color': '#008000'
+                               }
+                              )
+worksheet3.conditional_format(1, ntAlignLen + 5, len(ntNameListShort) + 3, ntAlignLen + 5,
                               {'type': '2_color_scale',
                                'min_color': '#FAFAFA',
                                'max_color': '#008000'
@@ -1204,22 +1273,22 @@ worksheet4.conditional_format(1, ntAlignLen + 2, len(uniqueNt) + 1, ntAlignLen +
                               )
 
 # Transform data into proper Excel-formatted tables without any design style applied.
-worksheet1.add_table(1, 0, len(aaShortNameList) + 1, aaAlignLen + 4,
+worksheet1.add_table(2, 0, len(aaShortNameList) + 1, aaAlignLen + 5,
                      {'header_row': False,
                       'style': None
                       }
                      )
-worksheet2.add_table(1, 0, len(OrderedCounter(aaSeqList)) + 1, aaAlignLen + 7,
+worksheet2.add_table(2, 0, len(OrderedCounter(aaSeqList)) + 1, aaAlignLen + 7,
                      {'header_row': False,
                       'style': None
                       }
                      )
-worksheet3.add_table(1, 0, len(ntNameList) + 1, ntAlignLen + 2,
+worksheet3.add_table(2, 0, len(ntNameList) + 1, ntAlignLen + 5,
                      {'header_row': False,
                       'style': None
                       }
                      )
-worksheet4.add_table(1, 0, len(OrderedCounter(ntSeqList)) + 1, ntAlignLen + 7,
+worksheet4.add_table(2, 0, len(OrderedCounter(ntSeqList)) + 1, ntAlignLen + 7,
                      {'header_row': False,
                       'style': None
                       }

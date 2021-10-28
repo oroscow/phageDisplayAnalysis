@@ -494,10 +494,10 @@ ntRawListShort = []
 for ID in seqPlateIDs:
     well = wellDict.get(ID)
     ntRawListShort.append(cellAveList[well])
-ntReducedRelAveList = []
+ntRelAveListShort = []
 for ID in seqPlateIDs:
     well = wellDict.get(ID)
-    ntReducedRelAveList.append(relAveList[well])
+    ntRelAveListShort.append(relAveList[well])
 logging.info('ELISA results without corresponding nucleotide sequences removed from analysis.')
 
 # Relate IDs to their respective ELISA absorbances.
@@ -518,7 +518,7 @@ ntDict = dict(zip(ntNameListShort,
                   ntSeqList)
               )
 ntAveCellsDict = dict(zip(ntNameListShort,
-                          ntReducedRelAveList)
+                          ntRelAveListShort)
                       )
 
 # Create a list of unique amino acid sequences ordered by frequency.
@@ -998,7 +998,7 @@ logging.info('All raw absorbances written to %s worksheet.' % worksheet1Name)
 absRow = 2
 absCol = ntAlignLen + 2
 worksheet3.write(1, absCol, 'Normalised', title_format)
-for result in ntReducedRelAveList:
+for result in ntRelAveListShort:
     worksheet3.write(absRow, absCol, result, stats_format)
     absRow += 1
 logging.info('All normalised absorbances written to %s worksheet.' % worksheet3Name)
