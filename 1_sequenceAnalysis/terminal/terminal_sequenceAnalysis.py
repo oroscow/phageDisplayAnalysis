@@ -779,7 +779,7 @@ logging.info('Cell formatting rules set.')
 ##################
 # Create worksheet for all amino acid sequences.
 ##################
-
+# TODO: Merge and freeze panes in same style as other programs.
 # Initialize sheet characteristics.
 worksheet1Name = 'All AA Seq'
 worksheet1 = workbook.add_worksheet(worksheet1Name)

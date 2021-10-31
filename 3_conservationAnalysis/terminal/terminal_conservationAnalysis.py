@@ -101,7 +101,7 @@ while True:
 ##################
 # Select input files.
 ##################
-
+# TODO: Put while loop here to catch mistakes.
 # ELISA input format.
 if inputFormat == '1':
     # Select ELISA data source. User prompt.
@@ -306,6 +306,7 @@ title_format = workbook.add_format({'bold': True,
                                    )
 title_format.set_align('center')
 title_format.set_align('vcenter')
+title_format.set_text_wrap()
 wellTitle_format = workbook.add_format({'bold': True,
                                         'font_size': 12
                                         }
@@ -315,19 +316,24 @@ wellTitle_format.set_align('vcenter')
 library_format = workbook.add_format({'font_size': 12})
 library_format.set_align('left')
 library_format.set_align('vcenter')
-# Statistics.
-stats_format = workbook.add_format({'num_format': '#,##0.0'})
+# Numbers.
+stats_format = workbook.add_format({'num_format': '#,##0.000'})
 stats_format.set_align('center')
 stats_format.set_align('vcenter')
+residue_format = workbook.add_format({'font_size': 10})
+residue_format.set_align('center')
+residue_format.set_align('vcenter')
+integer_format = workbook.add_format({'num_format': '#,##0'})
+integer_format.set_align('center')
+integer_format.set_align('vcenter')
+percent_format = workbook.add_format({'num_format': '#,##0.0%'})
+percent_format.set_align('center')
+percent_format.set_align('vcenter')
 # Wells.
 wellList_format = workbook.add_format({'font_size': 11})
 wellID_format = workbook.add_format({'font_size': 12})
 wellID_format.set_align('center')
 wellID_format.set_align('vcenter')
-# Residue numbers.
-residue_format = workbook.add_format({'font_size': 10})
-residue_format.set_align('center')
-residue_format.set_align('vcenter')
 # Sequences.
 sequence_format = workbook.add_format({'font_size': 10})
 sequence_format.set_align('center')
@@ -354,7 +360,7 @@ worksheet1.hide_gridlines(option=2)
 worksheet1.set_column(0, 0, 10)
 worksheet1.set_column(1, consensusLen, 2)
 worksheet1.set_column(consensusLen + 1, consensusLen + 5, 8)
-worksheet1.freeze_panes(0, 1)
+worksheet1.freeze_panes(3, 1)
 logging.info('%s worksheet created.' % worksheet1Name)
 
 # Assign IDs to each unique amino acid sequence.
@@ -682,13 +688,13 @@ if libraryInput == '1':
             if sequence[index] != '-':
                 totalTargeted += 1
         resTargeted.append(totalTargeted)
-        percentTargeted.append((totalTargeted / len(allRegionIndex)) * 100)
+        percentTargeted.append(totalTargeted / len(allRegionIndex))
 
         # Total diversified residues in non-targeted regions.
         totalUntargeted = totalDiversified - totalTargeted
         resUntargeted.append(totalUntargeted)
         try:
-            percentUntargeted.append((totalUntargeted / (len(conservedList[0]) - len(allRegionIndex))) * 100)
+            percentUntargeted.append(totalUntargeted / (len(conservedList[0]) - len(allRegionIndex)))
         except ZeroDivisionError:
             percentUntargeted.append('0')
 
@@ -698,7 +704,7 @@ if libraryInput == '1':
             if sequence[index] != '-':
                 totalResReg1 += 1
         resDiversifiedReg1.append(totalResReg1)
-        percentDiversifiedReg1.append((totalResReg1 / len(region1index)) * 100)
+        percentDiversifiedReg1.append(totalResReg1 / len(region1index))
 
         # Total diversified residues in region 2.
         totalResReg2 = 0
@@ -706,7 +712,7 @@ if libraryInput == '1':
             if sequence[index] != '-':
                 totalResReg2 += 1
         resDiversifiedReg2.append(totalResReg2)
-        percentDiversifiedReg2.append((totalResReg2 / len(region2index)) * 100)
+        percentDiversifiedReg2.append(totalResReg2 / len(region2index))
 
         # Total diversified residues in region 3.
         totalResReg3 = 0
@@ -714,7 +720,7 @@ if libraryInput == '1':
             if sequence[index] != '-':
                 totalResReg3 += 1
         resDiversifiedReg3.append(totalResReg3)
-        percentDiversifiedReg3.append((totalResReg3 / len(region3index)) * 100)
+        percentDiversifiedReg3.append(totalResReg3 / len(region3index))
 
         # Total hydrophobic residues.
         totalHydrophobic = 0
@@ -723,7 +729,7 @@ if libraryInput == '1':
                 totalHydrophobic += 1
         resHydrophobic.append(totalHydrophobic)
         try:
-            percentHydrophobic.append((totalHydrophobic / totalDiversified) * 100)
+            percentHydrophobic.append(totalHydrophobic / totalDiversified)
         except ZeroDivisionError:
             percentHydrophobic.append('0')
 
@@ -734,7 +740,7 @@ if libraryInput == '1':
                 totalPolar += 1
         resPolar.append(totalPolar)
         try:
-            percentPolar.append((totalPolar / totalDiversified) * 100)
+            percentPolar.append(totalPolar / totalDiversified)
         except ZeroDivisionError:
             percentPolar.append('0')
 
@@ -745,7 +751,7 @@ if libraryInput == '1':
                 totalAcidic += 1
         resAcidic.append(totalAcidic)
         try:
-            percentAcidic.append((totalAcidic / totalDiversified) * 100)
+            percentAcidic.append(totalAcidic / totalDiversified)
         except ZeroDivisionError:
             percentAcidic.append('0')
 
@@ -756,7 +762,7 @@ if libraryInput == '1':
                 totalBasic += 1
         resBasic.append(totalBasic)
         try:
-            percentBasic.append((totalBasic / totalDiversified) * 100)
+            percentBasic.append(totalBasic / totalDiversified)
         except ZeroDivisionError:
             percentBasic.append('0')
 
@@ -767,7 +773,7 @@ if libraryInput == '1':
                 totalAromatic += 1
         resAromatic.append(totalAromatic)
         try:
-            percentAromatic.append((totalAromatic / totalDiversified) * 100)
+            percentAromatic.append(totalAromatic / totalDiversified)
         except ZeroDivisionError:
             percentAromatic.append('0')
 
@@ -778,12 +784,11 @@ if libraryInput == '1':
                 totalAliphatic += 1
         resAliphatic.append(totalAliphatic)
         try:
-            percentAliphatic.append((totalAliphatic / totalDiversified) * 100)
+            percentAliphatic.append(totalAliphatic / totalDiversified)
         except ZeroDivisionError:
             percentAliphatic.append('0')
 
-    diversityTable = {'ID': IDlist,
-                      'Total Untargeted Diversified': resUntargeted,
+    diversityTable = {'Total Untargeted Diversified': resUntargeted,
                       'Untargeted: Percent of Untargeted Regions': percentUntargeted,
                       'Total Targeted Diversified': resTargeted,
                       'Targeted: Percent of Diversified Regions': percentTargeted,
@@ -796,8 +801,7 @@ if libraryInput == '1':
                       }
     diversityDataframe = pandas.DataFrame(diversityTable)
 
-    biochemicalTable = {'ID': IDlist,
-                        'Total Hydrophobic Residues': resHydrophobic,
+    biochemicalTable = {'Total Hydrophobic Residues': resHydrophobic,
                         'Hydrophobic: All Diversified Residues': percentHydrophobic,
                         'Total Polar Residues': resPolar,
                         'Polar: All Diversified Residues': percentPolar,
@@ -839,7 +843,7 @@ elif libraryInput == '2':
 
     region1index = [index - 1 for index in [2, 4, 6, 8, 9, 10, 11, 12, 14]]
     region2index = [index - 1 for index in [42, 44, 46, 47, 48, 49]]
-    region3index = [index - 1 for index in [62, 63, 64, 66, 68, 70, 71, 72, 73, 74, 75, 76, 78]]
+    region3index = [index - 1 for index in [62, 63, 64, 66, 68, 70, 71, 72, 73, 74, 75, 76, 77, 78]]
     allRegionIndex = region1index + region2index + region3index
 
     for sequence in conservedList:
@@ -856,13 +860,13 @@ elif libraryInput == '2':
             if sequence[index] != '-':
                 totalTargeted += 1
         resTargeted.append(totalTargeted)
-        percentTargeted.append((totalTargeted / len(allRegionIndex)) * 100)
+        percentTargeted.append(totalTargeted / len(allRegionIndex))
 
         # Total diversified residues in non-targeted regions.
         totalUntargeted = totalDiversified - totalTargeted
         resUntargeted.append(totalUntargeted)
         try:
-            percentUntargeted.append((totalUntargeted / (len(conservedList[0]) - len(allRegionIndex))) * 100)
+            percentUntargeted.append(totalUntargeted / (len(conservedList[0]) - len(allRegionIndex)))
         except ZeroDivisionError:
             percentUntargeted.append('0')
 
@@ -872,7 +876,7 @@ elif libraryInput == '2':
             if sequence[index] != '-':
                 totalResReg1 += 1
         resDiversifiedReg1.append(totalResReg1)
-        percentDiversifiedReg1.append((totalResReg1 / len(region1index)) * 100)
+        percentDiversifiedReg1.append(totalResReg1 / len(region1index))
 
         # Total diversified residues in region 2.
         totalResReg2 = 0
@@ -880,7 +884,7 @@ elif libraryInput == '2':
             if sequence[index] != '-':
                 totalResReg2 += 1
         resDiversifiedReg2.append(totalResReg2)
-        percentDiversifiedReg2.append((totalResReg2 / len(region2index)) * 100)
+        percentDiversifiedReg2.append(totalResReg2 / len(region2index))
 
         # Total diversified residues in region 3.
         totalResReg3 = 0
@@ -888,7 +892,7 @@ elif libraryInput == '2':
             if sequence[index] != '-':
                 totalResReg3 += 1
         resDiversifiedReg3.append(totalResReg3)
-        percentDiversifiedReg3.append((totalResReg3 / len(region3index)) * 100)
+        percentDiversifiedReg3.append(totalResReg3 / len(region3index))
 
         # Total hydrophobic residues.
         totalHydrophobic = 0
@@ -897,7 +901,7 @@ elif libraryInput == '2':
                 totalHydrophobic += 1
         resHydrophobic.append(totalHydrophobic)
         try:
-            percentHydrophobic.append((totalHydrophobic / totalDiversified) * 100)
+            percentHydrophobic.append(totalHydrophobic / totalDiversified)
         except ZeroDivisionError:
             percentHydrophobic.append('0')
 
@@ -908,7 +912,7 @@ elif libraryInput == '2':
                 totalPolar += 1
         resPolar.append(totalPolar)
         try:
-            percentPolar.append((totalPolar / totalDiversified) * 100)
+            percentPolar.append(totalPolar / totalDiversified)
         except ZeroDivisionError:
             percentPolar.append('0')
 
@@ -919,7 +923,7 @@ elif libraryInput == '2':
                 totalAcidic += 1
         resAcidic.append(totalAcidic)
         try:
-            percentAcidic.append((totalAcidic / totalDiversified) * 100)
+            percentAcidic.append(totalAcidic / totalDiversified)
         except ZeroDivisionError:
             percentAcidic.append('0')
 
@@ -930,7 +934,7 @@ elif libraryInput == '2':
                 totalBasic += 1
         resBasic.append(totalBasic)
         try:
-            percentBasic.append((totalBasic / totalDiversified) * 100)
+            percentBasic.append(totalBasic / totalDiversified)
         except ZeroDivisionError:
             percentBasic.append('0')
 
@@ -941,7 +945,7 @@ elif libraryInput == '2':
                 totalAromatic += 1
         resAromatic.append(totalAromatic)
         try:
-            percentAromatic.append((totalAromatic / totalDiversified) * 100)
+            percentAromatic.append(totalAromatic / totalDiversified)
         except ZeroDivisionError:
             percentAromatic.append('0')
 
@@ -952,7 +956,7 @@ elif libraryInput == '2':
                 totalAliphatic += 1
         resAliphatic.append(totalAliphatic)
         try:
-            percentAliphatic.append((totalAliphatic / totalDiversified) * 100)
+            percentAliphatic.append(totalAliphatic / totalDiversified)
         except ZeroDivisionError:
             percentAliphatic.append('0')
 
@@ -1016,7 +1020,7 @@ elif libraryInput == 'pass':
                 totalHydrophobic += 1
         resHydrophobic.append(totalHydrophobic)
         try:
-            percentHydrophobic.append((totalHydrophobic / totalDiversified) * 100)
+            percentHydrophobic.append(totalHydrophobic / totalDiversified)
         except ZeroDivisionError:
             percentHydrophobic.append('0')
 
@@ -1027,7 +1031,7 @@ elif libraryInput == 'pass':
                 totalPolar += 1
         resPolar.append(totalPolar)
         try:
-            percentPolar.append((totalPolar / totalDiversified) * 100)
+            percentPolar.append(totalPolar / totalDiversified)
         except ZeroDivisionError:
             percentPolar.append('0')
 
@@ -1038,7 +1042,7 @@ elif libraryInput == 'pass':
                 totalAcidic += 1
         resAcidic.append(totalAcidic)
         try:
-            percentAcidic.append((totalAcidic / totalDiversified) * 100)
+            percentAcidic.append(totalAcidic / totalDiversified)
         except ZeroDivisionError:
             percentAcidic.append('0')
 
@@ -1049,7 +1053,7 @@ elif libraryInput == 'pass':
                 totalBasic += 1
         resBasic.append(totalBasic)
         try:
-            percentBasic.append((totalBasic / totalDiversified) * 100)
+            percentBasic.append(totalBasic / totalDiversified)
         except ZeroDivisionError:
             percentBasic.append('0')
 
@@ -1060,7 +1064,7 @@ elif libraryInput == 'pass':
                 totalAromatic += 1
         resAromatic.append(totalAromatic)
         try:
-            percentAromatic.append((totalAromatic / totalDiversified) * 100)
+            percentAromatic.append(totalAromatic / totalDiversified)
         except ZeroDivisionError:
             percentAromatic.append('0')
 
@@ -1071,7 +1075,7 @@ elif libraryInput == 'pass':
                 totalAliphatic += 1
         resAliphatic.append(totalAliphatic)
         try:
-            percentAliphatic.append((totalAliphatic / totalDiversified) * 100)
+            percentAliphatic.append(totalAliphatic / totalDiversified)
         except ZeroDivisionError:
             percentAliphatic.append('0')
 
@@ -1096,29 +1100,91 @@ elif libraryInput == 'pass':
     biochemicalDataframe = pandas.DataFrame(biochemicalTable)
 
 ##################
-# Create worksheet for unique amino acid analyses.
+# Create worksheet for unique amino acid diversity analysis.
 ##################
-# TODO: Add conditional formatting. Add logging.
-worksheet2Name = 'AA Analyses'
-worksheet2 = workbook.add_worksheet(worksheet2Name)
-worksheet2.hide_gridlines(option=2)
-worksheet2.set_column(0, 0, 10)
-worksheet2.freeze_panes(0, 1)
-logging.info('%s worksheet created.' % worksheet2Name)
+# TODO: Finish this worksheet and add biochemical analysis worksheet.
+if libraryInput == '1' or '2':
+    worksheet2Name = 'Diversity Analysis'
+    worksheet2 = workbook.add_worksheet(worksheet2Name)
+    worksheet2.hide_gridlines(option=2)
+    worksheet2.set_column(0, 0, 10)
+    worksheet2.set_column(1, 1, 12)
+    worksheet2.set_column(2, 2, 17)
+    worksheet2.set_column(3, 3, 12)
+    worksheet2.set_column(4, 4, 17)
+    worksheet2.freeze_panes(2, 1)
+    logging.info('%s worksheet created.' % worksheet2Name)
 
-worksheet2.merge_range(0, 0, 1, 0, 'ID', title_format)
-idRow = 2
-for ID in IDlist:
-    worksheet2.write(idRow, 0, ID, general_format)
-    idRow += 1
-logging.info('IDs written to %s worksheet.' % worksheet2Name)
+    # Write unique sequence IDs.
+    worksheet2.merge_range(0, 0, 1, 0, 'ID', title_format)
+    idRow = 2
+    for ID in IDlist:
+        worksheet2.write(idRow, 0, ID, general_format)
+        idRow += 1
+    logging.info('IDs written to %s worksheet.' % worksheet2Name)
 
-# TODO: Create new format for intergers.
-untargetedRow = 2
-untargetedCol = 1
-for untargeted in diversityDataframe['Total Untargeted Diversified']:
-    worksheet2.write(untargetedRow, untargetedCol, untargeted, stats_format)
-    untargetedRow += 1
+    # Write untargeted diversified residues.
+    untargetedRow = 2
+    untargetedCol = 1
+    worksheet2.merge_range(0, 1, 1, 1, 'Untargeted', title_format)
+    for untargeted in diversityDataframe['Total Untargeted Diversified']:
+        worksheet2.write(untargetedRow, untargetedCol, untargeted, integer_format)
+        untargetedRow += 1
+    logging.info('Untargeted residues written to %s worksheet.' % worksheet2Name)
+
+    # Write untargeted diversified residues as a percent of untargeted regions.
+    untargetedPercentRow = 2
+    untargetedPercentCol = 2
+    worksheet2.merge_range(0, 2, 1, 2, '% of Untargeted Regions', title_format)
+    for untargetedPercent in diversityDataframe['Untargeted: Percent of Untargeted Regions']:
+        worksheet2.write(untargetedPercentRow, untargetedPercentCol, untargetedPercent, percent_format)
+        untargetedPercentRow += 1
+    logging.info('Untargeted residues as a percent of untargeted regions written to %s worksheet.' % worksheet2Name)
+
+    # Write targeted diversified residues.
+    targetedRow = 2
+    targetedCol = 3
+    worksheet2.merge_range(0, 3, 1, 3, 'Targeted', title_format)
+    for targeted in diversityDataframe['Total Targeted Diversified']:
+        worksheet2.write(targetedRow, targetedCol, targeted, integer_format)
+        targetedRow += 1
+    logging.info('Untargeted residues as a percent of untargeted regions written to %s worksheet.' % worksheet2Name)
+
+    # Write targeted diversified residues as a percent of targeted regions.
+    targetedPercentRow = 2
+    targetedPercentCol = 4
+    worksheet2.merge_range(0, 4, 1, 4, '% of Targeted Regions', title_format)
+    for targetedPercent in diversityDataframe['Targeted: Percent of Diversified Regions']:
+        worksheet2.write(targetedPercentRow, targetedPercentCol, targetedPercent, percent_format)
+        targetedPercentRow += 1
+    logging.info('Untargeted residues as a percent of untargeted regions written to %s worksheet.' % worksheet2Name)
+
+    # Conditional formatting for diversity anlysis.
+    worksheet2.conditional_format(2,
+                                  1,
+                                  len(conservedList) + 2,
+                                  1,
+                                  {'type': '2_color_scale', 'min_color': '#FAFAFA', 'max_color': '#008000'})
+    worksheet2.conditional_format(2,
+                                  2,
+                                  len(conservedList) + 2,
+                                  2,
+                                  {'type': '2_color_scale', 'min_color': '#FAFAFA', 'max_color': '#008000'})
+    worksheet2.conditional_format(2,
+                                  3,
+                                  len(conservedList) + 2,
+                                  3,
+                                  {'type': '2_color_scale', 'min_color': '#FAFAFA', 'max_color': '#008000'})
+    worksheet2.conditional_format(2,
+                                  4,
+                                  len(conservedList) + 2,
+                                  4,
+                                  {'type': '2_color_scale', 'min_color': '#FAFAFA', 'max_color': '#008000'})
+    logging.info('Conditional formatting applied to diversity analysis.')
+
+elif libraryInput == 'pass':
+    logging.info('No diversity analysis worksheet created because no library was chosen.')
+    pass
 
 ##################
 # Final workbook formatting.
