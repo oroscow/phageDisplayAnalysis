@@ -796,8 +796,8 @@ worksheet1.freeze_panes(0, 1)
 logging.info('%s worksheet created.' % worksheet1Name)
 
 # Write well IDs.
-idRow = 2
 worksheet1.merge_range(0, 0, 1, 0, 'ID', title_format)
+idRow = 2
 for name in aaShortNameList:
     worksheet1.write(idRow, 0, name, wellID_format)
     idRow += 1
