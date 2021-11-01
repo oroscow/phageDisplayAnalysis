@@ -36,7 +36,7 @@ def greenprint(text):
 class OrderedCounter(Counter, OrderedDict):
     pass
 
-
+# TODO: Check regexes and clean them up if necessary.
 ##################
 #    MAIN
 ##################
@@ -551,7 +551,7 @@ for seq in aaOrderedSeq:
             aaOrderedNames.append(key)
 logging.info('Ordered index of amino acid well IDs created.')
 
-# TODO: Duplicate this for control wells and see which descriptive stats are most helpful.
+# TODO: Duplicate/replace this for control wells and see which descriptive stats are most helpful.
 # Create ordered list of absorbances that correspond to unique sequences.
 aaOrderedAbs = []
 for index in aaOrderedNames:
@@ -733,7 +733,8 @@ logging.info('Excel spreadsheet created as "%s.xlsx".' % elisaInFileName)
 # Cell formatting rules. 
 #########
 
-# TODO: Clean up formatting.
+# TODO: Find a way to clean up this section's formatting.
+# TODO: Make sure workbook formatting is like Conservation Analysis'.
 # General.
 general_format = workbook.add_format()
 general_format.set_align('center')
@@ -1222,6 +1223,7 @@ worksheet2.write(len(aaUnique) + 5, 1, calcInfo, info_format)
 worksheet3.write(len(ntNameListShort) + 5, 1, calcInfo, info_format)
 worksheet4.write(len(uniqueNt) + 5, 1, calcInfo, info_format)
 
+# TODO: Add a for loop to clean up this section.
 # Conditionally format columns.
 worksheet1.conditional_format(1, aaAlignLen + 1, len(aaShortNameList) + 1, aaAlignLen + 2,
                               {'type': '2_color_scale',

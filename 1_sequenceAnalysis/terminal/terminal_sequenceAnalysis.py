@@ -743,6 +743,8 @@ for uniqueSeq, count in ntUniqueDict.items():
 # Create workbook.
 workbook = xlsxwriter.Workbook(alignmentPath + '/' + folderName + '_alignment.xlsx')
 
+# TODO: Find a way to clean up this section's formatting.
+# TODO: Make sure workbook formatting is like Conservation Analysis'.
 #########
 # Cell formatting rules.
 #########
@@ -779,7 +781,7 @@ logging.info('Cell formatting rules set.')
 ##################
 # Create worksheet for all amino acid sequences.
 ##################
-# TODO: Merge and freeze panes in same style as other programs.
+
 # Initialize sheet characteristics.
 worksheet1Name = 'All AA Seq'
 worksheet1 = workbook.add_worksheet(worksheet1Name)

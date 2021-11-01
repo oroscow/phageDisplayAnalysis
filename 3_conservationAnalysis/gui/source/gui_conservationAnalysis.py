@@ -253,8 +253,8 @@ while True:
                           }
         consensusSeq = str(values['-CONSENSUSINPUT-'])
         consensusSeq = consensusSeq.upper()
-        seqRegex = re.compile(r'[ARNDCEQGHILKMFPSTWYVX]{10,}')
-        consensusSeqInput = seqRegex.search(consensusSeq, re.IGNORECASE)
+        ntSeqRegex = re.compile(r'[ARNDCEQGHILKMFPSTWYVX]{10,}')
+        consensusSeqInput = ntSeqRegex.search(consensusSeq, re.IGNORECASE)
 
         if values['-ELISA_SEQ_DATA-']:
             inputFormat = '1'
@@ -350,8 +350,9 @@ else:
                  )
     logging.info('%s chosen as the data source.' % inFileName)
 
+    # TODO: Import changes from terminal version of code.
     ##################
-    # Select input format and retrieve/parse data.
+    # Retrieve and parse data.
     ##################
 
     # ELISA and sequencing data.
@@ -360,7 +361,7 @@ else:
         allCells = pandas.read_excel(inFileName,
                                      sheet_name=1
                                      )
-        # Remove useless rows.
+        # Remove rows with more than eight NaN values.
         allCells = allCells.dropna(axis=0, thresh=8)
         logging.info('%s data read.' % inFileName)
 
@@ -396,7 +397,7 @@ else:
         trimCells = allCells.iloc[1:, 1:]
         trimCells = trimCells.to_string(index=False)
         aaList = trimCells.replace(' ', '')
-        aaList = seqRegex.findall(aaList)
+        aaList = ntSeqRegex.findall(aaList)
 
         # Create list of unique nucleotide sequences ordered by frequency.
         uniqueDict = dict(zip(aaList, countList))
@@ -412,7 +413,7 @@ else:
             seqClean = stopRegex.sub('',
                                      seqClean
                                      )
-            aaList = seqRegex.findall(seqClean)
+            aaList = ntSeqRegex.findall(seqClean)
             logging.info('Amino acid sequences retrieved from %s.' % inFileName)
             alignFile.close()
 

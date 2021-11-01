@@ -46,6 +46,7 @@ class OrderedCounter(Counter, OrderedDict):
     pass
 
 
+# TODO: Check regexes and clean them up if necessary.
 ##################
 #    MAIN
 ##################
@@ -96,12 +97,13 @@ while True:
         break
     else:
         cyanprint('\nInvalid option.'
-                  'Please try again.')
+                  'Please try again.'
+                  )
 
 ##################
 # Select input files.
 ##################
-# TODO: Put while loop here to catch mistakes.
+
 # ELISA input format.
 if inputFormat == '1':
     # Select ELISA data source. User prompt.
@@ -109,7 +111,16 @@ if inputFormat == '1':
 * Must be in xlsx format.
 * Include the file extension in the name.'''
               )
-    inFileName = input()
+    while True:
+        inFileName = input()
+        if re.search('.xlsx$', inFileName):
+            cyanprint('\nAnalysing %s.' % inFileName
+                      )
+            break
+        else:
+            cyanprint('\nInvalid file type.'
+                      'Please try again.'
+                      )
 
 # Alignment input format.
 elif inputFormat == '2':
@@ -118,7 +129,16 @@ elif inputFormat == '2':
     * Must be in fasta format.
     * Include the file extension in the name.'''
               )
-    inFileName = input()
+    while True:
+        inFileName = input()
+        if re.search('.fasta$', inFileName):
+            cyanprint('\nAnalysing %s.' % inFileName
+                      )
+            break
+        else:
+            cyanprint('\nInvalid file type.'
+                      'Please try again.'
+                      )
 
 ##################
 # Setup logging file.
@@ -187,15 +207,15 @@ if inputFormat == '1':
     seqCells = allCells.iloc[1:, 1:]
     seqCells = seqCells.to_string(index=False)
     aaList = seqCells.replace(' ', '')
-    seqRegex = re.compile(r'[ARNDCEQGHILKMFPSTWYVX]{10,}')
-    aaList = seqRegex.findall(aaList)
+    ntSeqRegex = re.compile(r'[ARNDCEQGHILKMFPSTWYVX]{10,}')
+    aaList = ntSeqRegex.findall(aaList)
 
     # Create list of unique nucleotide sequences ordered by frequency.
     uniqueDict = dict(zip(aaList, countList))
 
 elif inputFormat == '2':
     # Read alignment file.
-    seqRegex = re.compile(r'[ARNDCEQGHILKMFPSTWYVX]{10,}')
+    ntSeqRegex = re.compile(r'[ARNDCEQGHILKMFPSTWYVX]{10,}')
     stopRegex = re.compile(r'([*]+[A-Z]*)')
     with open(inFileName, 'r') as alignFile:
         allData = alignFile.read()
@@ -206,7 +226,7 @@ elif inputFormat == '2':
         seqClean = stopRegex.sub('',
                                  seqClean
                                  )
-        aaList = seqRegex.findall(seqClean)
+        aaList = ntSeqRegex.findall(seqClean)
         logging.info('Amino acid sequences retrieved from %s.' % inFileName)
         alignFile.close()
 
@@ -291,6 +311,7 @@ residueList = list(range(1,
 workbook = xlsxwriter.Workbook(path + '/' + inFileNameShort + '.xlsx')
 logging.info('''Excel spreadsheet created as '%s.xlsx'.''' % inFileNameShort)
 
+# TODO: Find a way to clean up this section's formatting.
 #########
 # Cell formatting rules.
 #########
@@ -468,6 +489,12 @@ if inputFormat == '1':
                                   {'type': '2_color_scale', 'min_color': '#FAFAFA', 'max_color': '#008000'})
     logging.info('Conditional formatting applied to statistics.')
 
+    # Table for statistics.
+    worksheet1.add_table(3, 0, len(conservedList) + 2, consensusLen + 7, {'header_row': False,
+                                                                          'style': None
+                                                                          }
+                         )
+
 elif inputFormat == '2':
     # Wells.
     worksheet1.write(1, consensusLen + 2, 'Wells', wellTitle_format)
@@ -476,11 +503,18 @@ elif inputFormat == '2':
     # Change column width to fit all IDs.
     wellColWidth = round((len(countID[0]) / 1.16))
     worksheet1.set_column(consensusLen + 2, consensusLen + 2, wellColWidth)
+
     # Write specific IDs to worksheet.
     for wellList in countID:
         worksheet1.write(wellRow, wellCol, wellList, wellList_format)
         wellRow += 1
     logging.info('Amino acid sequence-specific well IDs written to %s worksheet.' % worksheet1Name)
+
+    # Table for counts and wells.
+    worksheet1.add_table(3, 0, len(conservedList) + 2, consensusLen + 2, {'header_row': False,
+                                                                          'style': None
+                                                                          }
+                         )
 
 ##################
 # Choose phage display library to overlay.
@@ -518,57 +552,24 @@ while True:
             worksheet1.write(len(conservedList) + 4, 1, libraryOptions.get('1'), library_format)
             logging.info('Library 1 (Ernst et al., 2013) selected.')
             worksheet1.merge_range(1, 2, 1, 14, 'Region 1', title_format)
-            worksheet1.conditional_format(3, 2, len(conservedList) + 2, 2,
-                                          {'type': 'no_blanks', 'format': region1_format}
-                                          )
-            worksheet1.conditional_format(3, 4, len(conservedList) + 2, 4,
-                                          {'type': 'no_blanks', 'format': region1_format}
-                                          )
-            worksheet1.conditional_format(3, 6, len(conservedList) + 2, 6,
-                                          {'type': 'no_blanks', 'format': region1_format}
-                                          )
-            worksheet1.conditional_format(3, 8, len(conservedList) + 2, 12,
-                                          {'type': 'no_blanks', 'format': region1_format}
-                                          )
-            worksheet1.conditional_format(3, 14, len(conservedList) + 2, 14,
-                                          {'type': 'no_blanks', 'format': region1_format}
-                                          )
+            for column in [2, 4, 6, 8, 9, 10, 11, 12, 14]:
+                worksheet1.conditional_format(3, column, len(conservedList) + 2, column,
+                                              {'type': 'no_blanks', 'format': region1_format}
+                                              )
             logging.info('Region 1 coloured.')
             # Region 2 formatting.
             worksheet1.merge_range(1, 35, 1, 49, 'Region 2', title_format)
-            worksheet1.conditional_format(3, 35, len(conservedList) + 2, 35,
-                                          {'type': 'no_blanks', 'format': region2_format}
-                                          )
-            worksheet1.conditional_format(3, 37, len(conservedList) + 2, 37,
-                                          {'type': 'no_blanks', 'format': region2_format}
-                                          )
-            worksheet1.conditional_format(3, 39, len(conservedList) + 2, 40,
-                                          {'type': 'no_blanks', 'format': region2_format}
-                                          )
-            worksheet1.conditional_format(3, 42, len(conservedList) + 2, 42,
-                                          {'type': 'no_blanks', 'format': region2_format}
-                                          )
-            worksheet1.conditional_format(3, 44, len(conservedList) + 2, 44,
-                                          {'type': 'no_blanks', 'format': region2_format}
-                                          )
-            worksheet1.conditional_format(3, 46, len(conservedList) + 2, 49,
-                                          {'type': 'no_blanks', 'format': region2_format}
-                                          )
+            for column in [35, 37, 39, 40, 42, 44, 46, 47, 48, 49]:
+                worksheet1.conditional_format(3, column, len(conservedList) + 2, column,
+                                              {'type': 'no_blanks', 'format': region2_format}
+                                              )
             logging.info('Region 2 coloured.')
             # Region 3 formatting.
             worksheet1.merge_range(1, 62, 1, 72, 'Region 3', title_format)
-            worksheet1.conditional_format(3, 62, len(conservedList) + 2, 64,
-                                          {'type': 'no_blanks', 'format': region3_format}
-                                          )
-            worksheet1.conditional_format(3, 66, len(conservedList) + 2, 66,
-                                          {'type': 'no_blanks', 'format': region3_format}
-                                          )
-            worksheet1.conditional_format(3, 68, len(conservedList) + 2, 68,
-                                          {'type': 'no_blanks', 'format': region3_format}
-                                          )
-            worksheet1.conditional_format(3, 70, len(conservedList) + 2, 72,
-                                          {'type': 'no_blanks', 'format': region3_format}
-                                          )
+            for column in [62, 63, 64, 66, 68, 70, 71, 72]:
+                worksheet1.conditional_format(3, 62, len(conservedList) + 2, 64,
+                                              {'type': 'no_blanks', 'format': region3_format}
+                                              )
             logging.info('Region 3 coloured.')
             break
 
@@ -578,48 +579,24 @@ while True:
             logging.info('Library 2 (Ernst et al., 2013) selected.')
             # Region 1 formatting.
             worksheet1.merge_range(1, 2, 1, 14, 'Region 1', title_format)
-            worksheet1.conditional_format(3, 2, len(conservedList) + 2, 2,
-                                          {'type': 'no_blanks', 'format': region1_format}
-                                          )
-            worksheet1.conditional_format(3, 4, len(conservedList) + 2, 4,
-                                          {'type': 'no_blanks', 'format': region1_format}
-                                          )
-            worksheet1.conditional_format(3, 6, len(conservedList) + 2, 6,
-                                          {'type': 'no_blanks', 'format': region1_format}
-                                          )
-            worksheet1.conditional_format(3, 8, len(conservedList) + 2, 12,
-                                          {'type': 'no_blanks', 'format': region1_format}
-                                          )
-            worksheet1.conditional_format(3, 14, len(conservedList) + 2, 14,
-                                          {'type': 'no_blanks', 'format': region1_format}
-                                          )
+            for column in [2, 4, 6, 8, 9, 10, 11, 12, 14]:
+                worksheet1.conditional_format(3, column, len(conservedList) + 2, column,
+                                              {'type': 'no_blanks', 'format': region1_format}
+                                              )
             logging.info('Region 1 coloured.')
             # Region 2 formatting.
             worksheet1.merge_range(1, 42, 1, 49, 'Region 2', title_format)
-            worksheet1.conditional_format(3, 42, len(conservedList) + 2, 42,
-                                          {'type': 'no_blanks', 'format': region2_format}
-                                          )
-            worksheet1.conditional_format(3, 44, len(conservedList) + 2, 44,
-                                          {'type': 'no_blanks', 'format': region2_format}
-                                          )
-            worksheet1.conditional_format(3, 46, len(conservedList) + 2, 49,
-                                          {'type': 'no_blanks', 'format': region2_format}
-                                          )
+            for column in [42, 44, 46, 47, 48, 49]:
+                worksheet1.conditional_format(3, column, len(conservedList) + 2, column,
+                                              {'type': 'no_blanks', 'format': region2_format}
+                                              )
             logging.info('Region 2 coloured.')
             # Region 3 formatting.
             worksheet1.merge_range(1, 62, 1, 78, 'Region 3', title_format)
-            worksheet1.conditional_format(3, 62, len(conservedList) + 2, 64,
-                                          {'type': 'no_blanks', 'format': region3_format}
-                                          )
-            worksheet1.conditional_format(3, 66, len(conservedList) + 2, 66,
-                                          {'type': 'no_blanks', 'format': region3_format}
-                                          )
-            worksheet1.conditional_format(3, 68, len(conservedList) + 2, 68,
-                                          {'type': 'no_blanks', 'format': region3_format}
-                                          )
-            worksheet1.conditional_format(3, 70, len(conservedList) + 2, 78,
-                                          {'type': 'no_blanks', 'format': region3_format}
-                                          )
+            for column in [62, 63, 64, 66, 68, 70, 71, 72, 73, 74, 75, 76, 77, 78]:
+                worksheet1.conditional_format(3, column, len(conservedList) + 2, column,
+                                              {'type': 'no_blanks', 'format': region3_format}
+                                              )
             logging.info('Region 3 coloured.')
             break
 
@@ -635,7 +612,6 @@ while True:
 ##################
 # Analyse biochemistry and diversification patterns in sequences.
 ##################
-# TODO: Add logging.
 aaTypes = {'hydrophobic': ['G', 'A', 'V', 'P', 'F', 'M', 'L', 'W', 'I'],
            'polar': ['S', 'N', 'Y', 'H', 'C', 'T', 'G', 'D', 'E', 'R', 'K'],
            'acidic': ['D', 'E'],
@@ -644,7 +620,21 @@ aaTypes = {'hydrophobic': ['G', 'A', 'V', 'P', 'F', 'M', 'L', 'W', 'I'],
            'aliphatic': ['A', 'G', 'I', 'L', 'P', 'V'],
            }
 
-if libraryInput == '1':
+if libraryInput == '1' or libraryInput == '2':
+    if libraryInput == '1':
+        region1index = [index - 1 for index in [2, 4, 6, 8, 9, 10, 11, 12, 14]]
+        region2index = [index - 1 for index in [35, 37, 39, 40, 42, 44, 46, 47, 48, 49]]
+        region3index = [index - 1 for index in [62, 63, 64, 66, 68, 70, 71, 72]]
+        allRegionIndex = region1index + region2index + region3index
+        allRegionLength = len(allRegionIndex)
+
+    elif libraryInput == '2':
+        region1index = [index - 1 for index in [2, 4, 6, 8, 9, 10, 11, 12, 14]]
+        region2index = [index - 1 for index in [42, 44, 46, 47, 48, 49]]
+        region3index = [index - 1 for index in [62, 63, 64, 66, 68, 70, 71, 72, 73, 74, 75, 76, 77, 78]]
+        allRegionIndex = region1index + region2index + region3index
+        allRegionLength = len(allRegionIndex)
+
     resDiversified = []
     resUntargeted = []
     percentUntargeted = []
@@ -668,11 +658,6 @@ if libraryInput == '1':
     percentAromatic = []
     resAliphatic = []
     percentAliphatic = []
-
-    region1index = [index - 1 for index in [2, 4, 6, 8, 9, 10, 11, 12, 14]]
-    region2index = [index - 1 for index in [35, 37, 39, 40, 42, 44, 46, 47, 48, 49]]
-    region3index = [index - 1 for index in [62, 63, 64, 66, 68, 70, 71, 72]]
-    allRegionIndex = region1index + region2index + region3index
 
     for sequence in conservedList:
         # Total diversified residues.
@@ -722,76 +707,77 @@ if libraryInput == '1':
         resDiversifiedReg3.append(totalResReg3)
         percentDiversifiedReg3.append(totalResReg3 / len(region3index))
 
-        # Total hydrophobic residues.
+        # Total diversified hydrophobic residues.
         totalHydrophobic = 0
         for residue in sequence:
             if residue in aaTypes['hydrophobic']:
                 totalHydrophobic += 1
         resHydrophobic.append(totalHydrophobic)
         try:
-            percentHydrophobic.append(totalHydrophobic / totalDiversified)
+            percentHydrophobic.append(totalHydrophobic / allRegionLength)
         except ZeroDivisionError:
             percentHydrophobic.append('0')
 
-        # Total polar residues.
+        # Total diversified polar residues.
         totalPolar = 0
         for residue in sequence:
             if residue in aaTypes['polar']:
                 totalPolar += 1
         resPolar.append(totalPolar)
         try:
-            percentPolar.append(totalPolar / totalDiversified)
+            percentPolar.append(totalPolar / len(sequence))
         except ZeroDivisionError:
             percentPolar.append('0')
 
-        # Total acidic residues.
+        # Total diversified acidic residues.
         totalAcidic = 0
         for residue in sequence:
             if residue in aaTypes['acidic']:
                 totalAcidic += 1
         resAcidic.append(totalAcidic)
         try:
-            percentAcidic.append(totalAcidic / totalDiversified)
+            percentAcidic.append(totalAcidic / len(sequence))
         except ZeroDivisionError:
             percentAcidic.append('0')
 
-        # Total basic residues.
+        # Total diversified basic residues.
         totalBasic = 0
         for residue in sequence:
             if residue in aaTypes['basic']:
                 totalBasic += 1
         resBasic.append(totalBasic)
         try:
-            percentBasic.append(totalBasic / totalDiversified)
+            percentBasic.append(totalBasic / len(sequence))
         except ZeroDivisionError:
             percentBasic.append('0')
 
-        # Total aromatic residues.
+        # Total diversified aromatic residues.
         totalAromatic = 0
         for residue in sequence:
             if residue in aaTypes['aromatic']:
                 totalAromatic += 1
         resAromatic.append(totalAromatic)
         try:
-            percentAromatic.append(totalAromatic / totalDiversified)
+            percentAromatic.append(totalAromatic / len(sequence))
         except ZeroDivisionError:
             percentAromatic.append('0')
 
-        # Total aliphatic residues.
+        # Total diversified aliphatic residues.
         totalAliphatic = 0
         for residue in sequence:
             if residue in aaTypes['aliphatic']:
                 totalAliphatic += 1
         resAliphatic.append(totalAliphatic)
         try:
-            percentAliphatic.append(totalAliphatic / totalDiversified)
+            percentAliphatic.append(totalAliphatic / len(sequence))
         except ZeroDivisionError:
             percentAliphatic.append('0')
+    logging.info('Diversity and biochemical analyses calculated.')
 
     diversityTable = {'Total Untargeted Diversified': resUntargeted,
                       'Untargeted: Percent of Untargeted Regions': percentUntargeted,
                       'Total Targeted Diversified': resTargeted,
-                      'Targeted: Percent of Diversified Regions': percentTargeted,
+                      'Targeted: Percent of Targeted Regions': percentTargeted,
                       'Region 1 Diversified': resDiversifiedReg1,
                       'Percent of Region 1': percentDiversifiedReg1,
                       'Region 2 Diversified': resDiversifiedReg2,
@@ -802,196 +788,23 @@ if libraryInput == '1':
     diversityDataframe = pandas.DataFrame(diversityTable)
 
     biochemicalTable = {'Total Hydrophobic Residues': resHydrophobic,
-                        'Hydrophobic: All Diversified Residues': percentHydrophobic,
+                        'Hydrophobic: Percent of Entire Sequence': percentHydrophobic,
                         'Total Polar Residues': resPolar,
-                        'Polar: All Diversified Residues': percentPolar,
+                        'Polar: Percent of Entire Sequence': percentPolar,
                         'Total Acidic Residues': resAcidic,
-                        'Acidic: All Diversified Residues': percentAcidic,
+                        'Acidic: Percent of Entire Sequence': percentAcidic,
                         'Total Basic Residues': resBasic,
-                        'Basic: All Diversified Residues': percentBasic,
+                        'Basic: Percent of Entire Sequence': percentBasic,
                         'Total Aromatic Residues': resAromatic,
-                        'Aromatic: All Diversified Residues': percentAromatic,
+                        'Aromatic: Percent of Entire Sequence': percentAromatic,
                         'Total Aliphatic Residues': resAliphatic,
-                        'Aliphatic: All Diversified Residues': percentAliphatic
-                        }
-    biochemicalDataframe = pandas.DataFrame(biochemicalTable)
-
-elif libraryInput == '2':
-    resDiversified = []
-    resUntargeted = []
-    percentUntargeted = []
-    resTargeted = []
-    percentTargeted = []
-    resDiversifiedReg1 = []
-    percentDiversifiedReg1 = []
-    resDiversifiedReg2 = []
-    percentDiversifiedReg2 = []
-    resDiversifiedReg3 = []
-    percentDiversifiedReg3 = []
-    resHydrophobic = []
-    percentHydrophobic = []
-    resPolar = []
-    percentPolar = []
-    resAcidic = []
-    percentAcidic = []
-    resBasic = []
-    percentBasic = []
-    resAromatic = []
-    percentAromatic = []
-    resAliphatic = []
-    percentAliphatic = []
-
-    region1index = [index - 1 for index in [2, 4, 6, 8, 9, 10, 11, 12, 14]]
-    region2index = [index - 1 for index in [42, 44, 46, 47, 48, 49]]
-    region3index = [index - 1 for index in [62, 63, 64, 66, 68, 70, 71, 72, 73, 74, 75, 76, 77, 78]]
-    allRegionIndex = region1index + region2index + region3index
-
-    for sequence in conservedList:
-        # Total diversified residues.
-        totalDiversified = 0
-        for residue in sequence:
-            if residue != '-':
-                totalDiversified += 1
-        resDiversified.append(totalDiversified)
-
-        # Total diversified residues in targeted regions.
-        totalTargeted = 0
-        for index in allRegionIndex:
-            if sequence[index] != '-':
-                totalTargeted += 1
-        resTargeted.append(totalTargeted)
-        percentTargeted.append(totalTargeted / len(allRegionIndex))
-
-        # Total diversified residues in non-targeted regions.
-        totalUntargeted = totalDiversified - totalTargeted
-        resUntargeted.append(totalUntargeted)
-        try:
-            percentUntargeted.append(totalUntargeted / (len(conservedList[0]) - len(allRegionIndex)))
-        except ZeroDivisionError:
-            percentUntargeted.append('0')
-
-        # Total diversified residues in region 1.
-        totalResReg1 = 0
-        for index in region1index:
-            if sequence[index] != '-':
-                totalResReg1 += 1
-        resDiversifiedReg1.append(totalResReg1)
-        percentDiversifiedReg1.append(totalResReg1 / len(region1index))
-
-        # Total diversified residues in region 2.
-        totalResReg2 = 0
-        for index in region2index:
-            if sequence[index] != '-':
-                totalResReg2 += 1
-        resDiversifiedReg2.append(totalResReg2)
-        percentDiversifiedReg2.append(totalResReg2 / len(region2index))
-
-        # Total diversified residues in region 3.
-        totalResReg3 = 0
-        for index in region3index:
-            if sequence[index] != '-':
-                totalResReg3 += 1
-        resDiversifiedReg3.append(totalResReg3)
-        percentDiversifiedReg3.append(totalResReg3 / len(region3index))
-
-        # Total hydrophobic residues.
-        totalHydrophobic = 0
-        for residue in sequence:
-            if residue in aaTypes['hydrophobic']:
-                totalHydrophobic += 1
-        resHydrophobic.append(totalHydrophobic)
-        try:
-            percentHydrophobic.append(totalHydrophobic / totalDiversified)
-        except ZeroDivisionError:
-            percentHydrophobic.append('0')
-
-        # Total polar residues.
-        totalPolar = 0
-        for residue in sequence:
-            if residue in aaTypes['polar']:
-                totalPolar += 1
-        resPolar.append(totalPolar)
-        try:
-            percentPolar.append(totalPolar / totalDiversified)
-        except ZeroDivisionError:
-            percentPolar.append('0')
-
-        # Total acidic residues.
-        totalAcidic = 0
-        for residue in sequence:
-            if residue in aaTypes['acidic']:
-                totalAcidic += 1
-        resAcidic.append(totalAcidic)
-        try:
-            percentAcidic.append(totalAcidic / totalDiversified)
-        except ZeroDivisionError:
-            percentAcidic.append('0')
-
-        # Total basic residues.
-        totalBasic = 0
-        for residue in sequence:
-            if residue in aaTypes['basic']:
-                totalBasic += 1
-        resBasic.append(totalBasic)
-        try:
-            percentBasic.append(totalBasic / totalDiversified)
-        except ZeroDivisionError:
-            percentBasic.append('0')
-
-        # Total aromatic residues.
-        totalAromatic = 0
-        for residue in sequence:
-            if residue in aaTypes['aromatic']:
-                totalAromatic += 1
-        resAromatic.append(totalAromatic)
-        try:
-            percentAromatic.append(totalAromatic / totalDiversified)
-        except ZeroDivisionError:
-            percentAromatic.append('0')
-
-        # Total aliphatic residues.
-        totalAliphatic = 0
-        for residue in sequence:
-            if residue in aaTypes['aliphatic']:
-                totalAliphatic += 1
-        resAliphatic.append(totalAliphatic)
-        try:
-            percentAliphatic.append(totalAliphatic / totalDiversified)
-        except ZeroDivisionError:
-            percentAliphatic.append('0')
-
-    diversityTable = {'ID': IDlist,
-                      'Total Untargeted Diversified': resUntargeted,
-                      'Untargeted: Percent of Untargeted Regions': percentUntargeted,
-                      'Total Targeted Diversified': resTargeted,
-                      'Targeted: Percent of Diversified Regions': percentTargeted,
-                      'Region 1 Diversified': resDiversifiedReg1,
-                      'Percent of Region 1': percentDiversifiedReg1,
-                      'Region 2 Diversified': resDiversifiedReg2,
-                      'Percent of Region 2': percentDiversifiedReg2,
-                      'Region 3 Diversified': resDiversifiedReg3,
-                      'Percent of Region 3': percentDiversifiedReg3,
-                      }
-    diversityDataframe = pandas.DataFrame(diversityTable)
-
-    biochemicalTable = {'ID': IDlist,
-                        'Total Hydrophobic Residues': resHydrophobic,
-                        'Hydrophobic: All Diversified Residues': percentHydrophobic,
-                        'Total Polar Residues': resPolar,
-                        'Polar: All Diversified Residues': percentPolar,
-                        'Total Acidic Residues': resAcidic,
-                        'Acidic: All Diversified Residues': percentAcidic,
-                        'Total Basic Residues': resBasic,
-                        'Basic: All Diversified Residues': percentBasic,
-                        'Total Aromatic Residues': resAromatic,
-                        'Aromatic: All Diversified Residues': percentAromatic,
-                        'Total Aliphatic Residues': resAliphatic,
-                        'Aliphatic: All Diversified Residues': percentAliphatic
+                        'Aliphatic: Percent of Entire Sequence': percentAliphatic
                         }
     biochemicalDataframe = pandas.DataFrame(biochemicalTable)
 
 elif libraryInput == 'pass':
     resDiversified = []
+    resDiversifiedPercent = []
     resHydrophobic = []
     percentHydrophobic = []
     resPolar = []
@@ -1012,106 +825,108 @@ elif libraryInput == 'pass':
             if residue != '-':
                 totalDiversified += 1
         resDiversified.append(totalDiversified)
+        resDiversifiedPercent.append(totalDiversified / len(sequence))
 
-        # Total hydrophobic residues.
+        # Total diversified hydrophobic residues.
         totalHydrophobic = 0
         for residue in sequence:
             if residue in aaTypes['hydrophobic']:
                 totalHydrophobic += 1
         resHydrophobic.append(totalHydrophobic)
         try:
-            percentHydrophobic.append(totalHydrophobic / totalDiversified)
+            percentHydrophobic.append(totalHydrophobic / len(sequence))
         except ZeroDivisionError:
             percentHydrophobic.append('0')
 
-        # Total polar residues.
+        # Total diversified polar residues.
         totalPolar = 0
         for residue in sequence:
             if residue in aaTypes['polar']:
                 totalPolar += 1
         resPolar.append(totalPolar)
         try:
-            percentPolar.append(totalPolar / totalDiversified)
+            percentPolar.append(totalPolar / len(sequence))
         except ZeroDivisionError:
             percentPolar.append('0')
 
-        # Total acidic residues.
+        # Total diversified acidic residues.
         totalAcidic = 0
         for residue in sequence:
             if residue in aaTypes['acidic']:
                 totalAcidic += 1
         resAcidic.append(totalAcidic)
         try:
-            percentAcidic.append(totalAcidic / totalDiversified)
+            percentAcidic.append(totalAcidic / len(sequence))
         except ZeroDivisionError:
             percentAcidic.append('0')
 
-        # Total basic residues.
+        # Total diversified basic residues.
         totalBasic = 0
         for residue in sequence:
             if residue in aaTypes['basic']:
                 totalBasic += 1
         resBasic.append(totalBasic)
         try:
-            percentBasic.append(totalBasic / totalDiversified)
+            percentBasic.append(totalBasic / len(sequence))
         except ZeroDivisionError:
             percentBasic.append('0')
 
-        # Total aromatic residues.
+        # Total diversified aromatic residues.
         totalAromatic = 0
         for residue in sequence:
             if residue in aaTypes['aromatic']:
                 totalAromatic += 1
         resAromatic.append(totalAromatic)
         try:
-            percentAromatic.append(totalAromatic / totalDiversified)
+            percentAromatic.append(totalAromatic / len(sequence))
         except ZeroDivisionError:
             percentAromatic.append('0')
 
-        # Total aliphatic residues.
+        # Total diversified aliphatic residues.
         totalAliphatic = 0
         for residue in sequence:
             if residue in aaTypes['aliphatic']:
                 totalAliphatic += 1
         resAliphatic.append(totalAliphatic)
         try:
-            percentAliphatic.append(totalAliphatic / totalDiversified)
+            percentAliphatic.append(totalAliphatic / len(sequence))
         except ZeroDivisionError:
             percentAliphatic.append('0')
+    logging.info('Diversity and biochemical analyses calculated.')
 
-    diversityTable = {
-    }
+    diversityTable = {'Total Diversified': resDiversified,
+                      'Diversified: Percent of Entire Sequence': resDiversifiedPercent
+                      }
     diversityDataframe = pandas.DataFrame(diversityTable)
 
-    biochemicalTable = {'ID': IDlist,
-                        'Total Hydrophobic Residues': resHydrophobic,
-                        'Hydrophobic: All Diversified Residues': percentHydrophobic,
+    biochemicalTable = {'Total Hydrophobic Residues': resHydrophobic,
+                        'Hydrophobic: Percent of Entire Sequence': percentHydrophobic,
                         'Total Polar Residues': resPolar,
-                        'Polar: All Diversified Residues': percentPolar,
+                        'Polar: Percent of Entire Sequence': percentPolar,
                         'Total Acidic Residues': resAcidic,
-                        'Acidic: All Diversified Residues': percentAcidic,
+                        'Acidic: Percent of Entire Sequence': percentAcidic,
                         'Total Basic Residues': resBasic,
-                        'Basic: All Diversified Residues': percentBasic,
+                        'Basic: Percent of Entire Sequence': percentBasic,
                         'Total Aromatic Residues': resAromatic,
-                        'Aromatic: All Diversified Residues': percentAromatic,
+                        'Aromatic: Percent of Entire Sequence': percentAromatic,
                         'Total Aliphatic Residues': resAliphatic,
-                        'Aliphatic: All Diversified Residues': percentAliphatic
+                        'Aliphatic: Percent of Entire Sequence': percentAliphatic
                         }
     biochemicalDataframe = pandas.DataFrame(biochemicalTable)
 
 ##################
-# Create worksheet for unique amino acid diversity analysis.
+# Create worksheet for unique amino acid diversity analyses.
 ##################
-# TODO: Finish this worksheet and add biochemical analysis worksheet.
-if libraryInput == '1' or '2':
-    worksheet2Name = 'Diversity Analysis'
+
+if libraryInput == '1' or libraryInput == '2':
+    worksheet2Name = 'Diversity Analyses'
     worksheet2 = workbook.add_worksheet(worksheet2Name)
     worksheet2.hide_gridlines(option=2)
     worksheet2.set_column(0, 0, 10)
-    worksheet2.set_column(1, 1, 12)
-    worksheet2.set_column(2, 2, 17)
-    worksheet2.set_column(3, 3, 12)
-    worksheet2.set_column(4, 4, 17)
+    for column in [1, 3, 5, 7, 9]:
+        worksheet2.set_column(column, column, 12)
+    for column in [2, 4, 6, 8, 10]:
+        worksheet2.set_column(column, column, 17)
     worksheet2.freeze_panes(2, 1)
     logging.info('%s worksheet created.' % worksheet2Name)
 
@@ -1154,53 +969,275 @@ if libraryInput == '1' or '2':
     targetedPercentRow = 2
     targetedPercentCol = 4
     worksheet2.merge_range(0, 4, 1, 4, '% of Targeted Regions', title_format)
-    for targetedPercent in diversityDataframe['Targeted: Percent of Diversified Regions']:
+    for targetedPercent in diversityDataframe['Targeted: Percent of Targeted Regions']:
         worksheet2.write(targetedPercentRow, targetedPercentCol, targetedPercent, percent_format)
         targetedPercentRow += 1
     logging.info('Untargeted residues as a percent of untargeted regions written to %s worksheet.' % worksheet2Name)
 
-    # Conditional formatting for diversity anlysis.
-    worksheet2.conditional_format(2,
-                                  1,
-                                  len(conservedList) + 2,
-                                  1,
-                                  {'type': '2_color_scale', 'min_color': '#FAFAFA', 'max_color': '#008000'})
-    worksheet2.conditional_format(2,
-                                  2,
-                                  len(conservedList) + 2,
-                                  2,
-                                  {'type': '2_color_scale', 'min_color': '#FAFAFA', 'max_color': '#008000'})
-    worksheet2.conditional_format(2,
-                                  3,
-                                  len(conservedList) + 2,
-                                  3,
-                                  {'type': '2_color_scale', 'min_color': '#FAFAFA', 'max_color': '#008000'})
-    worksheet2.conditional_format(2,
-                                  4,
-                                  len(conservedList) + 2,
-                                  4,
-                                  {'type': '2_color_scale', 'min_color': '#FAFAFA', 'max_color': '#008000'})
-    logging.info('Conditional formatting applied to diversity analysis.')
+    # Write region 1 diversified residues.
+    reg1Row = 2
+    reg1Col = 5
+    worksheet2.merge_range(0, 5, 1, 5, 'Region 1 Diversified', title_format)
+    for reg1 in diversityDataframe['Region 1 Diversified']:
+        worksheet2.write(reg1Row, reg1Col, reg1, integer_format)
+        reg1Row += 1
+    logging.info('Region 1 diversified residues written to %s worksheet.' % worksheet2Name)
+
+    # Write region 1 diversified residues as a percent of region 1.
+    reg1PercentRow = 2
+    reg1PercentCol = 6
+    worksheet2.merge_range(0, 6, 1, 6, '% of Region 1', title_format)
+    for reg1Percent in diversityDataframe['Percent of Region 1']:
+        worksheet2.write(reg1PercentRow, reg1PercentCol, reg1Percent, percent_format)
+        reg1PercentRow += 1
+    logging.info('Region 1 diversified residues as a percent of region 1 written to %s worksheet.' % worksheet2Name)
+
+    # Write region 2 diversified residues.
+    reg2Row = 2
+    reg2Col = 7
+    worksheet2.merge_range(0, 7, 1, 7, 'Region 2 Diversified', title_format)
+    for reg2 in diversityDataframe['Region 2 Diversified']:
+        worksheet2.write(reg2Row, reg2Col, reg2, integer_format)
+        reg2Row += 1
+    logging.info('Region 2 diversified residues written to %s worksheet.' % worksheet2Name)
+
+    # Write region 2 diversified residues as a percent of region 2.
+    reg2PercentRow = 2
+    reg2PercentCol = 8
+    worksheet2.merge_range(0, 8, 1, 8, '% of Region 2', title_format)
+    for reg2Percent in diversityDataframe['Percent of Region 2']:
+        worksheet2.write(reg2PercentRow, reg2PercentCol, reg2Percent, percent_format)
+        reg2PercentRow += 1
+    logging.info('Region 2 diversified residues as a percent of region 2 written to %s worksheet.' % worksheet2Name)
+
+    # Write region 3 diversified residues.
+    reg3Row = 2
+    reg3Col = 9
+    worksheet2.merge_range(0, 9, 1, 9, 'Region 3 Diversified', title_format)
+    for reg3 in diversityDataframe['Region 3 Diversified']:
+        worksheet2.write(reg3Row, reg3Col, reg3, integer_format)
+        reg3Row += 1
+    logging.info('Region 3 diversified residues written to %s worksheet.' % worksheet2Name)
+
+    # Write region 3 diversified residues as a percent of region 3.
+    reg3PercentRow = 2
+    reg3PercentCol = 10
+    worksheet2.merge_range(0, 10, 1, 10, '% of Region 3', title_format)
+    for reg3Percent in diversityDataframe['Percent of Region 3']:
+        worksheet2.write(reg3PercentRow, reg3PercentCol, reg3Percent, percent_format)
+        reg3PercentRow += 1
+    logging.info('Region 3 diversified residues as a percent of region 3 written to %s worksheet.' % worksheet2Name)
+
+    # Conditional formatting for diversity analyses.
+    for column in range(1, 11):
+        worksheet2.conditional_format(2,
+                                      column,
+                                      len(conservedList) + 2,
+                                      column,
+                                      {'type': '2_color_scale', 'min_color': '#FAFAFA', 'max_color': '#3D85C6'}
+                                      )
+
+    # Table formatting for diversity analyses.
+    worksheet2.add_table(2, 0, len(conservedList) + 1, 10, {'header_row': False,
+                                                            'style': None
+                                                            }
+                         )
 
 elif libraryInput == 'pass':
-    logging.info('No diversity analysis worksheet created because no library was chosen.')
-    pass
+    # Write total diversified region length.
+    worksheet2Name = 'Diversity Analyses'
+    worksheet2 = workbook.add_worksheet(worksheet2Name)
+    worksheet2.hide_gridlines(option=2)
+    worksheet2.set_column(0, 0, 10)
+    worksheet2.set_column(1, 1, 12)
+    worksheet2.set_column(2, 2, 17)
+    worksheet2.freeze_panes(2, 1)
+    logging.info('%s worksheet created.' % worksheet2Name)
 
-##################
-# Final workbook formatting.
-##################
-# TODO: Add tables to worksheet 2.
-# Transform data into proper Excel-formatted tables without any design style applied.
-if inputFormat == '1':
-    worksheet1.add_table(3, 0, len(conservedList) + 2, consensusLen + 7, {'header_row': False,
-                                                                          'style': None
-                                                                          }
+    # Write unique sequence IDs.
+    worksheet2.merge_range(0, 0, 1, 0, 'ID', title_format)
+    idRow = 2
+    for ID in IDlist:
+        worksheet2.write(idRow, 0, ID, general_format)
+        idRow += 1
+    logging.info('IDs written to %s worksheet.' % worksheet2Name)
+
+    # Write total diversified residues.
+    diversifiedRow = 2
+    diversifiedCol = 1
+    worksheet2.merge_range(0, 1, 1, 1, 'Total Diversified', title_format)
+    for diversified in diversityDataframe['Total Diversified']:
+        worksheet2.write(diversifiedRow, diversifiedCol, diversified, integer_format)
+        diversifiedRow += 1
+    logging.info('Diversified residues written to %s worksheet.' % worksheet2Name)
+
+    # Write total diversified residues as a percent of the entire sequence.
+    diversifiedPercentRow = 2
+    diversifiedPercentCol = 2
+    worksheet2.merge_range(0, 2, 1, 2, '% of Entire Sequence', title_format)
+    for diversifiedPercent in diversityDataframe['Diversified: Percent of Entire Sequence']:
+        worksheet2.write(diversifiedPercentRow, diversifiedPercentCol, diversifiedPercent, percent_format)
+        diversifiedPercentRow += 1
+    logging.info('Diversified residues as a percent of entire sequence written to %s worksheet.' % worksheet2Name)
+
+    # Conditional formatting for diversity analyses.
+    for column in range(1, 3):
+        worksheet2.conditional_format(2,
+                                      column,
+                                      len(conservedList) + 2,
+                                      column,
+                                      {'type': '2_color_scale', 'min_color': '#FAFAFA', 'max_color': '#3D85C6'}
+                                      )
+
+    # Table formatting for diversity analyses.
+    worksheet2.add_table(2, 0, len(conservedList) + 1, 2, {'header_row': False,
+                                                           'style': None
+                                                           }
                          )
-elif inputFormat == '2':
-    worksheet1.add_table(3, 0, len(conservedList) + 2, consensusLen + 2, {'header_row': False,
-                                                                          'style': None
-                                                                          }
-                         )
+##################
+# Create worksheet for unique amino acid biochemical analyses.
+##################
+
+worksheet3Name = 'Biochemical Analyses'
+worksheet3 = workbook.add_worksheet(worksheet3Name)
+worksheet3.hide_gridlines(option=2)
+worksheet3.set_column(0, 0, 10)
+for column in [1, 3, 5, 7, 9, 11]:
+    worksheet3.set_column(column, column, 15)
+for column in [2, 4, 6, 8, 10, 12]:
+    worksheet3.set_column(column, column, 17)
+logging.info('%s worksheet created.' % worksheet3Name)
+
+# Write unique sequence IDs.
+worksheet3.merge_range(0, 0, 1, 0, 'ID', title_format)
+idRow = 2
+for ID in IDlist:
+    worksheet3.write(idRow, 0, ID, general_format)
+    idRow += 1
+logging.info('IDs written to %s worksheet.' % worksheet3Name)
+
+# Write diversified hydrophobic residues.
+hydrophobicRow = 2
+hydrophobicCol = 1
+worksheet3.merge_range(0, 1, 1, 1, 'Hydrophobic', title_format)
+for hydrophobic in biochemicalDataframe['Total Hydrophobic Residues']:
+    worksheet3.write(hydrophobicRow, hydrophobicCol, hydrophobic, integer_format)
+    hydrophobicRow += 1
+logging.info('Hydrophobic residues written to %s worksheet.' % worksheet3Name)
+
+# Write diversified hydrophobic residues as a percent of the entire sequence.
+hydrophobicPercentRow = 2
+hydrophobicPercentCol = 2
+worksheet3.merge_range(0, 2, 1, 2, '% of Entire Sequence', title_format)
+for hydrophobicPercent in biochemicalDataframe['Hydrophobic: Percent of Entire Sequence']:
+    worksheet3.write(hydrophobicPercentRow, hydrophobicPercentCol, hydrophobicPercent, percent_format)
+    hydrophobicPercentRow += 1
+logging.info('Hydrophobic residues as a percent of the entire sequence written to %s worksheet.' % worksheet3Name)
+
+# Write diversified polar residues.
+polarRow = 2
+polarCol = 3
+worksheet3.merge_range(0, 3, 1, 3, 'Polar', title_format)
+for polar in biochemicalDataframe['Total Polar Residues']:
+    worksheet3.write(polarRow, polarCol, polar, integer_format)
+    polarRow += 1
+logging.info('Polar residues written to %s worksheet.' % worksheet3Name)
+
+# Write diversified polar residues as a percent of the entire sequence.
+polarPercentRow = 2
+polarPercentCol = 4
+worksheet3.merge_range(0, 4, 1, 4, '% of Entire Sequence', title_format)
+for polarPercent in biochemicalDataframe['Polar: Percent of Entire Sequence']:
+    worksheet3.write(polarPercentRow, polarPercentCol, polarPercent, percent_format)
+    polarPercentRow += 1
+logging.info('Polar residues as a percent of the entire sequence written to %s worksheet.' % worksheet3Name)
+
+# Write diversified acidic residues.
+acidicRow = 2
+acidicCol = 5
+worksheet3.merge_range(0, 5, 1, 5, 'Acidic', title_format)
+for acidic in biochemicalDataframe['Total Acidic Residues']:
+    worksheet3.write(acidicRow, acidicCol, acidic, integer_format)
+    acidicRow += 1
+logging.info('Acidic residues written to %s worksheet.' % worksheet3Name)
+
+# Write diversified acidic residues as a percent of targeted regions.
+acidicPercentRow = 2
+acidicPercentCol = 6
+worksheet3.merge_range(0, 6, 1, 6, '% of Entire Sequence', title_format)
+for acidicPercent in biochemicalDataframe['Acidic: Percent of Entire Sequence']:
+    worksheet3.write(acidicPercentRow, acidicPercentCol, acidicPercent, percent_format)
+    acidicPercentRow += 1
+logging.info('Acidic residues as a percent of the entire sequence written to %s worksheet.' % worksheet3Name)
+
+# Write diversified basic residues.
+basicRow = 2
+basicCol = 7
+worksheet3.merge_range(0, 7, 1, 7, 'Basic', title_format)
+for basic in biochemicalDataframe['Total Basic Residues']:
+    worksheet3.write(basicRow, basicCol, basic, integer_format)
+    basicRow += 1
+logging.info('Basic residues written to %s worksheet.' % worksheet3Name)
+
+# Write diversified basic residues as a percent of the entire sequence.
+basicPercentRow = 2
+basicPercentCol = 8
+worksheet3.merge_range(0, 8, 1, 8, '% of Entire Sequence', title_format)
+for basicPercent in biochemicalDataframe['Basic: Percent of Entire Sequence']:
+    worksheet3.write(basicPercentRow, basicPercentCol, basicPercent, percent_format)
+    basicPercentRow += 1
+logging.info('Basic residues as a percent of the entire sequence written to %s worksheet.' % worksheet3Name)
+
+# Write diversified aromatic residues.
+aromaticRow = 2
+aromaticCol = 9
+worksheet3.merge_range(0, 9, 1, 9, 'Aromatic', title_format)
+for aromatic in biochemicalDataframe['Total Aromatic Residues']:
+    worksheet3.write(aromaticRow, aromaticCol, aromatic, integer_format)
+    aromaticRow += 1
+logging.info('Aromatic residues written to %s worksheet.' % worksheet3Name)
+
+# Write diversified aromatic residues as a percent of the entire sequence.
+aromaticPercentRow = 2
+aromaticPercentCol = 10
+worksheet3.merge_range(0, 10, 1, 10, '% of Entire Sequence', title_format)
+for aromaticPercent in biochemicalDataframe['Aromatic: Percent of Entire Sequence']:
+    worksheet3.write(aromaticPercentRow, aromaticPercentCol, aromaticPercent, percent_format)
+    aromaticPercentRow += 1
+logging.info('Aromatic residues as a percent of the entire sequence written to %s worksheet.' % worksheet3Name)
+
+# Write diversified aliphatic residues.
+aliphaticRow = 2
+aliphaticCol = 11
+worksheet3.merge_range(0, 11, 1, 11, 'Aliphatic', title_format)
+for aliphatic in biochemicalDataframe['Total Aliphatic Residues']:
+    worksheet3.write(aliphaticRow, aliphaticCol, aliphatic, integer_format)
+    aliphaticRow += 1
+logging.info('Aliphatic residues written to %s worksheet.' % worksheet3Name)
+
+# Write diversified aliphatic residues as a percent of the entire sequence.
+aliphaticPercentRow = 2
+aliphaticPercentCol = 12
+worksheet3.merge_range(0, 12, 1, 12, '% of Entire Sequence', title_format)
+for aliphaticPercent in biochemicalDataframe['Aliphatic: Percent of Entire Sequence']:
+    worksheet3.write(aliphaticPercentRow, aliphaticPercentCol, aliphaticPercent, percent_format)
+    aliphaticPercentRow += 1
+logging.info('Aliphatic residues as a percent of the entire sequence written to %s worksheet.' % worksheet3Name)
+
+# Conditional formatting for biochemical analyses.
+for column in range(1, 13):
+    worksheet3.conditional_format(2,
+                                  column,
+                                  len(conservedList) + 2,
+                                  column,
+                                  {'type': '2_color_scale', 'min_color': '#FAFAFA', 'max_color': '#3D85C6'}
+                                  )
+
+# Table formatting for biochemical analyses.
+worksheet3.add_table(2, 0, len(conservedList) + 1, 12, {'header_row': False,
+                                                        'style': None
+                                                        }
+                     )
 
 ##################
 # Conclusion
@@ -1209,10 +1246,9 @@ elif inputFormat == '2':
 workbook.close()
 if inputFormat == '1':
     greenprint('\nExcel conserved alignment with ELISA scores saved as %s_conservation.xlsx.' % inFileNameShort)
-    logging.info('Excel file exported as %s_conservation.xlsx.' % inFileNameShort)
 elif inputFormat == '2':
     greenprint('\nExcel conserved alignment saved as %s_conservation.xlsx.' % inFileNameShort)
-    logging.info('Excel file exported as %s_conservation.xlsx.' % inFileNameShort)
-greenprint('\n Conservation Analysis program finished running. See log file for details.')
+logging.info('Excel file exported as %s_conservation.xlsx.' % inFileNameShort)
+greenprint('\nConservation Analysis program finished running. See log file for details.')
 logging.info('Conservation Analysis program finished running.')
 logging.shutdown()
