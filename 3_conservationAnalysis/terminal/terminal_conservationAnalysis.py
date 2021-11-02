@@ -46,7 +46,6 @@ class OrderedCounter(Counter, OrderedDict):
     pass
 
 
-# TODO: Check regexes and clean them up if necessary.
 ##################
 #    MAIN
 ##################
@@ -210,7 +209,7 @@ if inputFormat == '1':
     ntSeqRegex = re.compile(r'[ARNDCEQGHILKMFPSTWYVX]{10,}')
     aaList = ntSeqRegex.findall(aaList)
 
-    # Create list of unique nucleotide sequences ordered by frequency.
+    # Create list of unique amino acid sequences ordered by frequency.
     uniqueDict = dict(zip(aaList, countList))
 
 elif inputFormat == '2':
@@ -234,7 +233,7 @@ elif inputFormat == '2':
     wellList = re.findall(r'([A-H][0-1][0-9])',
                           allData
                           )
-    # Create list of unique nucleotide sequences ordered by frequency.
+    # Create list of unique amino acid sequences ordered by frequency.
     unique = OrderedCounter(aaList)
     unique = unique.most_common()
     uniqueDict = dict(unique)
@@ -281,7 +280,7 @@ logging.info('Initial non-ubiquitin amino acid residue removed from all sequence
 
 # Compare UbV sequences against a consensus sequence and replace conserved amino acids with dashes.
 consensusSeq = 'MQIFVKTLTGKTITLEVEPSDTIENVKAKIQDKEGIPPDQQRLIFAGKQLEDGRTLSDYNIQKESTLHLVLRLRGGGG'
-logging.info('''Consensus sequence set as '%s'.''' % consensusSeq)
+logging.info('''Consensus sequence set to '%s'.''' % consensusSeq)
 consensusLen = len(consensusSeq)
 conservedList = []
 for ubvSeq in aaShortList:
@@ -482,11 +481,12 @@ if inputFormat == '1':
     logging.info('Wells written to %s worksheet.' % worksheet1Name)
 
     # Conditional formatting for statistics.
-    worksheet1.conditional_format(2,
-                                  consensusLen + 2,
-                                  len(conservedList) + 2,
-                                  consensusLen + 6,
-                                  {'type': '2_color_scale', 'min_color': '#FAFAFA', 'max_color': '#008000'})
+    for column in range(consensusLen + 2, consensusLen + 7):
+        worksheet1.conditional_format(2,
+                                      column,
+                                      len(conservedList) + 2,
+                                      column,
+                                      {'type': '2_color_scale', 'min_color': '#FAFAFA', 'max_color': '#008000'})
     logging.info('Conditional formatting applied to statistics.')
 
     # Table for statistics.
@@ -963,7 +963,7 @@ if libraryInput == '1' or libraryInput == '2':
     for targeted in diversityDataframe['Total Targeted Diversified']:
         worksheet2.write(targetedRow, targetedCol, targeted, integer_format)
         targetedRow += 1
-    logging.info('Untargeted residues as a percent of untargeted regions written to %s worksheet.' % worksheet2Name)
+    logging.info('Targeted residues written to %s worksheet.' % worksheet2Name)
 
     # Write targeted diversified residues as a percent of targeted regions.
     targetedPercentRow = 2
@@ -972,7 +972,7 @@ if libraryInput == '1' or libraryInput == '2':
     for targetedPercent in diversityDataframe['Targeted: Percent of Targeted Regions']:
         worksheet2.write(targetedPercentRow, targetedPercentCol, targetedPercent, percent_format)
         targetedPercentRow += 1
-    logging.info('Untargeted residues as a percent of untargeted regions written to %s worksheet.' % worksheet2Name)
+    logging.info('Targeted residues as a percent of targeted regions written to %s worksheet.' % worksheet2Name)
 
     # Write region 1 diversified residues.
     reg1Row = 2

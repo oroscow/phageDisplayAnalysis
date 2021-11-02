@@ -36,7 +36,7 @@ def greenprint(text):
 class OrderedCounter(Counter, OrderedDict):
     pass
 
-# TODO: Check regexes and clean them up if necessary.
+
 ##################
 #    MAIN
 ##################
@@ -119,25 +119,25 @@ dataCellsClean = dataCellsClean.iloc[:, 1:]
 dataCellsClean.index = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P']
 
 # Create a list of all the data absorbances.
-cellValues = [dataCellsClean.loc['A'][value] for value in range(0, 24)] +\
-             [dataCellsClean.loc['C'][value] for value in range(0, 24)] +\
-             [dataCellsClean.loc['E'][value] for value in range(0, 24)] +\
-             [dataCellsClean.loc['G'][value] for value in range(0, 24)] +\
-             [dataCellsClean.loc['I'][value] for value in range(0, 24)] +\
-             [dataCellsClean.loc['K'][value] for value in range(0, 24)] +\
-             [dataCellsClean.loc['M'][value] for value in range(0, 24)] +\
+cellValues = [dataCellsClean.loc['A'][value] for value in range(0, 24)] + \
+             [dataCellsClean.loc['C'][value] for value in range(0, 24)] + \
+             [dataCellsClean.loc['E'][value] for value in range(0, 24)] + \
+             [dataCellsClean.loc['G'][value] for value in range(0, 24)] + \
+             [dataCellsClean.loc['I'][value] for value in range(0, 24)] + \
+             [dataCellsClean.loc['K'][value] for value in range(0, 24)] + \
+             [dataCellsClean.loc['M'][value] for value in range(0, 24)] + \
              [dataCellsClean.loc['O'][value] for value in range(0, 24)]
 logging.info('Data absorbances retrieved from raw data file.')
 greenprint('''\nData retrieved from raw ELISA file.''')
 
 # Retrieve control wells.
-controlCells = [dataCellsClean.loc['B'][value] for value in range(1, 24, 2)] +\
-               [dataCellsClean.loc['D'][value] for value in range(1, 24, 2)] +\
-               [dataCellsClean.loc['F'][value] for value in range(1, 24, 2)] +\
-               [dataCellsClean.loc['H'][value] for value in range(1, 24, 2)] +\
-               [dataCellsClean.loc['J'][value] for value in range(1, 24, 2)] +\
-               [dataCellsClean.loc['L'][value] for value in range(1, 24, 2)] +\
-               [dataCellsClean.loc['N'][value] for value in range(1, 24, 2)] +\
+controlCells = [dataCellsClean.loc['B'][value] for value in range(1, 24, 2)] + \
+               [dataCellsClean.loc['D'][value] for value in range(1, 24, 2)] + \
+               [dataCellsClean.loc['F'][value] for value in range(1, 24, 2)] + \
+               [dataCellsClean.loc['H'][value] for value in range(1, 24, 2)] + \
+               [dataCellsClean.loc['J'][value] for value in range(1, 24, 2)] + \
+               [dataCellsClean.loc['L'][value] for value in range(1, 24, 2)] + \
+               [dataCellsClean.loc['N'][value] for value in range(1, 24, 2)] + \
                [dataCellsClean.loc['P'][value] for value in range(1, 24, 2)]
 
 ##################
@@ -145,13 +145,13 @@ controlCells = [dataCellsClean.loc['B'][value] for value in range(1, 24, 2)] +\
 ##################
 
 # Retrieve blank wells and average.
-blankCells = [dataCellsClean.loc['B'][value] for value in range(0, 23, 2)] +\
-             [dataCellsClean.loc['D'][value] for value in range(0, 23, 2)] +\
-             [dataCellsClean.loc['F'][value] for value in range(0, 23, 2)] +\
-             [dataCellsClean.loc['H'][value] for value in range(0, 23, 2)] +\
-             [dataCellsClean.loc['J'][value] for value in range(0, 23, 2)] +\
-             [dataCellsClean.loc['L'][value] for value in range(0, 23, 2)] +\
-             [dataCellsClean.loc['N'][value] for value in range(0, 23, 2)] +\
+blankCells = [dataCellsClean.loc['B'][value] for value in range(0, 23, 2)] + \
+             [dataCellsClean.loc['D'][value] for value in range(0, 23, 2)] + \
+             [dataCellsClean.loc['F'][value] for value in range(0, 23, 2)] + \
+             [dataCellsClean.loc['H'][value] for value in range(0, 23, 2)] + \
+             [dataCellsClean.loc['J'][value] for value in range(0, 23, 2)] + \
+             [dataCellsClean.loc['L'][value] for value in range(0, 23, 2)] + \
+             [dataCellsClean.loc['N'][value] for value in range(0, 23, 2)] + \
              [dataCellsClean.loc['P'][value] for value in range(0, 23, 2)]
 # Remove values that contain no data in the excel cell.
 blankValues = [absorbance for absorbance in blankCells if not (pandas.isna(absorbance))]
@@ -264,7 +264,6 @@ Please try again.'''
     ntAlignLen = len(ntSeqList[0])
     logging.info('Nucleotide alignment length calculated to be %s.' % ntAlignLen)
 
-    wellRegex = re.compile(r'([A-Z][0-1][0-9])')
     # Retrieve amino acid sequence names.
     aaNameCells = aaCells.iloc[1:, 0:1]
     aaNameCells = aaNameCells.to_string(index=False)
@@ -291,6 +290,10 @@ Please try again.'''
 
 elif inputFormat == '2':
 
+    #########
+    # Amino Acids
+    #########
+
     # User prompt.
     cyanprint('''\nEnter amino acid alignment file name:
 * Must be in .fasta format.
@@ -307,10 +310,6 @@ The entered file does not exist in this location.
 Please try again.'''
                       )
     logging.info('%s chosen as the amino acid sequence source.' % aaInFilePath)
-
-    #########
-    # Amino Acids
-    #########
 
     # Retrieve amino acid sequence names.
     aaSeqRegex = re.compile(r'([ARNDCEQGHILKMFPSTWYVX]{10,})')
@@ -395,18 +394,19 @@ Please try again.'''
 # Correlate sequence data with ELISA data and remove ELISA data that don't have sequencing counterparts.
 ##################
 
+# Create a dictionary of all possible ELISA IDs and assign corresponding numbers for indexing.
+wellDict = {key: value for key, value in zip(elisaPlateIDs, range(0, 96))}
+
 #########
 # Amino acids
 #########
 
-# Create a dictionary of all possible ELISA IDs and assign corresponding numbers for indexing.
-wellDict = {key: value for key, value in zip(elisaPlateIDs, range(0, 96))}
+wellRegex = re.compile(r'[A-H][0-9]{2}')
 
 # Determine the amino acid IDs present in the sequencing data.
-seqPlateRegex = re.compile(r'[A-H][0-9]{2}')
 aaPlateIDs = []
 for name in aaNameList:
-    seqID = seqPlateRegex.findall(name)
+    seqID = wellRegex.findall(name)
     aaPlateIDs.append(seqID)
 # Turn list of lists into a flat list.
 aaSeqPlateIDs = []
@@ -470,7 +470,7 @@ for absorbance in aaControlListRaw:
 # Determine the nucleotide IDs present in the sequencing data.
 ntPlateIDs = list()
 for name in ntNameList:
-    seqID = seqPlateRegex.findall(name)
+    seqID = wellRegex.findall(name)
     ntPlateIDs.append(seqID)
 # Turn list of lists into a flat list.
 ntSeqPlateIDs = []
@@ -490,30 +490,32 @@ for ID in ntSeqPlateIDs:
 logging.info('ELISA results without corresponding nucleotide sequences removed from analysis.')
 
 # Relate IDs to their respective ELISA absorbances.
-ntNameListShort = list()
+ntShortNameList = list()
 for name in ntNameList:
     if re.findall(r'([A-H])(\d$)', name):
         newName = re.sub(r'([A-H])(\d$)',
                          r'\g<1>0\g<2>',
                          name
                          )
-        ntNameListShort.append(newName)
+        ntShortNameList.append(newName)
     else:
-        ntNameListShort.append(name)
-ntNameListShort.sort()
+        ntShortNameList.append(name)
+ntShortNameList.sort()
 
-# Create dictionaries with the new reorganised names/sequences.
-ntDict = dict(zip(ntNameListShort,
-                  ntSeqList)
-              )
-ntAveCellsDict = dict(zip(ntNameListShort,
-                          ntRelAveListShort)
-                      )
+# Create a dictionary with the new reorganised names and sequences.
+ntSeqDict = dict(zip(ntShortNameList,
+                     ntSeqList)
+                 )
+
+# Create a dictionary with the new reorganised names and ELISA absorbances.
+ntAbsDict = dict(zip(ntShortNameList,
+                     ntRelAveListShort)
+                 )
 
 # Create a list of unique amino acid sequences ordered by frequency.
-uniqueNt = OrderedCounter(ntSeqList)
-uniqueNt = uniqueNt.most_common()
-uniqueNtDict = dict(uniqueNt)
+ntUnique = OrderedCounter(ntSeqList)
+ntUnique = ntUnique.most_common()
+ntUniqueDict = dict(ntUnique)
 logging.info('Dictionary of unique nucleotide sequences created.')
 
 # Remove ELISA data that don't have sequencing counterparts.
@@ -524,13 +526,6 @@ ntControlListRel = []
 for absorbance in ntControlListRaw:
     relAve = absorbance / blankAve
     ntControlListRel.append(relAve)
-
-##################
-# Compare binder and control absorbances with binder:control absorbance ratios.
-##################
-
-aaBinderControlRatio = [binder / control for binder, control in zip(aaRawListShort, aaControlListRaw)]
-ntBinderControlRatio = [binder / control for binder, control in zip(ntRawListShort, ntControlListRaw)]
 
 ##################
 # Order sequences and wells so they can be attributed to unique sequences. Necessary for subsequent statistics.
@@ -551,7 +546,6 @@ for seq in aaOrderedSeq:
             aaOrderedNames.append(key)
 logging.info('Ordered index of amino acid well IDs created.')
 
-# TODO: Duplicate/replace this for control wells and see which descriptive stats are most helpful.
 # Create ordered list of absorbances that correspond to unique sequences.
 aaOrderedAbs = []
 for index in aaOrderedNames:
@@ -575,11 +569,11 @@ logging.info('List of specific well IDs associated with amino acid sequences cre
 
 # Get ordered list of wells that correspond to unique sequences.
 ntOrderedSeq = []
-for key in uniqueNtDict.keys():
+for key in ntUniqueDict.keys():
     ntOrderedSeq.append(key)
 ntOrderedNames = []
 for seq in ntOrderedSeq:
-    for key, value in ntDict.items():
+    for key, value in ntSeqDict.items():
         if seq in value:
             ntOrderedNames.append(key)
 logging.info('Ordered index of nucleotide well IDs created.')
@@ -587,7 +581,7 @@ logging.info('Ordered index of nucleotide well IDs created.')
 # Get ordered values corresponding to ordered list of wells for unique sequences; necessary for subsequent statistics.
 ntOrderedAbs = []
 for index in ntOrderedNames:
-    for ID, score in ntAveCellsDict.items():
+    for ID, score in ntAbsDict.items():
         if index == ID:
             ntOrderedAbs.append(score)
 logging.info('Ordered list of nucleotide absorbances created.')
@@ -595,7 +589,7 @@ logging.info('Ordered list of nucleotide absorbances created.')
 # Associate specific well IDs with corresponding unique sequence.
 ntCountID = []
 begin = 0
-for uniqueSeq, count in uniqueNtDict.items():
+for uniqueSeq, count in ntUniqueDict.items():
     end = int(count) + begin
     ntCountID.append(ntOrderedNames[begin:end])
     begin += count
@@ -663,6 +657,15 @@ for seq, count in aaUniqueDict.items():
     begin += count
 logging.info('List of unique amino acid absorbance standard deviations created.')
 
+aaStatsTable = {'AA Max': aaUniqueMaxList,
+                'AA Min': aaUniqueMinList,
+                'AA Median': aaUniqueMedianList,
+                'AA Mean': aaUniqueMeanList,
+                'AA St Dev': aaUniqueStdevList
+                }
+
+aaStatsDataframe = pandas.DataFrame(aaStatsTable)
+
 #########
 # Nucleotides
 #########
@@ -670,7 +673,7 @@ logging.info('List of unique amino acid absorbance standard deviations created.'
 # Retrieve max absorbance for ordered values.
 ntUniqueMaxList = []
 begin = 0
-for seq, count in uniqueNtDict.items():
+for seq, count in ntUniqueDict.items():
     end = int(count) + begin
     uniqueMax = max(ntOrderedAbs[begin:end])
     ntUniqueMaxList.append(uniqueMax)
@@ -680,7 +683,7 @@ logging.info('List of unique nucleotide maximum absorbances created.')
 # Retrieve min absorbance for ordered values.
 ntUniqueMinList = []
 begin = 0
-for seq, count in uniqueNtDict.items():
+for seq, count in ntUniqueDict.items():
     end = int(count) + begin
     uniqueMin = min(ntOrderedAbs[begin:end])
     ntUniqueMinList.append(uniqueMin)
@@ -690,7 +693,7 @@ logging.info('List of unique nucleotide minimum absorbances created.')
 # Retrieve median absorbance for ordered values.
 ntUniqueMedianList = []
 begin = 0
-for seq, count in uniqueNtDict.items():
+for seq, count in ntUniqueDict.items():
     end = int(count) + begin
     uniqueMedian = statistics.median(ntOrderedAbs[begin:end])
     ntUniqueMedianList.append(uniqueMedian)
@@ -700,7 +703,7 @@ logging.info('List of unique nucleotide median absorbances created.')
 # Retrieve mean absorbance for ordered values.
 ntUniqueMeanList = []
 begin = 0
-for seq, count in uniqueNtDict.items():
+for seq, count in ntUniqueDict.items():
     end = int(count) + begin
     uniqueMean = statistics.mean(ntOrderedAbs[begin:end])
     ntUniqueMeanList.append(uniqueMean)
@@ -710,7 +713,7 @@ logging.info('List of unique nucleotide mean absorbances created.')
 # Retrieve stdev absorbance for ordered values.
 ntUniqueStdevList = []
 begin = 0
-for seq, count in uniqueNtDict.items():
+for seq, count in ntUniqueDict.items():
     end = int(count) + begin
     try:
         uniqueStdev = statistics.stdev(ntOrderedAbs[begin:end])
@@ -720,6 +723,194 @@ for seq, count in uniqueNtDict.items():
         ntUniqueStdevList.append(0)
     begin += count
 logging.info('List of unique nucleotide absorbance standard deviations created.')
+
+ntStatsTable = {'NT Max': ntUniqueMaxList,
+                'NT Min': ntUniqueMinList,
+                'NT Median': ntUniqueMedianList,
+                'NT Mean': ntUniqueMeanList,
+                'NT St Dev': ntUniqueStdevList
+                }
+
+ntStatsDataframe = pandas.DataFrame(ntStatsTable)
+
+# TODO: Decide how to include these ratio statistics into the final spreadsheet.
+##################
+# Compare binder and control absorbances with binder:control absorbance ratios.
+##################
+
+#########
+# Amino acids
+#########
+
+# Normalise absorbances to controls.
+aaBinderControlRatio = [binder / control for binder, control in zip(aaRawListShort, aaControlListRaw)]
+aaNameRatioDict = dict(zip(aaShortNameList,
+                           aaBinderControlRatio)
+                       )
+# Create ordered list of ratios.
+aaOrderedRatios = []
+for name in aaOrderedNames:
+    for ID, score in aaNameRatioDict.items():
+        if name == ID:
+            aaOrderedRatios.append(score)
+
+# Create ordered list of absorbances that correspond to unique sequences.
+aaCounts = []
+for ratio, count in aaUniqueDict.items():
+    aaCounts.append(count)
+aaRatioCountDict = dict(zip(aaBinderControlRatio,
+                            aaCounts)
+                        )
+
+# Retrieve max absorbance for ordered values.
+aaRatioMaxList = []
+begin = 0
+for ratio, count in aaRatioCountDict.items():
+    end = int(count) + begin
+    uniqueMax = max(aaOrderedRatios[begin:end])
+    aaRatioMaxList.append(uniqueMax)
+    begin += count
+logging.info('List of unique amino acid maximum absorbances created.')
+
+# Retrieve min absorbance for ordered values.
+aaRatioMinList = []
+begin = 0
+for ratio, count in aaRatioCountDict.items():
+    end = int(count) + begin
+    uniqueMin = min(aaOrderedRatios[begin:end])
+    aaRatioMinList.append(uniqueMin)
+    begin += count
+logging.info('List of unique amino acid minimum absorbances created.')
+
+# Retrieve median absorbance for ordered values.
+aaRatioMedianList = []
+begin = 0
+for ratio, count in aaRatioCountDict.items():
+    end = int(count) + begin
+    uniqueMedian = statistics.median(aaOrderedRatios[begin:end])
+    aaRatioMedianList.append(uniqueMedian)
+    begin += count
+logging.info('List of unique amino acid median absorbances created.')
+
+# Retrieve mean absorbance for ordered values.
+aaRatioMeanList = []
+begin = 0
+for ratio, count in aaRatioCountDict.items():
+    end = int(count) + begin
+    uniqueMean = statistics.mean(aaOrderedRatios[begin:end])
+    aaRatioMeanList.append(uniqueMean)
+    begin += count
+logging.info('List of unique amino acid mean absorbances created.')
+
+# Retrieve standard deviation of absorbances for ordered values.
+aaRatioStdevList = []
+begin = 0
+for ratio, count in aaRatioCountDict.items():
+    end = int(count) + begin
+    try:
+        uniqueStdev = statistics.stdev(aaOrderedRatios[begin:end])
+        aaRatioStdevList.append(uniqueStdev)
+    # Above statistic won't work if only a single value so append '0.0' value to the list.
+    except statistics.StatisticsError:
+        aaRatioStdevList.append(0)
+    begin += count
+logging.info('List of unique amino acid absorbance standard deviations created.')
+
+aaRatioStatsTable = {'Ratio Max': aaRatioMaxList,
+                     'Ratio Min': aaRatioMinList,
+                     'Ratio Median': aaRatioMedianList,
+                     'Ratio Mean': aaRatioMeanList,
+                     'Ratio St Dev': aaRatioStdevList
+                     }
+
+aaRatioStatsDataframe = pandas.DataFrame(aaRatioStatsTable)
+
+#########
+# Nucleotides
+#########
+
+# Normalise absorbances to controls.
+ntBinderControlRatio = [binder / control for binder, control in zip(ntRawListShort, ntControlListRaw)]
+ntNameRatioDict = dict(zip(ntShortNameList,
+                           ntBinderControlRatio)
+                       )
+# Create ordered list of ratios.
+ntOrderedRatios = []
+for name in ntOrderedNames:
+    for ID, score in ntNameRatioDict.items():
+        if name == ID:
+            ntOrderedRatios.append(score)
+
+# Create ordered list of absorbances that correspond to unique sequences.
+ntCounts = []
+for ratio, count in ntUniqueDict.items():
+    ntCounts.append(count)
+ntRatioCountDict = dict(zip(ntBinderControlRatio,
+                            ntCounts)
+                        )
+
+# Retrieve max absorbance for ordered values.
+ntRatioMaxList = []
+begin = 0
+for ratio, count in ntRatioCountDict.items():
+    end = int(count) + begin
+    uniqueMax = max(ntOrderedRatios[begin:end])
+    ntRatioMaxList.append(uniqueMax)
+    begin += count
+logging.info('List of unique amino acid maximum absorbances created.')
+
+# Retrieve min absorbance for ordered values.
+ntRatioMinList = []
+begin = 0
+for ratio, count in ntRatioCountDict.items():
+    end = int(count) + begin
+    uniqueMin = min(ntOrderedRatios[begin:end])
+    ntRatioMinList.append(uniqueMin)
+    begin += count
+logging.info('List of unique amino acid minimum absorbances created.')
+
+# Retrieve median absorbance for ordered values.
+ntRatioMedianList = []
+begin = 0
+for ratio, count in ntRatioCountDict.items():
+    end = int(count) + begin
+    uniqueMedian = statistics.median(ntOrderedRatios[begin:end])
+    ntRatioMedianList.append(uniqueMedian)
+    begin += count
+logging.info('List of unique amino acid median absorbances created.')
+
+# Retrieve mean absorbance for ordered values.
+ntRatioMeanList = []
+begin = 0
+for ratio, count in ntRatioCountDict.items():
+    end = int(count) + begin
+    uniqueMean = statistics.mean(ntOrderedRatios[begin:end])
+    ntRatioMeanList.append(uniqueMean)
+    begin += count
+logging.info('List of unique amino acid mean absorbances created.')
+
+# Retrieve standard deviation of absorbances for ordered values.
+ntRatioStdevList = []
+begin = 0
+for ratio, count in ntRatioCountDict.items():
+    end = int(count) + begin
+    try:
+        uniqueStdev = statistics.stdev(ntOrderedRatios[begin:end])
+        ntRatioStdevList.append(uniqueStdev)
+    # Above statistic won't work if only a single value so append '0.0' value to the list.
+    except statistics.StatisticsError:
+        ntRatioStdevList.append(0)
+    begin += count
+logging.info('List of unique amino acid absorbance standard deviations created.')
+
+ntRatioStatsTable = {'Ratio Max': ntRatioMaxList,
+                     'Ratio Min': ntRatioMinList,
+                     'Ratio Median': ntRatioMedianList,
+                     'Ratio Mean': ntRatioMeanList,
+                     'Ratio St Dev': ntRatioStdevList
+                     }
+
+ntRatioStatsDataframe = pandas.DataFrame(ntRatioStatsTable)
 
 ##################
 # Export data as a single xlsx file.
@@ -734,7 +925,6 @@ logging.info('Excel spreadsheet created as "%s.xlsx".' % elisaInFileName)
 #########
 
 # TODO: Find a way to clean up this section's formatting.
-# TODO: Make sure workbook formatting is like Conservation Analysis'.
 # General.
 general_format = workbook.add_format()
 general_format.set_align('center')
@@ -805,7 +995,7 @@ for name in aaShortNameList:
 logging.info('Amino acid well IDs written to %s worksheet.' % worksheet1Name)
 
 # Write amino acid sequences.
-worksheet1.write(0, 6, 'Amino Acid Sequence', title_format)
+worksheet1.merge_range(0, 1, 0, 9, 'Amino Acid Sequence', title_format)
 seqRow = 2
 seqCol = 1
 for aa in aaSeqList:
@@ -889,7 +1079,7 @@ worksheet2.freeze_panes(0, 1)
 logging.info('%s worksheet created.' % worksheet2Name)
 
 # Write unique amino acid sequences.
-worksheet2.write(0, 6, 'Amino Acid Sequence', title_format)
+worksheet2.merge_range(0, 1, 0, 9, 'Amino Acid Sequence', title_format)
 uniqueRow = 2
 uniqueCol = 1
 for seq in aaUniqueDict.keys():
@@ -974,10 +1164,9 @@ worksheet2.set_column(aaAlignLen + 7, aaAlignLen + 7, wellColWidth)
 worksheet2.merge_range(0, aaAlignLen + 7, 1, aaAlignLen + 7, 'Wells', wellTitle_format)
 wellRow = 2
 wellCol = aaAlignLen + 7
-countIDregex = re.compile(r"([A-Z][0-1][0-9])")
 sep = ', '
 for wellList in aaCountID:
-    wellList = countIDregex.findall(str(wellList))
+    wellList = wellRegex.findall(str(wellList))
     wellList = sep.join(wellList)
     worksheet2.write(wellRow, wellCol, wellList, wellList_format)
     wellRow += 1
@@ -1018,7 +1207,7 @@ for name in ntNameList:
 logging.info('Nucleotide well IDs written to %s worksheet.' % worksheet3Name)
 
 # Write nucleotide sequences.
-worksheet3.write(0, 4, 'Nucleotide Sequence', title_format)
+worksheet3.merge_range(0, 1, 0, 7, 'Nucleotide Sequence', title_format)
 seqRow = 2
 seqCol = 1
 for nt in ntSeqList:
@@ -1102,10 +1291,10 @@ worksheet4.freeze_panes(2, 1)
 logging.info('%s worksheet created.' % worksheet4Name)
 
 # Write unique nucleotide sequences.
-worksheet4.write(0, 4, 'Nucleotide Sequence', title_format)
+worksheet4.merge_range(0, 1, 0, 7, 'Nucleotide Sequence', title_format)
 uniqueRow = 2
 uniqueCol = 1
-for seq in uniqueNtDict.keys():
+for seq in ntUniqueDict.keys():
     letterList = list(seq)
     for letter in letterList:
         worksheet4.write(uniqueRow, uniqueCol, letter, sequence_format)
@@ -1118,7 +1307,7 @@ logging.info('Unique nucleotide sequences written to %s worksheet.' % worksheet4
 countRow = 2
 countCol = ntAlignLen + 1
 worksheet4.merge_range(0, ntAlignLen + 1, 1, ntAlignLen + 1, 'Count', title_format)
-count = list(uniqueNtDict.values())
+count = list(ntUniqueDict.values())
 for number in count:
     worksheet4.write_number(countRow, countCol, number, general_format)
     countRow += 1
@@ -1186,10 +1375,9 @@ worksheet4.set_column(ntAlignLen + 7, ntAlignLen + 7, wellColWidth)
 worksheet4.merge_range(0, ntAlignLen + 7, 1, ntAlignLen + 7, 'Wells', wellTitle_format)
 wellRow = 2
 wellCol = ntAlignLen + 7
-countIDregex = re.compile(r'([A-Z][0-1][0-9])')
 sep = ', '
 for wellList in ntCountID:
-    wellList = countIDregex.findall(str(wellList))
+    wellList = wellRegex.findall(str(wellList))
     wellList = sep.join(wellList)
     worksheet4.write(wellRow, wellCol, wellList, wellList_format)
     wellRow += 1
@@ -1198,7 +1386,7 @@ logging.info('Nucleotide sequence-specific well IDs written to %s worksheet.' % 
 # Assign arbitrary IDs to each unique nucleotide sequence.
 worksheet4.merge_range(0, 0, 1, 0, 'ID', title_format)
 ntIdList = list(range(1,
-                      len(uniqueNtDict) + 1)
+                      len(ntUniqueDict) + 1)
                 )
 idRow = 2
 for number in ntIdList:
@@ -1214,65 +1402,44 @@ logging.info('Arbitrary unique nucleotide sequence IDs written to %s worksheet.'
 blankInfo = 'Normalised against the average absorbance of %i blanks (%s).' % (len(blankValues), round(blankAve, 2))
 worksheet1.write(len(aaShortNameList) + 3, 1, blankInfo, info_format)
 worksheet2.write(len(aaUnique) + 3, 1, blankInfo, info_format)
-worksheet3.write(len(ntNameListShort) + 3, 1, blankInfo, info_format)
-worksheet4.write(len(uniqueNt) + 3, 1, blankInfo, info_format)
+worksheet3.write(len(ntShortNameList) + 3, 1, blankInfo, info_format)
+worksheet4.write(len(ntUnique) + 3, 1, blankInfo, info_format)
 calcInfo = 'Values were rounded after calculation, not before. As a result, manual calculation will produce slightly ' \
            'different results.'
 worksheet1.write(len(aaShortNameList) + 5, 1, calcInfo, info_format)
 worksheet2.write(len(aaUnique) + 5, 1, calcInfo, info_format)
-worksheet3.write(len(ntNameListShort) + 5, 1, calcInfo, info_format)
-worksheet4.write(len(uniqueNt) + 5, 1, calcInfo, info_format)
+worksheet3.write(len(ntShortNameList) + 5, 1, calcInfo, info_format)
+worksheet4.write(len(ntUnique) + 5, 1, calcInfo, info_format)
 
-# TODO: Add a for loop to clean up this section.
 # Conditionally format columns.
-worksheet1.conditional_format(1, aaAlignLen + 1, len(aaShortNameList) + 1, aaAlignLen + 2,
-                              {'type': '2_color_scale',
-                               'min_color': '#FAFAFA',
-                               'max_color': '#008000'
-                               }
-                              )
-worksheet1.conditional_format(1, aaAlignLen + 2, len(aaShortNameList) + 3, aaAlignLen + 4,
-                              {'type': '2_color_scale',
-                               'min_color': '#FAFAFA',
-                               'max_color': '#008000'
-                               }
-                              )
-worksheet1.conditional_format(1, aaAlignLen + 5, len(aaShortNameList) + 3, aaAlignLen + 5,
-                              {'type': '2_color_scale',
-                               'min_color': '#FAFAFA',
-                               'max_color': '#008000'
-                               }
-                              )
-worksheet2.conditional_format(1, aaAlignLen + 2, len(aaUnique) + 1, aaAlignLen + 6,
-                              {'type': '2_color_scale',
-                               'min_color': '#FAFAFA',
-                               'max_color': '#008000'
-                               }
-                              )
-worksheet3.conditional_format(1, ntAlignLen + 1, len(ntNameListShort) + 1, ntAlignLen + 2,
-                              {'type': '2_color_scale',
-                               'min_color': '#FAFAFA',
-                               'max_color': '#008000'
-                               }
-                              )
-worksheet3.conditional_format(1, ntAlignLen + 1, len(ntNameListShort) + 3, ntAlignLen + 4,
-                              {'type': '2_color_scale',
-                               'min_color': '#FAFAFA',
-                               'max_color': '#008000'
-                               }
-                              )
-worksheet3.conditional_format(1, ntAlignLen + 5, len(ntNameListShort) + 3, ntAlignLen + 5,
-                              {'type': '2_color_scale',
-                               'min_color': '#FAFAFA',
-                               'max_color': '#008000'
-                               }
-                              )
-worksheet4.conditional_format(1, ntAlignLen + 2, len(uniqueNt) + 1, ntAlignLen + 6,
-                              {'type': '2_color_scale',
-                               'min_color': '#FAFAFA',
-                               'max_color': '#008000'
-                               }
-                              )
+for column in range(aaAlignLen + 1, aaAlignLen + 6):
+    worksheet1.conditional_format(1, column, len(aaShortNameList) + 1, column,
+                                  {'type': '2_color_scale',
+                                   'min_color': '#FAFAFA',
+                                   'max_color': '#008000'
+                                   }
+                                  )
+for column in range(aaAlignLen + 2, aaAlignLen + 7):
+    worksheet2.conditional_format(1, column, len(aaUnique) + 1, column,
+                                  {'type': '2_color_scale',
+                                   'min_color': '#FAFAFA',
+                                   'max_color': '#008000'
+                                   }
+                                  )
+for column in range(ntAlignLen + 2, ntAlignLen + 6):
+    worksheet3.conditional_format(1, column, len(ntShortNameList) + 1, column,
+                                  {'type': '2_color_scale',
+                                   'min_color': '#FAFAFA',
+                                   'max_color': '#008000'
+                                   }
+                                  )
+for column in range(ntAlignLen + 2, ntAlignLen + 7):
+    worksheet4.conditional_format(1, column, len(ntUnique) + 1, column,
+                                  {'type': '2_color_scale',
+                                   'min_color': '#FAFAFA',
+                                   'max_color': '#008000'
+                                   }
+                                  )
 
 # Transform data into proper Excel-formatted tables without any design style applied.
 worksheet1.add_table(2, 0, len(aaShortNameList) + 1, aaAlignLen + 5,
@@ -1280,7 +1447,7 @@ worksheet1.add_table(2, 0, len(aaShortNameList) + 1, aaAlignLen + 5,
                       'style': None
                       }
                      )
-worksheet2.add_table(2, 0, len(OrderedCounter(aaSeqList)) + 1, aaAlignLen + 7,
+worksheet2.add_table(2, 0, len(aaUnique) + 1, aaAlignLen + 7,
                      {'header_row': False,
                       'style': None
                       }
@@ -1290,7 +1457,7 @@ worksheet3.add_table(2, 0, len(ntNameList) + 1, ntAlignLen + 5,
                       'style': None
                       }
                      )
-worksheet4.add_table(2, 0, len(OrderedCounter(ntSeqList)) + 1, ntAlignLen + 7,
+worksheet4.add_table(2, 0, len(ntUnique) + 1, ntAlignLen + 7,
                      {'header_row': False,
                       'style': None
                       }
@@ -1303,22 +1470,8 @@ worksheet4.add_table(2, 0, len(OrderedCounter(ntSeqList)) + 1, ntAlignLen + 7,
 workbook.close()
 greenprint('\nExcel alignment with ELISA absorbances created.')
 logging.info('Excel file exported as %s_analysed.xlsx.' % elisaInFileName)
-# TODO: Change what the popup says and have earlier popups that address this if the code fails. The code won't even
-#  get to this popup if any of these issues arise.
-cyanprint('''\nBinding Analysis program finished running. See log file for details.
-
-
-Post-analysis help:
-
-    a) Statistical error.
-Statistics will encounter an error if 'overflow' cells are in the raw ELISA data. This is reflected in the number of
-averaged ELISA scores (i.e. the length of cellAveList) being less than the total number of sequences. Replace 'OVRFLW'
-wells with '4'.
-
-    b) Indexing error.
-If you encounter an error involving index values being out of range, this is because the sum of all unique sequence
-counts does not match the total number of ELISA scores. Check the original sequencing file to make sure sequences
-aren't repeated.'''
+# TODO: Add suggestions to final terminal prompt.
+cyanprint('\nBinding Analysis program finished running. See log file for details.'
           )
 logging.info('Binding Analysis program finished running.')
 logging.shutdown()
