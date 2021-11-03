@@ -78,7 +78,7 @@ Please try again.'''
 
 # Choose whether to analyse ELISA and sequencing data or just sequencing data. User prompt.
 cyanprint('''\nChoose input format by typing the corresponding number:
-\n[1] ELISA and sequencing data
+\n[1] Binding and sequencing data
 * Requires xlsx output from Binding Analysis program.
 \n[2] Sequencing data only
 * Requires amino acid alignment fasta output from Sequence Analysis program.'''

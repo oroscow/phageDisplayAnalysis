@@ -40,10 +40,10 @@ infoLayout = [
              )
      ],
     [Sg.Text('''        Analyses ELISA binding data along with corresponding sequence data.
-        Calculates the average of duplicate absorbances for each protein and
-        normalizes them against the average of the negative controls/blanks.
-        ELISA data that don't have corresponding sequencing data are excluded
-        from the final results.\n\n''',
+        Calculates the average of duplicate absorbances for each protein,
+        calculates the binder:control absorbance ratio, and normalizes them
+        against the average of the blanks. ELISA data that don't have
+        corresponding sequencing data are excluded from the final results.\n\n''',
              text_color='#8294cc',
              font=('Segoe UI', 12)
              )

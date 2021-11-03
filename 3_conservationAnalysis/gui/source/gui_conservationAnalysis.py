@@ -54,8 +54,8 @@ layout = [
              expand_x=True)
      ],
     [Sg.Text('''    Analyses UbV ELISA and/or sequencing data by showing only non-conserved amino acid
-    residues and highlighting regions that were targeted for diversification in the original
-    phage display library.\n''',
+    residues, highlighting regions that were targeted for diversification in the original 
+    phage display library, and calculating diversity and biochemistry metrics.\n''',
              text_color='#8294cc',
              font=('Segoe UI', 12)
              )
@@ -67,7 +67,7 @@ layout = [
              font=('Segoe UI Bold', 10)
              )
      ],
-    [Sg.Radio('ELISA and sequencing data',
+    [Sg.Radio('Binding and sequencing data',
               'FORMAT',
               default=True,
               key='-ELISA_SEQ_DATA-',

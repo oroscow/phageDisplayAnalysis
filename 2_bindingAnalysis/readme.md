@@ -1,17 +1,16 @@
 # Binding Analysis
  
-Analyses ELISA binding data along with corresponding sequence data. Calculates the average of duplicate absorbances for
-each protein and normalizes them against the average of the negative controls/blanks. ELISA data that don't have
-corresponding sequencing data are excluded from the final results.
+Analyses ELISA binding data along with corresponding sequence data.  Calculates the average of duplicate absorbances for
+each protein, calculates the binder:control absorbance ratio, and normalizes them against the average of the blanks.
+ELISA data that don't have corresponding sequencing data are excluded from the final results.
 
-![gui](https://user-images.githubusercontent.com/55511532/137400550-14d8f048-7b04-4d20-b35a-6f8dd54b60f6.png)
+![Binding Analysis GUI](gui/source/images/gui.png)
 
 ## Details:
 
 The following ELISA plate layout must be used:
 
-![plateLayout](https://user-images.githubusercontent.com/55511532/137400418-06778a2a-5f08-410c-a0de-a90e7cab77b0.png)
-
+![Plate Layout](gui/source/images/plateLayout.png)
 
 **Input:** ELISA data (xlsx; formatting dependent on the plate reader, please see _/sampleInputs_ for an example), amino
 acid alignment data (fasta; generic formatting), and nucleotide alignment data (fasta; generic formatting).
@@ -54,7 +53,7 @@ desktop.
 5. The first time the program is run, Windows may try to prevent you from opening the file in order to protect your PC
 (see below). Click on 'More info' and then click on 'Run anyway'. Once you've done this once, it won't ask again.
 
-![warning](https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fmonstersocial.net%2Fwp-content%2Fuploads%2F2015%2F08%2Fwindowsprotectedyourpc.jpg&f=1&nofb=1)
+![Windows Warning](https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fmonstersocial.net%2Fwp-content%2Fuploads%2F2015%2F08%2Fwindowsprotectedyourpc.jpg&f=1&nofb=1)
 
 ###### Image credit to [monstersocial.net](https://monstersocial.net/).
 

@@ -1,9 +1,10 @@
 # Conservation Analysis
  
-Analyses UbV ELISA and/or sequencing data by showing only non-conserved amino acid residues and highlighting regions
-that were targeted for diversification in the original phage display library.
+Analyses UbV ELISA and/or sequencing data by showing only non-conserved amino acid residues, highlighting regions that
+were targeted for diversification in the original phage display library, and calculating diversity and biochemistry
+metrics.
 
-![gui](https://user-images.githubusercontent.com/55511532/137401794-0cef3a9e-2250-418c-8bb8-81fe3e512fef.png)
+![Conservation Analysis GUI](gui/source/images/gui.png)
 
 ## Details:
 
@@ -46,7 +47,7 @@ desktop.
 5. The first time the program is run, Windows may try to prevent you from opening the file in order to protect your PC
 (see below). Click on 'More info' and then click on 'Run anyway'. Once you've done this once, it won't ask again.
 
-![warning](https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fmonstersocial.net%2Fwp-content%2Fuploads%2F2015%2F08%2Fwindowsprotectedyourpc.jpg&f=1&nofb=1)
+![Windows Warning](https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fmonstersocial.net%2Fwp-content%2Fuploads%2F2015%2F08%2Fwindowsprotectedyourpc.jpg&f=1&nofb=1)
 
 ###### Image credit to [monstersocial.net](https://monstersocial.net/).
 
