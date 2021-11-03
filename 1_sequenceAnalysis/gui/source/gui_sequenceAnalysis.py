@@ -223,7 +223,6 @@ Please enter a number.''',
                          )
                 continue
 
-# TODO: Import changes from terminal version of code.
 ##################
 #    MAIN
 ##################
@@ -271,9 +270,9 @@ else:
                          shortName
                          )
         # Move to raw sequences folder.
-        oldPath = path + '/' + fileName
-        newPath = rawSeqPath + '/' + newName
-        shutil.move(oldPath, newPath)
+        shutil.move(path + '/' + fileName,
+                    rawSeqPath + '/' + newName
+                    )
     logging.info('Sequences renamed and moved to %s.' % rawSeqFolder)
 
     ##################
@@ -309,7 +308,7 @@ else:
         # Create a text file stating that no ab1 files were found.
         noAb1FileName = 'noAb1FilesFound.txt'
         noAb1File = open(noAb1FileName, 'x')
-        noAb1File.write('No .ab1 files found.')
+        noAb1File.write('No ab1 files found.')
         noAb1File.close()
         shutil.move(path + '/' + noAb1FileName,
                     rawAb1Path + '/' + noAb1FileName
@@ -345,13 +344,12 @@ else:
             with open(outputFileName, 'w') as postConvFile:
                 postConvFile.write(fastaSeq)
             preConvFile.close()
-    logging.info('.seq to .fasta conversion finished.')
+    logging.info('Seq to fasta conversion finished.')
 
     # Move fasta files to nucleotide fasta folder.
     for fileName in glob.glob('*.fasta'):
         shutil.move(rawSeqPath + '/' + fileName,
-                    ntFastaPath + '/' + fileName
-                    )
+                    ntFastaPath + '/' + fileName)
     logging.info('Fasta files moved to %s.' % ntFastaFolder)
 
     # Combine all fasta sequences together into a single batch file.
@@ -380,6 +378,7 @@ else:
     fivePrimeRegex = re.compile('[agtcurynwsmkbhdv]{6,}',
                                 re.IGNORECASE)
 
+    startSite = input()
     startSite = startSite.upper()
     logging.info('%s chosen as the start site sequence.' % startSite)
     # Find the first instance of the 5' motif.
@@ -460,7 +459,9 @@ else:
                         os.makedirs(noTrimPath)
                         logging.info('%s directory created.' % noTrimFolder)
                     os.chdir(noTrimPath)
-                    untrimName = fileName.replace('_ntTrimmed.fasta', '_3trimfail.fasta')
+                    untrimName = fileName.replace('_ntTrimmed.fasta',
+                                                  '_3trimfail.fasta'
+                                                  )
                     with open(untrimName, 'w') as untrimFile:
                         newFasta = untrimName.replace('.fasta',
                                                       ''
@@ -643,7 +644,7 @@ else:
             else:
                 pass
         truncAaTrimBatchFile.close()
-    logging.info('Truncated amino acid sequences removed.')
+    logging.info('Non-full length and truncated amino acid sequences removed from alignment pool.')
 
     ##################
     # Create clustal and fasta alignments for both nucleotide and amino acid sequences.
@@ -722,9 +723,9 @@ else:
     #########
     # TODO: Clean up regexes.
     # Amino acid alignment data extraction.
-    nameRegex = re.compile('>(.*)')
+    fastaNameRegex = re.compile('>(.*)')
     seqRegex = re.compile(r'(?<!>)([A-Z]{5,})(?!\d|[a-z]|_)')
-    stopRegex = re.compile('([*]+[A-Z]*)')
+    stopCodonRegex = re.compile('([*]+[A-Z]*)')
     nameTrimRegex = re.compile(r'([_][M][\w]*)')
     alignSource = folderName + '_aaTrimmed_alignment.fasta'
     with open(alignSource, 'r') as alignFile:
@@ -734,15 +735,15 @@ else:
                               '',
                               allDataAa)
         # Retrieve names.
-        aaNameList = nameRegex.findall(shortNamesAa)
+        aaNameList = fastaNameRegex.findall(shortNamesAa)
         # Remove text formatting.
         formattedDataAa = allDataAa.replace('\n',
                                             ''
                                             )
         # Remove truncated sequences.
-        noTruncSeq = stopRegex.sub('',
-                                   formattedDataAa
-                                   )
+        noTruncSeq = stopCodonRegex.sub('',
+                                        formattedDataAa
+                                        )
         # Retrieve sequences.
         aaList = seqRegex.findall(noTruncSeq)
         # Remove '_<primer>_aaTrimmed' from names.
@@ -750,7 +751,7 @@ else:
                                            allDataAa
                                            )
         # Retrieve well IDs.
-        shortWellListAa = nameRegex.findall(shorterNamesAa)
+        shortWellListAa = fastaNameRegex.findall(shorterNamesAa)
         alignFile.close()
 
     # Create list of unique amino acid sequences ordered by frequency.
@@ -773,7 +774,7 @@ else:
                               allDataNt
                               )
         # Retrieve names.
-        nameListNt = nameRegex.findall(shortNamesNt)
+        nameListNt = fastaNameRegex.findall(shortNamesNt)
         # Remove text formatting.
         formattedDataNt = allDataNt.replace('\n',
                                             ''
@@ -784,7 +785,7 @@ else:
                                            allDataNt
                                            )
         # Retrieve well IDs.
-        shortWellListNt = nameRegex.findall(shorterNamesNt)
+        shortWellListNt = fastaNameRegex.findall(shorterNamesNt)
         alignFile.close()
 
     # Create list of unique nucleotide sequences ordered by frequency.
@@ -828,8 +829,7 @@ else:
     # Nucleotides
     #########
 
-    # Get ordered list of wells that correspond to unique sequences; necessary for attributing wells to unique
-    # sequences.
+    # Get ordered list of wells that correspond to unique sequences; necessary for attributing wells to unique sequences.
     newNtDict = dict(zip(shortWellListNt,
                          ntList)
                      )
@@ -857,6 +857,7 @@ else:
     # Create workbook.
     workbook = xlsxwriter.Workbook(alignmentPath + '/' + folderName + '_alignment.xlsx')
 
+    # TODO: Find a way to clean up this section's formatting.
     #########
     # Cell formatting rules.
     #########
@@ -871,18 +872,23 @@ else:
                                         }
                                        )
     title_format.set_align('center')
+    title_format.set_align('vcenter')
     wellTitle_format = workbook.add_format({'bold': True,
                                             'font_size': 12
                                             }
                                            )
     wellTitle_format.set_align('left')
+    wellTitle_format.set_align('vcenter')
     # Wells.
     wellList_format = workbook.add_format({'font_size': 11})
     wellID_format = workbook.add_format({'font_size': 12})
+    wellID_format = workbook.add_format({'font_size': 12})
     wellID_format.set_align('center')
+    wellID_format.set_align('vcenter')
     # Residue numbers.
     residue_format = workbook.add_format({'font_size': 10})
     residue_format.set_align('center')
+    residue_format.set_align('vcenter')
     # Sequences.
     sequence_format = workbook.add_format({'font_size': 10})
     sequence_format.set_align('center')
@@ -905,7 +911,7 @@ else:
     logging.info('%s worksheet created.' % worksheet1Name)
 
     # Write well IDs.
-    worksheet1.write(0, 0, 'ID', title_format)
+    worksheet1.merge_range(0, 0, 1, 0, 'ID', title_format)
     idRow = 2
     for name in aaNameList:
         worksheet1.write(idRow, 0, name, wellID_format)
@@ -913,7 +919,7 @@ else:
     logging.info('Amino acid well IDs written to %s worksheet.' % worksheet1Name)
 
     # Write all amino acid sequences.
-    worksheet1.write(0, 6, 'Amino Acid Sequence', title_format)
+    worksheet1.merge_range(0, 1, 0, 9, 'Amino Acid Sequence', title_format)
     seqRow = 2
     seqCol = 1
     for aa in aaList:
@@ -950,7 +956,7 @@ else:
     logging.info('%s worksheet created.' % worksheet2Name)
 
     # Write unique amino acid sequences.
-    worksheet2.write(0, 6, 'Amino Acid Sequence', title_format)
+    worksheet2.merge_range(0, 1, 0, 9, 'Amino Acid Sequence', title_format)
     seqRow = 2
     seqCol = 1
     for seq in aaUniqueDict.keys():
@@ -966,14 +972,14 @@ else:
     count = list(aaUniqueDict.values())
     countRow = 2
     countCol = aaAlignLen + 1
-    worksheet2.write(0, aaAlignLen + 1, 'Count', title_format)
+    worksheet2.merge_range(0, aaAlignLen + 1, 1, aaAlignLen + 1, 'Count', title_format)
     for number in count:
         worksheet2.write_number(countRow, countCol, number, general_format)
         countRow += 1
     logging.info('Amino acid sequence counts written to %s worksheet.' % worksheet2Name)
 
     # Assign arbitrary IDs to each unique amino acid sequence.
-    worksheet2.write(0, 0, 'ID', title_format)
+    worksheet2.merge_range(0, 0, 1, 0, 'ID', title_format)
     aaIdList = list(range(1,
                           len(aaUnique) + 1)
                     )
@@ -994,13 +1000,13 @@ else:
     wellColWidth = round((len(aaCountID[0]) * 3) * 1.4)
     worksheet2.set_column(aaAlignLen + 2, aaAlignLen + 2, wellColWidth)
     # Write specific IDs to worksheet.
-    worksheet2.write(0, aaAlignLen + 2, 'Wells', wellTitle_format)
+    worksheet2.merge_range(0, aaAlignLen + 2, 1, aaAlignLen + 2, 'Wells', wellTitle_format)
     wellRow = 2
     wellCol = aaAlignLen + 2
-    countIDregex = re.compile(r'([A-Z][0-1][0-9])')
+    wellRegex = re.compile(r'([A-Z][0-1][0-9])')
     sep = ', '
     for wellList in aaCountID:
-        wellList = countIDregex.findall(str(wellList))
+        wellList = wellRegex.findall(str(wellList))
         wellList = sep.join(wellList)
         worksheet2.write(wellRow, wellCol, wellList, wellList_format)
         wellRow += 1
@@ -1020,7 +1026,7 @@ else:
     logging.info('%s worksheet created.' % worksheet3Name)
 
     # Write well IDs.
-    worksheet3.write(0, 0, 'ID', title_format)
+    worksheet3.merge_range(0, 0, 1, 0, 'ID', title_format)
     idRow = 2
     for name in nameListNt:
         worksheet3.write(idRow, 0, name, wellID_format)
@@ -1028,7 +1034,7 @@ else:
     logging.info('Nucleotide well IDs written to %s worksheet.' % worksheet3Name)
 
     # Write all nucleotide sequences.
-    worksheet3.write(0, 6, 'Nucleotide Sequence', title_format)
+    worksheet3.merge_range(0, 1, 0, 7, 'Nucleotide Sequence', title_format)
     seqRow = 2
     seqCol = 1
     for nt in ntList:
@@ -1062,8 +1068,9 @@ else:
     worksheet4.set_column(1, ntAlignLen, 3)
     worksheet4.freeze_panes(0, 1)
     logging.info('%s worksheet created.' % worksheet4Name)
+
     # Write unique nucleotide sequences.
-    worksheet4.write(0, 6, 'Nucleotide Sequence', title_format)
+    worksheet4.merge_range(0, 1, 0, 7, 'Nucleotide Sequence', title_format)
     seqRow = 2
     seqCol = 1
     for seq in ntUniqueDict.keys():
@@ -1074,17 +1081,19 @@ else:
         seqRow += 1
         seqCol = 1
     logging.info('Unique nucleotide sequences written to %s worksheet.' % worksheet4Name)
+
     # Write sequence counts.
     count = list(ntUniqueDict.values())
     countRow = 2
     countCol = ntAlignLen + 1
-    worksheet4.write(0, ntAlignLen + 1, 'Count', title_format)
+    worksheet4.merge_range(0, ntAlignLen + 1, 1, ntAlignLen + 1, 'Count', title_format)
     for number in count:
         worksheet4.write_number(countRow, countCol, number, general_format)
         countRow += 1
     logging.info('Nucleotide sequence counts written to %s worksheet.' % worksheet4Name)
+
     # Assign arbitrary IDs to each unique nucleotide sequence.
-    worksheet4.write(0, 0, 'ID', title_format)
+    worksheet4.merge_range(0, 0, 1, 0, 'ID', title_format)
     ntIdList = list(range(1,
                           len(uniqueNt) + 1)
                     )
@@ -1093,6 +1102,7 @@ else:
         worksheet4.write_number(idRow, 0, number, general_format)
         idRow += 1
     logging.info('Arbitrary unique nucleotide sequence IDs written to %s worksheet.' % worksheet4Name)
+
     # Write nucleotide base pair numbers above sequences.
     bpCol = 1
     for number in ntBpList:
@@ -1106,10 +1116,9 @@ else:
     worksheet4.write(0, ntAlignLen + 2, 'Wells', wellTitle_format)
     wellRow = 2
     wellCol = ntAlignLen + 2
-    countIDregex = re.compile(r'([A-Z][0-1][0-9])')
     sep = ', '
     for wellList in ntCountID:
-        wellList = countIDregex.findall(str(wellList))
+        wellList = wellRegex.findall(str(wellList))
         wellList = sep.join(wellList)
         worksheet4.write(wellRow, wellCol, wellList, wellList_format)
         wellRow += 1
@@ -1119,22 +1128,22 @@ else:
     # Transform data in every sheet into proper Excel-formatted tables without any design style applied.
     ##################
 
-    worksheet1.add_table(1, 0, len(aaNameList) + 1, aaAlignLen,
+    worksheet1.add_table(2, 0, len(aaNameList) + 1, aaAlignLen,
                          {'header_row': False,
                           'style': None
                           }
                          )
-    worksheet2.add_table(1, 0, len(aaUnique) + 1, aaAlignLen + 2,
+    worksheet2.add_table(2, 0, len(aaUnique) + 1, aaAlignLen + 2,
                          {'header_row': False,
                           'style': None
                           }
                          )
-    worksheet3.add_table(1, 0, len(nameListNt) + 1, ntAlignLen,
+    worksheet3.add_table(2, 0, len(nameListNt) + 1, ntAlignLen,
                          {'header_row': False,
                           'style': None
                           }
                          )
-    worksheet4.add_table(1, 0, len(uniqueNt) + 1, ntAlignLen + 2,
+    worksheet4.add_table(2, 0, len(uniqueNt) + 1, ntAlignLen + 2,
                          {'header_row': False,
                           'style': None
                           }

@@ -500,13 +500,9 @@ else:
     # Create lists of arbitrary IDs and residue numbers.
     ##################
 
-    IDlist = list(range(1,
-                        len(uniqueDict) + 1)
-                  )
+    IDlist = [range(1, len(uniqueDict) + 1)]
 
-    residueList = list(range(1,
-                             consensusLen + 1)
-                       )
+    residueList = [range(1, consensusLen + 1)]
 
     ##################
     # Export data as a single xlsx file.
@@ -543,7 +539,7 @@ else:
     library_format.set_align('left')
     library_format.set_align('vcenter')
     # Numbers.
-    stats_format = workbook.add_format({'num_format': '#,##0.000'})
+    stats_format = workbook.add_format({'num_format': '#,##0.0'})
     stats_format.set_align('center')
     stats_format.set_align('vcenter')
     residue_format = workbook.add_format({'font_size': 10})
@@ -692,7 +688,7 @@ else:
                                           column,
                                           len(conservedList) + 2,
                                           column,
-                                          {'type': '2_color_scale', 'min_color': '#FAFAFA', 'max_color': '#008000'})
+                                          {'type': '2_color_scale', 'min_color': '#FFFFFF', 'max_color': '#3D85C6'})
         logging.info('Conditional formatting applied to statistics.')
 
         # Table for statistics.
@@ -727,8 +723,8 @@ else:
     ##################
 
     # Library 1 (Ernst et al., 2013).
-    # Region 1 formatting.
     if libraryInput == '1':
+        # Region 1 formatting.
         worksheet1.write(len(conservedList) + 4, 1, libraryOptions.get('1'), library_format)
         logging.info('Library 1 (Ernst et al., 2013) selected.')
         worksheet1.merge_range(1, 2, 1, 14, 'Region 1', title_format)
@@ -783,8 +779,9 @@ else:
         logging.info('No library design selected.')
 
     ##################
-    # Analyse biochemistry and diversification patterns in sequences.
+    # Analyse diversity and biochemical patterns in sequences.
     ##################
+
     aaTypes = {'hydrophobic': ['G', 'A', 'V', 'P', 'F', 'M', 'L', 'W', 'I'],
                'polar': ['S', 'N', 'Y', 'H', 'C', 'T', 'G', 'D', 'E', 'R', 'K'],
                'acidic': ['D', 'E'],
@@ -1203,17 +1200,18 @@ else:
 
         # Conditional formatting for diversity analyses.
         for column in range(1, 11):
-            worksheet2.conditional_format(2,
-                                          column,
-                                          len(conservedList) + 2,
-                                          column,
-                                          {'type': '2_color_scale', 'min_color': '#FAFAFA', 'max_color': '#3D85C6'}
+            worksheet2.conditional_format(2, column, len(conservedList) + 2, column,
+                                          {'type': '2_color_scale',
+                                           'min_color': '#FFFFFF',
+                                           'max_color': '#3D85C6'
+                                           }
                                           )
 
         # Table formatting for diversity analyses.
-        worksheet2.add_table(2, 0, len(conservedList) + 1, 10, {'header_row': False,
-                                                                'style': None
-                                                                }
+        worksheet2.add_table(2, 0, len(conservedList) + 1, 10,
+                             {'header_row': False,
+                              'style': None
+                              }
                              )
 
     elif libraryInput == 'pass':
@@ -1255,17 +1253,18 @@ else:
 
         # Conditional formatting for diversity analyses.
         for column in range(1, 3):
-            worksheet2.conditional_format(2,
-                                          column,
-                                          len(conservedList) + 2,
-                                          column,
-                                          {'type': '2_color_scale', 'min_color': '#FAFAFA', 'max_color': '#3D85C6'}
+            worksheet2.conditional_format(2, column, len(conservedList) + 2, column,
+                                          {'type': '2_color_scale',
+                                           'min_color': '#FFFFFF',
+                                           'max_color': '#3D85C6'
+                                           }
                                           )
 
         # Table formatting for diversity analyses.
-        worksheet2.add_table(2, 0, len(conservedList) + 1, 2, {'header_row': False,
-                                                               'style': None
-                                                               }
+        worksheet2.add_table(2, 0, len(conservedList) + 1, 2,
+                             {'header_row': False,
+                              'style': None
+                              }
                              )
     ##################
     # Create worksheet for unique amino acid biochemical analyses.
@@ -1399,17 +1398,17 @@ else:
 
     # Conditional formatting for biochemical analyses.
     for column in range(1, 13):
-        worksheet3.conditional_format(2,
-                                      column,
-                                      len(conservedList) + 2,
-                                      column,
-                                      {'type': '2_color_scale', 'min_color': '#FAFAFA', 'max_color': '#3D85C6'}
+        worksheet3.conditional_format(2, column, len(conservedList) + 2, column,
+                                      {'type': '2_color_scale',
+                                       'min_color': '#FFFFFF',
+                                       'max_color': '#3D85C6'}
                                       )
 
     # Table formatting for biochemical analyses.
-    worksheet3.add_table(2, 0, len(conservedList) + 1, 12, {'header_row': False,
-                                                            'style': None
-                                                            }
+    worksheet3.add_table(2, 0, len(conservedList) + 1, 12,
+                         {'header_row': False,
+                          'style': None
+                          }
                          )
 
     ##################
@@ -1420,7 +1419,7 @@ else:
     logging.info('Excel file exported as %s_conservation.xlsx.' % inFileName)
     logging.info('Conservation Analysis program finished running.')
     logging.shutdown()
-    # TODO: Add suggestions to final terminal popup.
+    # TODO: Add suggestions to final gui popup.
     Sg.Popup(' Conservation Analysis program finished running. See log file for details.',
              title='Analysis Finished',
              grab_anywhere=True,
