@@ -115,10 +115,13 @@ for fileName in glob.glob('*.seq'):
                        fileName
                        )
     # Add leading zero to well IDs.
-    newName = re.sub(r'(^\w[_]\w)(\d[_]\s*\w*)',
-                     r'\g<1>0\g<2>',
-                     shortName
-                     )
+    if len(re.findall(r'(\d{2,}[_]\s*\w*)', shortName)) < 1:
+        newName = re.sub(r'(\d[_]\s*\w*)',
+                         r'0\g<1>',
+                         shortName
+                         )
+    else:
+        newName = shortName
     # Move to raw sequences folder.
     shutil.move(path + '/' + fileName,
                 rawSeqPath + '/' + newName
@@ -145,10 +148,13 @@ if len(glob.glob('*.ab1')) > 0:
                            fileName
                            )
         # Add leading zero to well IDs.
-        newName = re.sub(r'(^\w[_]\w)(\d[_]\s*\w*)',
-                         r'\g<1>0\g<2>',
-                         shortName
-                         )
+        if len(re.findall(r'(\d{2,}[_]\s*\w*)', shortName)) < 1:
+            newName = re.sub(r'(\d[_]\s*\w*)',
+                             r'0\g<1>',
+                             shortName
+                             )
+        else:
+            newName = shortName
         # Move to raw ab1 folder.
         shutil.move(path + '/' + fileName,
                     rawAb1Path + '/' + newName
@@ -163,7 +169,7 @@ else:
     shutil.move(path + '/' + noAb1FileName,
                 rawAb1Path + '/' + noAb1FileName
                 )
-    logging.info('%s created.' % noAb1FileName)
+    logging.info('No ab1 files found so %s was created.' % noAb1FileName)
 greenprint('\nFile renaming finished.')
 logging.info('File renaming finished.')
 
@@ -311,6 +317,7 @@ if not os.path.exists(ntTrimmedPath):
     logging.info('%s directory created.' % ntTrimmedFolder)
 
 threePrimeRegex = re.compile('[0-9]{2,}')
+
 while True:
     endSite = input()
     logging.info('%s chosen as the sequence length.' % endSite)

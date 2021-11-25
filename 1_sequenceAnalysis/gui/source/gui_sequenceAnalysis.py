@@ -265,10 +265,13 @@ else:
                            fileName
                            )
         # Add leading zero to well IDs.
-        newName = re.sub(r'(^\w[_]\w)(\d[_]\s*\w*)',
-                         r'\g<1>0\g<2>',
-                         shortName
-                         )
+        if len(re.findall(r'(\d{2,}[_]\s*\w*)', shortName)) < 1:
+            newName = re.sub(r'(\d[_]\s*\w*)',
+                             r'0\g<1>',
+                             shortName
+                             )
+        else:
+            newName = shortName
         # Move to raw sequences folder.
         shutil.move(path + '/' + fileName,
                     rawSeqPath + '/' + newName
@@ -295,10 +298,13 @@ else:
                                fileName
                                )
             # Add leading zero to well IDs.
-            newName = re.sub(r'(^\w[_]\w)(\d[_]\s*\w*)',
-                             r'\g<1>0\g<2>',
-                             shortName
-                             )
+            if len(re.findall(r'(\d{2,}[_]\s*\w*)', shortName)) < 1:
+                newName = re.sub(r'(\d[_]\s*\w*)',
+                                 r'0\g<1>',
+                                 shortName
+                                 )
+            else:
+                newName = shortName
             # Move to raw ab1 folder.
             shutil.move(path + '/' + fileName,
                         rawAb1Path + '/' + newName
@@ -313,7 +319,7 @@ else:
         shutil.move(path + '/' + noAb1FileName,
                     rawAb1Path + '/' + noAb1FileName
                     )
-        logging.info('%s created.' % noAb1FileName)
+        logging.info('No ab1 files found so %s was created.' % noAb1FileName)
     logging.info('File renaming finished.')
 
     ##################
@@ -364,6 +370,8 @@ else:
                 inFile.close()
     logging.info('Fasta batch file created.')
 
+    # TODO: Figure out why script stalls here even though the terminal version works fine.
+
     ##################
     # Trim fasta sequences at a 5' motif.
     ##################
@@ -378,7 +386,6 @@ else:
     fivePrimeRegex = re.compile('[agtcurynwsmkbhdv]{6,}',
                                 re.IGNORECASE)
 
-    startSite = input()
     startSite = startSite.upper()
     logging.info('%s chosen as the start site sequence.' % startSite)
     # Find the first instance of the 5' motif.
@@ -829,7 +836,8 @@ else:
     # Nucleotides
     #########
 
-    # Get ordered list of wells that correspond to unique sequences; necessary for attributing wells to unique sequences.
+    # Get ordered list of wells that correspond to unique sequences; necessary for attributing wells to unique
+    # sequences.
     newNtDict = dict(zip(shortWellListNt,
                          ntList)
                      )
