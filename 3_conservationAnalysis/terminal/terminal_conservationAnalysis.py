@@ -294,9 +294,9 @@ logging.info('List of conserved sequences created.')
 # Create lists of arbitrary IDs and residue numbers.
 ##################
 
-IDlist = [range(1, len(uniqueDict) + 1)]
+IDlist = [*range(1, len(uniqueDict) + 1)]
 
-residueList = [range(1, consensusLen + 1)]
+residueList = [*range(1, consensusLen + 1)]
 
 ##################
 # Export data as a single xlsx file.
