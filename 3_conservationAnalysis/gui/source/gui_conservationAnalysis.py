@@ -348,12 +348,12 @@ if event == Sg.WIN_CLOSED:
 # Carry on with code otherwise.
 else:
     # Setup logging file.
-    inFileNameShort = re.sub(r'_a.*[.].*',
-                             '_conservation',
-                             inFileName
-                             )
+    outFileNameShort = re.sub(r'_a.*[.].*',
+                              '_conservationAnalysis',
+                              inFileName
+                              )
 
-    logging.basicConfig(filename=path + '/' + inFileNameShort + '.log',
+    logging.basicConfig(filename=path + '/' + outFileNameShort + '.log',
                         level=logging.INFO,
                         format='%(asctime)s - %(message)s',
                         filemode='w'
@@ -378,7 +378,7 @@ else:
                                      )
         # Remove rows with more than eight NaN values.
         allCells = allCells.dropna(axis=0, thresh=8)
-        logging.info('%s data read.' % inFileNameShort)
+        logging.info('%s data read.' % outFileNameShort)
 
         # Retrieve statistical data.
         countListFloat = list(allCells['Count'])
@@ -386,27 +386,27 @@ else:
         countList = []
         for count in countListFloat:
             countList.append(int(count))
-        logging.info('Count values extracted from %s.' % inFileNameShort)
+        logging.info('Count values extracted from %s.' % outFileNameShort)
         maxList = list(allCells['Max.'])
         maxList = maxList[1:]
-        logging.info('Maximum values extracted from %s.' % inFileNameShort)
+        logging.info('Maximum values extracted from %s.' % outFileNameShort)
         minList = list(allCells['Min.'])
         minList = minList[1:]
-        logging.info('Minimum values extracted from %s.' % inFileNameShort)
+        logging.info('Minimum values extracted from %s.' % outFileNameShort)
         medianList = list(allCells['Median'])
         medianList = medianList[1:]
-        logging.info('Median values extracted from %s.' % inFileNameShort)
+        logging.info('Median values extracted from %s.' % outFileNameShort)
         meanList = list(allCells['Mean'])
         meanList = meanList[1:]
-        logging.info('Mean values extracted from %s.' % inFileNameShort)
+        logging.info('Mean values extracted from %s.' % outFileNameShort)
         devList = list(allCells['St. Dev.'])
         devList = devList[1:]
-        logging.info('Standard deviation values extracted from %s.' % inFileNameShort)
+        logging.info('Standard deviation values extracted from %s.' % outFileNameShort)
 
         # Retrieve well data.
         countID = list(allCells['Wells'])
         countID = countID[1:]
-        logging.info('Wells extracted from %s.' % inFileNameShort)
+        logging.info('Wells extracted from %s.' % outFileNameShort)
 
         # Retrieve amino acid sequences from ELISA file.
         seqCells = allCells.iloc[1:, 1:]
@@ -509,8 +509,8 @@ else:
     ##################
 
     # Create workbook.
-    workbook = xlsxwriter.Workbook(path + '/' + inFileNameShort + '.xlsx')
-    logging.info('''Excel spreadsheet created as '%s.xlsx'.''' % inFileNameShort)
+    workbook = xlsxwriter.Workbook(path + '/' + outFileNameShort + '.xlsx')
+    logging.info('''Excel spreadsheet created as '%s.xlsx'.''' % outFileNameShort)
 
     # TODO: Find a way to clean up this section's formatting.
     #########
@@ -1416,7 +1416,7 @@ else:
     ##################
 
     workbook.close()
-    logging.info('Excel file exported as %s_conservation.xlsx.' % inFileName)
+    logging.info('Excel file exported as %s_conservationAnalysis.xlsx.' % inFileName)
     logging.info('Conservation Analysis program finished running.')
     logging.shutdown()
     # TODO: Add suggestions to final gui popup.

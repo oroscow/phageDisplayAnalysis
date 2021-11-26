@@ -143,12 +143,12 @@ elif inputFormat == '2':
 # Setup logging file.
 ##################
 
-inFileNameShort = re.sub(r'_a.*[.].*',
-                         '_conservation',
-                         inFileName
-                         )
+outFileNameShort = re.sub(r'_a.*[.].*',
+                          '_conservationAnalysis',
+                          inFileName
+                          )
 
-logging.basicConfig(filename=path + '/' + inFileNameShort + '.log',
+logging.basicConfig(filename=path + '/' + outFileNameShort + '.log',
                     level=logging.INFO,
                     format='%(asctime)s - %(message)s',
                     filemode='w'
@@ -172,7 +172,7 @@ if inputFormat == '1':
                                  )
     # Remove rows with more than eight NaN values.
     allCells = allCells.dropna(axis=0, thresh=8)
-    logging.info('%s data read.' % inFileNameShort)
+    logging.info('%s data read.' % outFileNameShort)
 
     # Retrieve statistical data.
     countListFloat = list(allCells['Count'])
@@ -180,27 +180,27 @@ if inputFormat == '1':
     countList = []
     for count in countListFloat:
         countList.append(int(count))
-    logging.info('Count values extracted from %s.' % inFileNameShort)
+    logging.info('Count values extracted from %s.' % outFileNameShort)
     maxList = list(allCells['Max.'])
     maxList = maxList[1:]
-    logging.info('Maximum values extracted from %s.' % inFileNameShort)
+    logging.info('Maximum values extracted from %s.' % outFileNameShort)
     minList = list(allCells['Min.'])
     minList = minList[1:]
-    logging.info('Minimum values extracted from %s.' % inFileNameShort)
+    logging.info('Minimum values extracted from %s.' % outFileNameShort)
     medianList = list(allCells['Median'])
     medianList = medianList[1:]
-    logging.info('Median values extracted from %s.' % inFileNameShort)
+    logging.info('Median values extracted from %s.' % outFileNameShort)
     meanList = list(allCells['Mean'])
     meanList = meanList[1:]
-    logging.info('Mean values extracted from %s.' % inFileNameShort)
+    logging.info('Mean values extracted from %s.' % outFileNameShort)
     devList = list(allCells['St. Dev.'])
     devList = devList[1:]
-    logging.info('Standard deviation values extracted from %s.' % inFileNameShort)
+    logging.info('Standard deviation values extracted from %s.' % outFileNameShort)
 
     # Retrieve well data.
     countID = list(allCells['Wells'])
     countID = countID[1:]
-    logging.info('Wells extracted from %s.' % inFileNameShort)
+    logging.info('Wells extracted from %s.' % outFileNameShort)
 
     # Retrieve amino acid sequences from ELISA file.
     seqCells = allCells.iloc[1:, 1:]
@@ -303,8 +303,8 @@ residueList = [*range(1, consensusLen + 1)]
 ##################
 
 # Create workbook.
-workbook = xlsxwriter.Workbook(path + '/' + inFileNameShort + '.xlsx')
-logging.info('''Excel spreadsheet created as '%s.xlsx'.''' % inFileNameShort)
+workbook = xlsxwriter.Workbook(path + '/' + outFileNameShort + '.xlsx')
+logging.info('''Excel spreadsheet created as '%s.xlsx'.''' % outFileNameShort)
 
 # TODO: Find a way to clean up this section's formatting.
 #########
@@ -1244,10 +1244,11 @@ worksheet3.add_table(2, 0, len(conservedList) + 1, 12,
 
 workbook.close()
 if inputFormat == '1':
-    greenprint('\nExcel conserved alignment with ELISA scores saved as %s_conservation.xlsx.' % inFileNameShort)
+    greenprint(
+        '\nExcel conserved alignment with ELISA scores saved as %s_conservationAnalysis.xlsx.' % outFileNameShort)
 elif inputFormat == '2':
-    greenprint('\nExcel conserved alignment saved as %s_conservation.xlsx.' % inFileNameShort)
-logging.info('Excel file exported as %s_conservation.xlsx.' % inFileNameShort)
+    greenprint('\nExcel conserved alignment saved as %s_conservationAnalysis.xlsx.' % outFileNameShort)
+logging.info('Excel file exported as %s_conservationAnalysis.xlsx.' % outFileNameShort)
 # TODO: Add suggestions to final terminal text.
 greenprint('\nConservation Analysis program finished running. See log file for details.')
 logging.info('Conservation Analysis program finished running.')

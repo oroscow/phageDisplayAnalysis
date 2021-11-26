@@ -911,7 +911,7 @@ ntRatioStatsDataframe = pandas.DataFrame(ntRatioStatsTable)
 ##################
 
 # Create workbook.
-workbook = xlsxwriter.Workbook(path + '/' + elisaInFileName + '_analysed.xlsx')
+workbook = xlsxwriter.Workbook(path + '/' + elisaInFileName + '_bindingAnalysis.xlsx')
 logging.info('Excel spreadsheet created as "%s.xlsx".' % elisaInFileName)
 
 #########
