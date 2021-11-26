@@ -146,18 +146,11 @@ greenprint('''\nData retrieved from raw ELISA file.''')
 ##################
 
 # Retrieve blank wells and average.
-blankCells = [dataCellsClean.loc['B'][value] for value in range(0, 23, 2)] + \
-             [dataCellsClean.loc['D'][value] for value in range(0, 23, 2)] + \
-             [dataCellsClean.loc['F'][value] for value in range(0, 23, 2)] + \
-             [dataCellsClean.loc['H'][value] for value in range(0, 23, 2)] + \
-             [dataCellsClean.loc['J'][value] for value in range(0, 23, 2)] + \
-             [dataCellsClean.loc['L'][value] for value in range(0, 23, 2)] + \
-             [dataCellsClean.loc['N'][value] for value in range(0, 23, 2)] + \
-             [dataCellsClean.loc['P'][value] for value in range(0, 23, 2)]
+blankCells = [dataCellsClean.loc['B'][value] for value in range(0, 23, 2)]
 # Remove values that contain no data in the excel cell.
 blankValues = [absorbance for absorbance in blankCells if not (pandas.isna(absorbance))]
 # Average blanks.
-blankAve = statistics.mean(blankCells)
+blankAve = statistics.mean(blankValues)
 logging.info('Blank absorbances retrieved from raw data file.')
 logging.info('Blank values averaged.')
 
@@ -1437,31 +1430,31 @@ worksheet2.conditional_format(1, aaAlignLen + 2, len(aaUnique) + 1, aaAlignLen +
                                'max_color': '#3D85C6'
                                }
                               )
-worksheet3.conditional_format(1, ntAlignLen + 1, len(aaShortNameList) + 1, ntAlignLen + 2,
+worksheet3.conditional_format(1, ntAlignLen + 1, len(ntShortNameList) + 1, ntAlignLen + 2,
                               {'type': '2_color_scale',
                                'min_color': '#FFFFFF',
                                'max_color': '#3D85C6'
                                }
                               )
-worksheet3.conditional_format(1, ntAlignLen + 3, len(aaShortNameList) + 1, ntAlignLen + 4,
+worksheet3.conditional_format(1, ntAlignLen + 3, len(ntShortNameList) + 1, ntAlignLen + 4,
                               {'type': '2_color_scale',
                                'min_color': '#FFFFFF',
                                'max_color': '#3D85C6'
                                }
                               )
-worksheet3.conditional_format(1, ntAlignLen + 5, len(aaShortNameList) + 1, ntAlignLen + 5,
+worksheet3.conditional_format(1, ntAlignLen + 5, len(ntShortNameList) + 1, ntAlignLen + 5,
                               {'type': '2_color_scale',
                                'min_color': '#FFFFFF',
                                'max_color': '#3D85C6'
                                }
                               )
-worksheet3.conditional_format(1, ntAlignLen + 2, len(aaUnique) + 1, ntAlignLen + 7,
+worksheet3.conditional_format(1, ntAlignLen + 2, len(ntUnique) + 1, ntAlignLen + 7,
                               {'type': '2_color_scale',
                                'min_color': '#FFFFFF',
                                'max_color': '#3D85C6'
                                }
                               )
-worksheet4.conditional_format(1, ntAlignLen + 2, len(aaUnique) + 1, ntAlignLen + 7,
+worksheet4.conditional_format(1, ntAlignLen + 2, len(ntUnique) + 1, ntAlignLen + 7,
                               {'type': '2_color_scale',
                                'min_color': '#FFFFFF',
                                'max_color': '#3D85C6'

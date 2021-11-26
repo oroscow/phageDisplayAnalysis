@@ -445,8 +445,8 @@ else:
         uniqueDict = dict(unique)
         # Create ordered list of wells.
         orderedSeq = []
-        for key in uniqueDict.keys():
-            orderedSeq.append(key)
+        for seq in uniqueDict.keys():
+            orderedSeq.append(seq)
         aaDict = dict(zip(wellList,
                           aaList)
                       )

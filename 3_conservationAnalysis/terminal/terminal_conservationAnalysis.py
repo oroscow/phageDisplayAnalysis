@@ -125,8 +125,8 @@ if inputFormat == '1':
 elif inputFormat == '2':
     # Select amino acid alignment file. User prompt.
     cyanprint('''\nEnter amino acid alignment file name:
-    * Must be in fasta format.
-    * Include the file extension in the name.'''
+* Must be in fasta format.
+* Include the file extension in the name.'''
               )
     while True:
         inFileName = input()
@@ -239,8 +239,8 @@ elif inputFormat == '2':
     uniqueDict = dict(unique)
     # Create ordered list of wells.
     orderedSeq = []
-    for key in uniqueDict.keys():
-        orderedSeq.append(key)
+    for seq in uniqueDict.keys():
+        orderedSeq.append(seq)
     aaDict = dict(zip(wellList,
                       aaList)
                   )

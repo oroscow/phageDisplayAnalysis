@@ -34,12 +34,13 @@ Sg.theme('DarkGrey13')
 # Create window layout.
 infoLayout = [
     # Title and introduction.
-    [Sg.Text('\nPhage Display - Binding Analysis',
+    [Sg.Text('\nPhage Display - Binding Analysis\n',
              text_color='#8294cc',
              font=('Segoe UI Semibold', 16)
              )
      ],
     [Sg.Text('''        Analyses ELISA binding data along with corresponding sequence data.
+    
         Calculates the average of duplicate absorbances for each protein,
         calculates the binder:control absorbance ratio, and normalizes them
         against the average of the blanks. ELISA data that don't have
@@ -50,7 +51,7 @@ infoLayout = [
      ],
 
     # 'Plate layout' button.
-    [Sg.Text('        Click the button below to see the required plate layout for this program.\n',
+    [Sg.Text('        To use this program, ELISA data must correspond to the following plate layout:\n',
              text_color='#8294cc',
              font=('Segoe UI', 12)
              )
@@ -177,29 +178,8 @@ inFileLayout = [
 
 settingsLayout = [
 
-    # Blank well ID input prompt.
-    [Sg.Text('1. Enter well IDs that contain ELISA blanks/negative controls:',
-             text_color='white',
-             font=('Segoe UI Bold', 10)
-             )
-     ],
-    [Sg.Input(key='-BLANK_INPUT-',
-              size=20,
-              pad=(25, 0),
-              font=('Segoe UI', 10)
-              )
-     ],
-    [Sg.Text('''    * Not case-sensitive.
-    * Blank wells not associated with any absorbance value will be ignored.
-    * For multiple wells, use any kind of separator between them.
-      E.g. p22,p23,p24    or    P22-P23-P24\n''',
-             text_color='#bfbfbf',
-             font=('Segoe UI', 10)
-             )
-     ],
-
     # Emission absorbance input prompt.
-    [Sg.Text('2. Enter the wavelength of the emission peak (nm):',
+    [Sg.Text('5. Enter the wavelength of the emission peak (nm):',
              text_color='white',
              font=('Segoe UI Bold', 10)
              )
@@ -226,6 +206,7 @@ settingsLayout = [
      ]
 ]
 
+# TODO: Possibly remove tab layout.
 # Create tab layout.
 tabGroup = [
     [Sg.TabGroup(
@@ -254,7 +235,7 @@ tabGroup = [
     ]
 ]
 
-# Set up window behaviour..
+# Set up window behaviour.
 window = Sg.Window('Phage Display - Binding Analysis',
                    tabGroup,
                    alpha_channel=0.95,
@@ -479,18 +460,11 @@ else:
     ##################
 
     # Retrieve blank wells and average.
-    blankCells = [dataCellsClean.loc['B'][value] for value in range(0, 23, 2)] + \
-                 [dataCellsClean.loc['D'][value] for value in range(0, 23, 2)] + \
-                 [dataCellsClean.loc['F'][value] for value in range(0, 23, 2)] + \
-                 [dataCellsClean.loc['H'][value] for value in range(0, 23, 2)] + \
-                 [dataCellsClean.loc['J'][value] for value in range(0, 23, 2)] + \
-                 [dataCellsClean.loc['L'][value] for value in range(0, 23, 2)] + \
-                 [dataCellsClean.loc['N'][value] for value in range(0, 23, 2)] + \
-                 [dataCellsClean.loc['P'][value] for value in range(0, 23, 2)]
+    blankCells = [dataCellsClean.loc['B'][value] for value in range(0, 23, 2)]
     # Remove values that contain no data in the excel cell.
     blankValues = [absorbance for absorbance in blankCells if not (pandas.isna(absorbance))]
     # Average blanks.
-    blankAve = statistics.mean(blankCells)
+    blankAve = statistics.mean(blankValues)
     logging.info('Blank absorbances retrieved from raw data file.')
     logging.info('Blank values averaged.')
 
@@ -1690,31 +1664,31 @@ else:
                                    'max_color': '#3D85C6'
                                    }
                                   )
-    worksheet3.conditional_format(1, ntAlignLen + 1, len(aaShortNameList) + 1, ntAlignLen + 2,
+    worksheet3.conditional_format(1, ntAlignLen + 1, len(ntShortNameList) + 1, ntAlignLen + 2,
                                   {'type': '2_color_scale',
                                    'min_color': '#FFFFFF',
                                    'max_color': '#3D85C6'
                                    }
                                   )
-    worksheet3.conditional_format(1, ntAlignLen + 3, len(aaShortNameList) + 1, ntAlignLen + 4,
+    worksheet3.conditional_format(1, ntAlignLen + 3, len(ntShortNameList) + 1, ntAlignLen + 4,
                                   {'type': '2_color_scale',
                                    'min_color': '#FFFFFF',
                                    'max_color': '#3D85C6'
                                    }
                                   )
-    worksheet3.conditional_format(1, ntAlignLen + 5, len(aaShortNameList) + 1, ntAlignLen + 5,
+    worksheet3.conditional_format(1, ntAlignLen + 5, len(ntShortNameList) + 1, ntAlignLen + 5,
                                   {'type': '2_color_scale',
                                    'min_color': '#FFFFFF',
                                    'max_color': '#3D85C6'
                                    }
                                   )
-    worksheet3.conditional_format(1, ntAlignLen + 2, len(aaUnique) + 1, ntAlignLen + 7,
+    worksheet3.conditional_format(1, ntAlignLen + 2, len(ntUnique) + 1, ntAlignLen + 7,
                                   {'type': '2_color_scale',
                                    'min_color': '#FFFFFF',
                                    'max_color': '#3D85C6'
                                    }
                                   )
-    worksheet4.conditional_format(1, ntAlignLen + 2, len(aaUnique) + 1, ntAlignLen + 7,
+    worksheet4.conditional_format(1, ntAlignLen + 2, len(ntUnique) + 1, ntAlignLen + 7,
                                   {'type': '2_color_scale',
                                    'min_color': '#FFFFFF',
                                    'max_color': '#3D85C6'
