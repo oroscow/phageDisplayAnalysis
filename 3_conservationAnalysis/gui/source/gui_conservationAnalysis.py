@@ -348,7 +348,7 @@ if event == Sg.WIN_CLOSED:
 # Carry on with code otherwise.
 else:
     # Setup logging file.
-    outFileNameShort = re.sub(r'_a.*[.].*',
+    outFileNameShort = re.sub(r'[a-zA-Z]*[.]xlsx',
                               '_conservationAnalysis',
                               inFileName
                               )
@@ -433,7 +433,6 @@ else:
                                      )
             aaList = ntSeqRegex.findall(seqClean)
             logging.info('Amino acid sequences retrieved from %s.' % inFileName)
-            alignFile.close()
 
         # Retrieve well data.
         wellList = re.findall(r'([A-H][0-1][0-9])',
@@ -535,9 +534,9 @@ else:
                                            )
     wellTitle_format.set_align('left')
     wellTitle_format.set_align('vcenter')
-    library_format = workbook.add_format({'font_size': 12})
-    library_format.set_align('left')
-    library_format.set_align('vcenter')
+    info_format = workbook.add_format({'font_size': 12})
+    info_format.set_align('left')
+    info_format.set_align('vcenter')
     # Numbers.
     stats_format = workbook.add_format({'num_format': '#,##0.0'})
     stats_format.set_align('center')
@@ -725,7 +724,7 @@ else:
     # Library 1 (Ernst et al., 2013).
     if libraryInput == '1':
         # Region 1 formatting.
-        worksheet1.write(len(conservedList) + 4, 1, libraryOptions.get('1'), library_format)
+        worksheet1.write(len(conservedList) + 4, 1, libraryOptions.get('1'), info_format)
         logging.info('Library 1 (Ernst et al., 2013) selected.')
         worksheet1.merge_range(1, 2, 1, 14, 'Region 1', title_format)
         for column in [2, 4, 6, 8, 9, 10, 11, 12, 14]:
@@ -750,7 +749,7 @@ else:
 
     # Library 2 (Ernst et al., 2013).
     elif libraryInput == '2':
-        worksheet1.write(len(conservedList) + 4, 1, libraryOptions.get('2'), library_format)
+        worksheet1.write(len(conservedList) + 4, 1, libraryOptions.get('2'), info_format)
         logging.info('Library 2 (Ernst et al., 2013) selected.')
         # Region 1 formatting.
         worksheet1.merge_range(1, 2, 1, 14, 'Region 1', title_format)
@@ -777,6 +776,10 @@ else:
     # Pass.
     elif libraryInput == 'pass':
         logging.info('No library design selected.')
+
+    # Info about how the values were obtained.
+    statsInfo = 'The statistics presented above are for binder:control ratios.'
+    worksheet1.write(len(conservedList) + 6, 1, statsInfo, info_format)
 
     ##################
     # Analyse diversity and biochemical patterns in sequences.
@@ -1278,6 +1281,7 @@ else:
         worksheet3.set_column(column, column, 15)
     for column in [2, 4, 6, 8, 10, 12]:
         worksheet3.set_column(column, column, 17)
+    worksheet3.freeze_panes(2, 1)
     logging.info('%s worksheet created.' % worksheet3Name)
 
     # Write unique sequence IDs.

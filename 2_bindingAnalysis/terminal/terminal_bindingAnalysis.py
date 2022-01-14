@@ -173,16 +173,11 @@ controlDict = {key: value for key, value in zip(elisaPlateIDs, controlCells)}
 ##################
 
 # Average paired values and append to a new list.
-cellAveList = []
-for value in range(0, len(cellValues), 2):
-    cellAveList.append(statistics.mean([cellValues[value], cellValues[value + 1]]))
+cellAveList = [statistics.mean([cellValues[value], cellValues[value + 1]]) for value in range(0, len(cellValues), 2)]
 logging.info('Paired ELISA absorbances averaged.')
 
 # Normalise ELISA scores to the blank/negative control average.
-relAveList = []
-for value in cellAveList:
-    relAve = value / blankAve
-    relAveList.append(relAve)
+relAveList = [(value / blankAve) for value in cellAveList]
 logging.info('Averaged absorbances normalised to the blanks/negative control average.')
 
 ##################
@@ -399,10 +394,7 @@ wellDict = {key: value for key, value in zip(elisaPlateIDs, range(0, 96))}
 wellRegex = re.compile(r'[A-H][0-9]{2}')
 
 # Determine the amino acid IDs present in the sequencing data.
-aaPlateIDs = []
-for name in aaNameList:
-    seqID = wellRegex.findall(name)
-    aaPlateIDs.append(seqID)
+aaPlateIDs = [wellRegex.findall(name) for name in aaNameList]
 # Turn list of lists into a flat list.
 aaSeqPlateIDs = []
 for sublist in aaPlateIDs:
@@ -410,18 +402,12 @@ for sublist in aaPlateIDs:
         aaSeqPlateIDs.append(ID)
 
 # Retrieve ELISA absorbances for only the IDs present in the sequencing data.
-aaRawListShort = []
-for ID in aaSeqPlateIDs:
-    well = wellDict.get(ID)
-    aaRawListShort.append(cellAveList[well])
-aaRelAveListShort = []
-for ID in aaSeqPlateIDs:
-    well = wellDict.get(ID)
-    aaRelAveListShort.append(relAveList[well])
+aaRawListShort = [cellAveList[wellDict.get(ID)] for ID in aaSeqPlateIDs]
+aaRelAveListShort = [relAveList[wellDict.get(ID)] for ID in aaSeqPlateIDs]
 logging.info('ELISA results without corresponding amino acid sequences removed from analysis.')
 
 # Relate IDs to their respective ELISA absorbances.
-aaShortNameList = list()
+aaShortNameList = []
 for name in aaNameList:
     if re.findall(r'([A-H])(\d$)', name):
         newName = re.sub(r'([A-H])(\d$)',
@@ -450,23 +436,15 @@ aaUniqueDict = dict(aaUnique)
 logging.info('Dictionary of unique amino acid sequences created.')
 
 # Remove controls that don't have sequencing counterparts.
-aaControlListRaw = []
-for well in aaSeqPlateIDs:
-    aaControlListRaw.append(controlDict[well])
-aaControlListRel = []
-for absorbance in aaControlListRaw:
-    relAve = absorbance / blankAve
-    aaControlListRel.append(relAve)
+aaControlListRaw = [controlDict[well] for well in aaSeqPlateIDs]
+aaControlListRel = [(absorbance / blankAve) for absorbance in aaControlListRaw]
 
 #########
 # Nucleotides
 #########
 
 # Determine the nucleotide IDs present in the sequencing data.
-ntPlateIDs = list()
-for name in ntNameList:
-    seqID = wellRegex.findall(name)
-    ntPlateIDs.append(seqID)
+ntPlateIDs = [wellRegex.findall(name) for name in ntNameList]
 # Turn list of lists into a flat list.
 ntSeqPlateIDs = []
 for sublist in ntPlateIDs:
@@ -474,18 +452,12 @@ for sublist in ntPlateIDs:
         ntSeqPlateIDs.append(item)
 
 # Retrieve ELISA absorbances for only the IDs present in the sequencing data.
-ntRawListShort = []
-for ID in ntSeqPlateIDs:
-    well = wellDict.get(ID)
-    ntRawListShort.append(cellAveList[well])
-ntRelAveListShort = []
-for ID in ntSeqPlateIDs:
-    well = wellDict.get(ID)
-    ntRelAveListShort.append(relAveList[well])
+ntRawListShort = [cellAveList[wellDict.get(ID)] for ID in ntSeqPlateIDs]
+ntRelAveListShort = [relAveList[wellDict.get(ID)] for ID in ntSeqPlateIDs]
 logging.info('ELISA results without corresponding nucleotide sequences removed from analysis.')
 
 # Relate IDs to their respective ELISA absorbances.
-ntShortNameList = list()
+ntShortNameList = []
 for name in ntNameList:
     if re.findall(r'([A-H])(\d$)', name):
         newName = re.sub(r'([A-H])(\d$)',
@@ -514,13 +486,8 @@ ntUniqueDict = dict(ntUnique)
 logging.info('Dictionary of unique nucleotide sequences created.')
 
 # Remove ELISA data that don't have sequencing counterparts.
-ntControlListRaw = []
-for well in ntSeqPlateIDs:
-    ntControlListRaw.append(controlDict[well])
-ntControlListRel = []
-for absorbance in ntControlListRaw:
-    relAve = absorbance / blankAve
-    ntControlListRel.append(relAve)
+ntControlListRaw = [controlDict[well] for well in ntSeqPlateIDs]
+ntControlListRel = [(absorbance / blankAve) for absorbance in ntControlListRaw]
 
 ##################
 # Order sequences and wells so they can be attributed to unique sequences. Necessary for subsequent statistics.
@@ -531,9 +498,7 @@ for absorbance in ntControlListRaw:
 #########
 
 # Create ordered list of wells that correspond to unique sequences.
-aaOrderedSeq = []
-for key in aaUniqueDict.keys():
-    aaOrderedSeq.append(key)
+aaOrderedSeq = [key for key in aaUniqueDict.keys()]
 aaOrderedNames = []
 for seq in aaOrderedSeq:
     for key, value in aaSeqDict.items():
@@ -563,9 +528,7 @@ logging.info('List of specific well IDs associated with amino acid sequences cre
 #########
 
 # Get ordered list of wells that correspond to unique sequences.
-ntOrderedSeq = []
-for key in ntUniqueDict.keys():
-    ntOrderedSeq.append(key)
+ntOrderedSeq = [key for key in ntUniqueDict.keys()]
 ntOrderedNames = []
 for seq in ntOrderedSeq:
     for key, value in ntSeqDict.items():
@@ -590,144 +553,6 @@ for uniqueSeq, count in ntUniqueDict.items():
     begin += count
 logging.info('List of specific well IDs associated with nucleotide sequences created.')
 
-# ##################
-# # Statistical analyses for unique sequences.
-# ##################
-#
-# #########
-# # Amino acids
-# #########
-#
-# # Retrieve max absorbance for ordered values.
-# aaUniqueMaxList = []
-# begin = 0
-# for seq, count in aaUniqueDict.items():
-#     end = int(count) + begin
-#     uniqueMax = max(aaOrderedAbs[begin:end])
-#     aaUniqueMaxList.append(uniqueMax)
-#     begin += count
-# logging.info('List of unique amino acid maximum absorbances created.')
-#
-# # Retrieve min absorbance for ordered values.
-# aaUniqueMinList = []
-# begin = 0
-# for seq, count in aaUniqueDict.items():
-#     end = int(count) + begin
-#     uniqueMin = min(aaOrderedAbs[begin:end])
-#     aaUniqueMinList.append(uniqueMin)
-#     begin += count
-# logging.info('List of unique amino acid minimum absorbances created.')
-#
-# # Retrieve median absorbance for ordered values.
-# aaUniqueMedianList = []
-# begin = 0
-# for seq, count in aaUniqueDict.items():
-#     end = int(count) + begin
-#     uniqueMedian = statistics.median(aaOrderedAbs[begin:end])
-#     aaUniqueMedianList.append(uniqueMedian)
-#     begin += count
-# logging.info('List of unique amino acid median absorbances created.')
-#
-# # Retrieve mean absorbance for ordered values.
-# aaUniqueMeanList = []
-# begin = 0
-# for seq, count in aaUniqueDict.items():
-#     end = int(count) + begin
-#     uniqueMean = statistics.mean(aaOrderedAbs[begin:end])
-#     aaUniqueMeanList.append(uniqueMean)
-#     begin += count
-# logging.info('List of unique amino acid mean absorbances created.')
-#
-# # Retrieve standard deviation of absorbances for ordered values.
-# aaUniqueStdevList = []
-# begin = 0
-# for seq, count in aaUniqueDict.items():
-#     end = int(count) + begin
-#     try:
-#         uniqueStdev = statistics.stdev(aaOrderedAbs[begin:end])
-#         aaUniqueStdevList.append(uniqueStdev)
-#     # Above statistic won't work if only a single value so append '0.0' value to the list.
-#     except statistics.StatisticsError:
-#         aaUniqueStdevList.append(0)
-#     begin += count
-# logging.info('List of unique amino acid absorbance standard deviations created.')
-#
-# aaStatsTable = {'AA Max': aaUniqueMaxList,
-#                 'AA Min': aaUniqueMinList,
-#                 'AA Median': aaUniqueMedianList,
-#                 'AA Mean': aaUniqueMeanList,
-#                 'AA St Dev': aaUniqueStdevList
-#                 }
-#
-# aaStatsDataframe = pandas.DataFrame(aaStatsTable)
-#
-# #########
-# # Nucleotides
-# #########
-#
-# # Retrieve max absorbance for ordered values.
-# ntUniqueMaxList = []
-# begin = 0
-# for seq, count in ntUniqueDict.items():
-#     end = int(count) + begin
-#     uniqueMax = max(ntOrderedAbs[begin:end])
-#     ntUniqueMaxList.append(uniqueMax)
-#     begin += count
-# logging.info('List of unique nucleotide maximum absorbances created.')
-#
-# # Retrieve min absorbance for ordered values.
-# ntUniqueMinList = []
-# begin = 0
-# for seq, count in ntUniqueDict.items():
-#     end = int(count) + begin
-#     uniqueMin = min(ntOrderedAbs[begin:end])
-#     ntUniqueMinList.append(uniqueMin)
-#     begin += count
-# logging.info('List of unique nucleotide minimum absorbances created.')
-#
-# # Retrieve median absorbance for ordered values.
-# ntUniqueMedianList = []
-# begin = 0
-# for seq, count in ntUniqueDict.items():
-#     end = int(count) + begin
-#     uniqueMedian = statistics.median(ntOrderedAbs[begin:end])
-#     ntUniqueMedianList.append(uniqueMedian)
-#     begin += count
-# logging.info('List of unique nucleotide median absorbances created.')
-#
-# # Retrieve mean absorbance for ordered values.
-# ntUniqueMeanList = []
-# begin = 0
-# for seq, count in ntUniqueDict.items():
-#     end = int(count) + begin
-#     uniqueMean = statistics.mean(ntOrderedAbs[begin:end])
-#     ntUniqueMeanList.append(uniqueMean)
-#     begin += count
-# logging.info('List of unique nucleotide mean absorbances created.')
-#
-# # Retrieve stdev absorbance for ordered values.
-# ntUniqueStdevList = []
-# begin = 0
-# for seq, count in ntUniqueDict.items():
-#     end = int(count) + begin
-#     try:
-#         uniqueStdev = statistics.stdev(ntOrderedAbs[begin:end])
-#         ntUniqueStdevList.append(uniqueStdev)
-#     # Above statistic won't work if only a single value so append '0.0' value to the list.
-#     except statistics.StatisticsError:
-#         ntUniqueStdevList.append(0)
-#     begin += count
-# logging.info('List of unique nucleotide absorbance standard deviations created.')
-#
-# ntStatsTable = {'NT Max': ntUniqueMaxList,
-#                 'NT Min': ntUniqueMinList,
-#                 'NT Median': ntUniqueMedianList,
-#                 'NT Mean': ntUniqueMeanList,
-#                 'NT St Dev': ntUniqueStdevList
-#                 }
-#
-# ntStatsDataframe = pandas.DataFrame(ntStatsTable)
-
 ##################
 # Compare binder and control absorbances and calculate statistics.
 ##################
@@ -737,7 +562,7 @@ logging.info('List of specific well IDs associated with nucleotide sequences cre
 #########
 
 # Normalise absorbances to controls.
-aaBinderControlRatio = [binder / control for binder, control in zip(aaRawListShort, aaControlListRaw)]
+aaBinderControlRatio = [(binder / control) for binder, control in zip(aaRawListShort, aaControlListRaw)]
 aaNameRatioDict = dict(zip(aaShortNameList,
                            aaBinderControlRatio)
                        )
@@ -749,9 +574,7 @@ for name in aaOrderedNames:
             aaOrderedRatios.append(score)
 
 # Create ordered list of absorbances that correspond to unique sequences.
-aaCounts = []
-for ratio, count in aaUniqueDict.items():
-    aaCounts.append(count)
+aaCounts = [count for ratio, count in aaUniqueDict.items()]
 aaRatioCountDict = dict(zip(aaBinderControlRatio,
                             aaCounts)
                         )
@@ -824,7 +647,7 @@ aaRatioStatsDataframe = pandas.DataFrame(aaRatioStatsTable)
 #########
 
 # Normalise absorbances to controls.
-ntBinderControlRatio = [binder / control for binder, control in zip(ntRawListShort, ntControlListRaw)]
+ntBinderControlRatio = [(binder / control) for binder, control in zip(ntRawListShort, ntControlListRaw)]
 ntNameRatioDict = dict(zip(ntShortNameList,
                            ntBinderControlRatio)
                        )

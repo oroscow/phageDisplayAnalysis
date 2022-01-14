@@ -231,8 +231,10 @@ logging.info('Fasta batch file created.')
 cyanprint('''\nEnter the sequence to begin the 5' trim at:
 * Not case-sensitive.
 * Must be at least six nucleotides long.
-* Use conserved nucleotides to prevent trimming at multiple sites.
-  E.g. For UbVs, use AAAATG (last FLAG tag residue & UbV start codon).'''
+* Use conserved nucleotides to prevent trimming at multiple sites or lack of trimming.
+* Do not enter nucleotides that contribute to the codons of diversified residues, where possible. 
+    E.g. For UbVs, the three nucleotides succeeding the start codon are diversified, so use the preceding three '''
+          '''nucleotides to ensure specificity (i.e. AAA ATG; the last FLAG tag codon & the UbV start codon).'''
           )
 
 # Create no trim folder.
@@ -286,8 +288,6 @@ while True:
                                                          ''
                                                          )
                         unTrimFile.write('>' + untrimFasta + '\n' + seq)
-                        unTrimFile.close()
-                tempFile.close()
         break
     # Redirect user to input the motif again if regex doesn't match anything.
     else:
@@ -349,7 +349,6 @@ while True:
                                                       ''
                                                       )
                         untrimFile.write('>' + newFasta + '\n' + seq)
-                        untrimFile.close()
                     os.chdir(ntFastaPath)
                     os.remove(fileName)
                 # If the sequence can be trimmed at the input length, trim the sequence, write it to the trimmed file,
@@ -367,7 +366,6 @@ while True:
                         shutil.move(ntFastaPath + '/' + fileName,
                                     ntTrimmedPath + '/' + fileName
                                     )
-                        trimFile.close()
         break
     # Redirect user to input the length again if regex doesn't match anything.
     else:
@@ -404,7 +402,6 @@ with open(correctNtTrimBatchName, 'w') as ntTrimBatchFile:
     for file in ntTrimFileNames:
         with open(file) as ntTrimFile:
             ntTrimBatchFile.write(ntTrimFile.read() + '\n\n')
-    ntTrimBatchFile.close()
 greenprint('\nTrimmed nucleotide batch file created.')
 logging.info('Trimmed nucleotide batch file created.')
 
@@ -455,7 +452,6 @@ for file in aaTrimFileList:
         aaSeq = str(aaSeq)
         # Write new contents to same file.
         aaTrimFile.write(fastaName + aaSeq)
-        aaTrimFile.close()
 greenprint('''\nTranslation finished.''')
 logging.info('Nucleotide sequences translated into amino acid sequences.')
 
@@ -478,10 +474,8 @@ aaTrimData = ''
 for file in aaTrimFileNames:
     with open(file) as aaTrimFile:
         aaTrimData += str(aaTrimFile.read() + '\n\n')
-        aaTrimFile.close()
 with open(correctAaTrimBatchPath, 'a') as aaTrimBatchFile:
     aaTrimBatchFile.write(aaTrimData)
-    aaTrimBatchFile.close()
 
 ##################
 # Create a new batch file where truncated and non-full length amino acid sequences are removed.
@@ -495,7 +489,6 @@ truncAaTrimBatchPath = re.sub('.fasta',
 # with open(truncAaTrimBatchPath, 'x') as truncBatchFile:
 with open(correctAaTrimBatchPath, 'r') as fullBatchFile:
     batchData = fullBatchFile.readlines()
-    batchFile.close()
 seqBatchList = []
 nameBatchList = []
 # Retrieve amino acid sequences and names in batch file.
@@ -533,7 +526,6 @@ with open(truncAaTrimBatchPath, 'x') as truncAaTrimBatchFile:
             truncAaTrimBatchFile.write(name + '\n' + seq + '\n\n')
         else:
             pass
-    truncAaTrimBatchFile.close()
 logging.info('Non-full length and truncated amino acid sequences removed from alignment pool.')
 greenprint('Non-full length and truncated amino acid sequences removed from alignment pool.')
 
@@ -566,7 +558,6 @@ aaFastaName = folderName + '_aaTrimmed_alignment.fasta'
 with open(aaFastaName, 'w') as aaFastaFile:
     aaFastaFile.write(aaAlignFasta)
     logging.info('Amino acid fasta alignment created.')
-    aaFastaFile.close()
 # Amino acid clustal alignment.
 aaAlignClustal = format(aaAlignment,
                         'clustal'
@@ -575,7 +566,6 @@ aaClustalName = folderName + '_aaTrimmed_alignment.clustal'
 with open(aaClustalName, 'w') as aaClustalFile:
     aaClustalFile.write(aaAlignClustal)
     logging.info('Amino acid clustal alignment created.')
-    aaClustalFile.close()
 
 #########
 # Nucleotides
@@ -594,7 +584,6 @@ ntFastaName = folderName + '_ntTrimmed_alignment.fasta'
 with open(ntFastaName, 'w') as ntFastaFile:
     ntFastaFile.write(ntAlignFasta)
     logging.info('Nucleotide fasta alignment created.')
-    ntFastaFile.close()
 # Nucleotide clustal alignment.
 ntAlignClustal = format(ntAlignment,
                         'clustal'
@@ -603,7 +592,6 @@ ntClustalName = folderName + '_ntTrimmed_alignment.clustal'
 with open(ntClustalName, 'w') as ntClustalFile:
     ntClustalFile.write(ntAlignClustal)
     logging.info('Nucleotide clustal alignment created.')
-    ntClustalFile.close()
 
 ##################
 # Extract data for writing to xlsx file.
@@ -643,7 +631,6 @@ with open(alignSource, 'r') as alignFile:
                                        )
     # Retrieve well IDs.
     shortWellListAa = fastaNameRegex.findall(shorterNamesAa)
-    alignFile.close()
 
 # Create list of unique amino acid sequences ordered by frequency.
 aaUnique = OrderedCounter(aaList)
@@ -677,7 +664,6 @@ with open(alignFile2, 'r') as alignFile:
                                        )
     # Retrieve well IDs.
     shortWellListNt = fastaNameRegex.findall(shorterNamesNt)
-    alignFile.close()
 
 # Create list of unique nucleotide sequences ordered by frequency.
 uniqueNt = OrderedCounter(ntList)
@@ -694,17 +680,15 @@ logging.info('Dictionary of unique nucleotide sequences created.')
 #########
 
 # Get ordered list of wells that correspond to unique sequences; necessary for assigning wells to unique IDs.
-orderedSeq = []
-for key in aaUniqueDict.keys():
-    orderedSeq.append(key)
+aaOrderedSeq = [key for key in aaUniqueDict.keys()]
 aaDict = dict(zip(shortWellListAa,
                   aaList)
               )
-orderedIndex = []
-for seq in orderedSeq:
+aaOrderedIndex = []
+for seq in aaOrderedSeq:
     for key, value in aaDict.items():
         if seq in value:
-            orderedIndex.append(key)
+            aaOrderedIndex.append(key)
 logging.info('Ordered index of amino acid well IDs created.')
 
 # Associate specific well IDs with corresponding unique sequence (amino acids).
@@ -712,7 +696,7 @@ aaCountID = []
 begin = 0
 for uniqueSeq, count in aaUniqueDict.items():
     end = int(count) + begin
-    aaCountID.append(orderedIndex[begin:end])
+    aaCountID.append(aaOrderedIndex[begin:end])
     begin += count
 logging.info('List of specific well IDs associated with amino acid sequences created.')
 
@@ -724,9 +708,7 @@ logging.info('List of specific well IDs associated with amino acid sequences cre
 newNtDict = dict(zip(shortWellListNt,
                      ntList)
                  )
-ntOrderedSeq = []
-for key in ntUniqueDict.keys():
-    ntOrderedSeq.append(key)
+ntOrderedSeq = [key for key in ntUniqueDict.keys()]
 ntOrderedIndex = []
 for seq in ntOrderedSeq:
     for key, value in newNtDict.items():
@@ -1057,7 +1039,7 @@ present in the sample.
 In this case, look at the corresponding ab1 file and assess whether or not the bases were called correctly. If
 not, create a copy of the ab1 file, edit the base calls (type manually called bases in lowercase to distinguish
 them from bases originally called by the sequencing equipment), move the original unedited ab1 file to a separate'''
-             '''folder, replace its original position with the new edited ab1 file, and run this script again.'''
+          '''folder, replace its original position with the new edited ab1 file, and run this script again.'''
           )
 logging.info('Sequence Analysis program finished running.')
 logging.shutdown()
