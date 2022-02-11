@@ -20,3 +20,6 @@
 # OS generated files.
 .git
 .idea
+
+# Bit files.
+*.pyc
