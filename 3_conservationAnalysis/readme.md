@@ -31,7 +31,7 @@ Analysis programs, the following will apply:
 ## Compatibility:
 * PyCharm is the recommended IDE to use for running terminal scripts. If using Spyder, avoid version 5 as this version
 for has conflicts with the xlsxwriter package and may get stuck on importing modules.
-* Confirmed to work with Python 3.9. Later/earlier versions may work but have not been verified.
+* Confirmed to work with Python 3.9. Later/earlier versions may work but have not been tested.
 * Confirmed to work in Windows and unconfirmed in Macs and Linux. Path names may need to be changed to suit Macs
 and Linux' formats.
 

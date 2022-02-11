@@ -4,7 +4,11 @@ Analyses ELISA binding data along with corresponding sequence data.  Calculates 
 each protein, calculates the binder:control absorbance ratio, and normalizes them against the average of the blanks.
 ELISA data that don't have corresponding sequencing data are excluded from the final results.
 
-![Binding Analysis GUI](gui/source/images/gui.png)
+![Binding Analysis GUI 1](gui/source/images/gui1.png)
+
+![Binding Analysis GUI 2](gui/source/images/gui2.png)
+
+![Binding Analysis GUI 3](gui/source/images/gui3.png)
 
 ## Details:
 
@@ -37,7 +41,7 @@ respectively) are included.
 ## Compatibility:
 * PyCharm is the recommended IDE to use for running terminal scripts. If using Spyder, avoid version 5 as this version
 for has conflicts with the xlsxwriter package and may get stuck on importing modules.
-* Confirmed to work with Python 3.9. Later/earlier versions may work but have not been verified.
+* Confirmed to work with Python 3.9. Later/earlier versions may work but have not been tested.
 * Confirmed to work in Windows and unconfirmed in Macs and Linux. Path names may need to be changed to suit Macs
 and Linux' formats.
 

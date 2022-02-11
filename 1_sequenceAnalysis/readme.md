@@ -4,7 +4,7 @@ Analyses the University of Guelph's Advanced Analytics Centre (AAC) Genomics Fac
 files are left unaltered and copies are renamed, reorganised, converted to fasta, trimmed, translated, and aligned.
 Final amino acid/nucleotide alignments are in fasta, clustal, and xlsx formats.
 
-![Sequence Analysis GUI](https://user-images.githubusercontent.com/55511532/137400899-cea27a53-72dc-4130-bcb7-eda1edcd1a98.png)
+![Sequence Analysis GUI](gui/source/images/gui.png)
 
 ## Details:
 
@@ -33,7 +33,7 @@ to a separate folder for manual analysis.
 ## Compatibility:
 * PyCharm is the recommended IDE to use for running terminal scripts. If using Spyder, avoid version 5 as this version
 for has conflicts with the xlsxwriter package and may get stuck on importing modules.
-* Confirmed to work with Python 3.9. Later/earlier versions may work but have not been verified.
+* Confirmed to work with Python 3.9. Later/earlier versions may work but have not been tested.
 * Confirmed to work in Windows and unconfirmed in Macs and Linux. Path names may need to be changed to suit Macs
 and Linux' formats.
 
