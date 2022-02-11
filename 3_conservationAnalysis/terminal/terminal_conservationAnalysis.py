@@ -143,10 +143,16 @@ elif inputFormat == '2':
 # Setup logging file.
 ##################
 
-outFileNameShort = re.sub(r'[a-zA-Z]*[.]xlsx',
-                          'conservationAnalysis',
-                          inFileName
-                          )
+if inputFormat == '1':
+    outFileNameShort = re.sub(r'[a-zA-Z]{15,}[.]xlsx',
+                              'conservationAnalysis',
+                              inFileName
+                              )
+elif inputFormat == '2':
+    outFileNameShort = re.sub(r'[a-zA-Z]{6,}[_]*[a-zA-Z]+[.]fasta',
+                              'conservationAnalysis',
+                              inFileName
+                              )
 
 logging.basicConfig(filename=path + '/' + outFileNameShort + '.log',
                     level=logging.INFO,

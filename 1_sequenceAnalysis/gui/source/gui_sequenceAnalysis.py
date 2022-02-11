@@ -376,8 +376,6 @@ else:
                 batchFile.write(inFile.read() + '\n')
     logging.info('Fasta batch file created.')
 
-    # TODO: Figure out why script stalls here even though the terminal version works fine.
-
     ##################
     # Trim fasta sequences at a 5' motif.
     ##################
@@ -463,6 +461,7 @@ else:
                 fastaName = str(lines[0])
                 seq = str(lines[1])
                 trimSeq = seq[0:endSite]
+                tempFile1.close()
                 # If the sequence cannot be trimmed at the input length, move the sequence to the untrimmed folder.
                 if len(trimSeq) < endSite:
                     if not os.path.exists(noTrimPath):
@@ -490,6 +489,8 @@ else:
                         trimSeq = seq[0:endSite]
                         with open(fileName, 'w') as trimFile:
                             trimFile.write(fastaName + trimSeq)
+                            trimFile.close()
+                        tempFile2.close()
                         shutil.move(ntFastaPath + '/' + fileName,
                                     ntTrimmedPath + '/' + fileName
                                     )
@@ -718,7 +719,7 @@ else:
     #########
     # Amino acids
     #########
-    # TODO: Clean up regexes.
+
     # Amino acid alignment data extraction.
     fastaNameRegex = re.compile('>(.*)')
     seqRegex = re.compile(r'(?<!>)([A-Z]{5,})(?!\d|[a-z]|_)')

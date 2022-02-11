@@ -348,10 +348,16 @@ if event == Sg.WIN_CLOSED:
 # Carry on with code otherwise.
 else:
     # Setup logging file.
-    outFileNameShort = re.sub(r'[a-zA-Z]*[.]xlsx',
-                              '_conservationAnalysis',
-                              inFileName
-                              )
+    if inputFormat == '1':
+        outFileNameShort = re.sub(r'[a-zA-Z]{15,}[.]xlsx',
+                                  'conservationAnalysis',
+                                  inFileName
+                                  )
+    elif inputFormat == '2':
+        outFileNameShort = re.sub(r'[a-zA-Z]{6,}[_]*[a-zA-Z]+[.]fasta',
+                                  'conservationAnalysis',
+                                  inFileName
+                                  )
 
     logging.basicConfig(filename=path + '/' + outFileNameShort + '.log',
                         level=logging.INFO,
@@ -1422,9 +1428,10 @@ else:
     workbook.close()
     logging.info('Excel file exported as %s_conservationAnalysis.xlsx.' % inFileName)
     logging.info('Conservation Analysis program finished running.')
-    logging.shutdown()
     # TODO: Add suggestions to final gui popup.
     Sg.Popup(' Conservation Analysis program finished running. See log file for details.',
              title='Analysis Finished',
              grab_anywhere=True,
              text_color='#4276ac')
+    logging.shutdown()
+    window.close()
