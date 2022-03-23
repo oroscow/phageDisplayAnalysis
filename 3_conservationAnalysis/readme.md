@@ -1,6 +1,6 @@
 # Conservation Analysis
  
-Analyses UbV ELISA and/or sequencing data by showing only non-conserved amino acid residues, highlighting regions that
+Analyses phage display ELISA and/or sequencing data by showing only non-conserved amino acid residues, highlighting regions that
 were targeted for diversification in the original phage display library, and calculating diversity and biochemistry
 metrics.
 
@@ -8,10 +8,10 @@ metrics.
 
 ## Details:
 
-**Input:** ELISA data (xlsx; formatted same as Binding Analysis output) or amino acid alignment data (fasta; generic
+**Input:** ELISA data (\*.xlsx; formatted same as Binding Analysis output) or amino acid alignment data (\*.fasta; generic
 formatting).
 
-**Output:** Excel file (xlsx) with one worksheet containing the conserved amino acid alignment of unique sequences,
+**Output:** Excel file (\*.xlsx) with one worksheet containing the conserved amino acid alignment of unique sequences,
 frequency of each sequence, corresponding UbV IDs, and with/without statistical data depending on whether the input file
 was ELISA data or amino acid alignment data, respectively.
 
