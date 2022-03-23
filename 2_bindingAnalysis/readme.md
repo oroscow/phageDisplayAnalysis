@@ -16,10 +16,10 @@ The following ELISA plate layout must be used:
 
 ![Plate Layout](gui/source/images/plateLayout.png)
 
-**Input:** ELISA data (xlsx; formatting dependent on the plate reader, please see _/sampleInputs_ for an example), amino
-acid alignment data (fasta; generic formatting), and nucleotide alignment data (fasta; generic formatting).
+**Input:** ELISA data (\*.xlsx; formatting dependent on the plate reader, please see _/sampleInputs_ for an example), amino
+acid alignment data (\*.fasta; generic formatting), and nucleotide alignment data (\*.fasta; generic formatting).
 
-**Output:** Excel file (xlsx) with four worksheets containing all amino acid sequences, unique amino acid sequences,
+**Output:** Excel file (\*.xlsx) with four worksheets containing all amino acid sequences, unique amino acid sequences,
 all nucleotide sequences, and unique nucleotide sequences, respectively. ELISA data is paired with the corresponding
 sequences and descriptive statistics (i.e. frequency, maximum/minimum/mean/median/standard deviation, and corresponding
 sequence IDs) are generated for each unique sequence.
