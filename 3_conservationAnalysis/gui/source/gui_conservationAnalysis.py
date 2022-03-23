@@ -109,15 +109,40 @@ layout = [
                    file_types=(('Excel/Fasta Files', '*.xlsx;*.fasta'), ('All Files', '*.*'),),
                    )
      ],
-    [Sg.Text('''    * Must be in xlsx format.\n''',
+    [Sg.Text('''    * Must be in xlsx format.''',
              text_color='#bfbfbf',
              font=('Segoe UI', 10),
              key='-INFILE_END_TEXT-'
              )
      ],
 
+    # Trim prompt.
+    [Sg.Radio('Trim first amino acid',
+              'TRIM',
+              default=True,
+              key='-TRIM-',
+              text_color='#bfbfbf',
+              font=('Segoe UI Bold', 10),
+              enable_events=True
+              ),
+     Sg.Radio('Do not trim first amino acid',
+              'TRIM',
+              default=False,
+              key='-NOTRIM-',
+              text_color='#bfbfbf',
+              font=('Segoe UI Bold', 10),
+              enable_events=True
+              )
+     ],
+    [Sg.Text('''    * During sequence analysis, if the second codon wasn't conserved and the codon preceding the first 
+      codon had to be used, this option allows that codon to be trimmed and removed from analysis.''',
+             text_color='#bfbfbf',
+             font=('Segoe UI', 10)
+             )
+     ],
+
     # Consensus sequence input prompt.
-    [Sg.Text('3. Enter the consensus sequence for comparison:',
+    [Sg.Text('\n3. Enter the consensus sequence for comparison:',
              text_color='white',
              font=('Segoe UI Bold', 10)
              )
@@ -130,8 +155,7 @@ layout = [
               )
      ],
     [Sg.Text('''    * Not case-sensitive.
-    * Default is human ubiquitin (accession: AAA36789/CAA28495/CAA44911). In most cases this does not
-      need to be changed.\n''',
+    * Default is human ubiquitin (accession: AAA36789, PDB: 1UBQ).\n''',
              text_color='#bfbfbf',
              font=('Segoe UI', 10)
              )
@@ -162,7 +186,7 @@ layout = [
      Sg.Radio('N/A',
               'LIBRARY',
               default=False,
-              key='-NO_LIBRARY-',
+              key='-LIBRARY0-',
               text_color='#bfbfbf',
               font=('Segoe UI Bold', 10),
               enable_events=True
@@ -196,7 +220,7 @@ window = Sg.Window('Phage Display - Conservation Analysis',
                    alpha_channel=0.95,
                    grab_anywhere=True,
                    resizable=True,
-                   size=(675, 710),
+                   size=(675, 775),
                    ttk_theme='clam'
                    )
 
@@ -233,7 +257,7 @@ while True:
         (Region 2) 42, 44, 46-49
         (Region 3) 62-64, 66, 68, 70-78\n''')
         continue
-    elif event == '-NO_LIBRARY-':
+    elif event == '-LIBRARY0-':
         window['-LIBRARY_END_TEXT-'].update('''    Diversified residues:
         N/A\n\n\n''')
         continue
@@ -249,8 +273,9 @@ while True:
                           }
         consensusSeq = str(values['-CONSENSUSINPUT-'])
         consensusSeq = consensusSeq.upper()
-        ntSeqRegex = re.compile(r'[ARNDCEQGHILKMFPSTWYVX]{10,}')
-        consensusSeqInput = ntSeqRegex.search(consensusSeq, re.IGNORECASE)
+        aaSeqRegex = re.compile(r'[ARNDCEQGHILKMFPSTWYVX]{10,}')
+        consensusSeqInput = aaSeqRegex.search(consensusSeq, re.IGNORECASE)
+        trimInput = 'N'
 
         if values['-ELISA_SEQ_DATA-']:
             inputFormat = '1'
@@ -316,26 +341,29 @@ Please choose the file again.''',
             inFileName = re.findall(r'[a-zA-Z0-9_]+\.fasta$', inFilePath)
             inFileName = inFileName[0]
 
-            if consensusSeqInput is None:
-                Sg.Popup('''Invalid input for consensus sequence.
+        if values['-TRIM-']:
+            trimInput = 'Y'
+
+        if consensusSeqInput is None:
+            Sg.Popup('''Invalid input for consensus sequence.
 Please enter a valid IUPAC amino acid sequence at least 10 digits long.''',
-                         title='Invalid Consensus Sequence',
-                         grab_anywhere=True,
-                         text_color='#4276ac',
-                         any_key_closes=False
-                         )
-                continue
+                     title='Invalid Consensus Sequence',
+                     grab_anywhere=True,
+                     text_color='#4276ac',
+                     any_key_closes=False
+                     )
+            continue
 
         if values['-LIBRARY1-']:
             libraryInput = '1'
+            break
 
         if values['-LIBRARY2-']:
             libraryInput = '2'
+            break
 
-        if values['-NO_LIBRARY-']:
+        if values['-LIBRARY0-']:
             libraryInput = 'pass'
-
-        else:
             break
 
 ##################
@@ -418,15 +446,15 @@ else:
         seqCells = allCells.iloc[1:, 1:]
         seqCells = seqCells.to_string(index=False)
         aaList = seqCells.replace(' ', '')
-        ntSeqRegex = re.compile(r'[ARNDCEQGHILKMFPSTWYVX]{10,}')
-        aaList = ntSeqRegex.findall(aaList)
+        aaSeqRegex = re.compile(r'[ARNDCEQGHILKMFPSTWYVX]{10,}')
+        aaList = aaSeqRegex.findall(aaList)
 
         # Create list of unique amino acid sequences ordered by frequency.
         uniqueDict = dict(zip(aaList, countList))
 
     elif inputFormat == '2':
         # Read alignment file.
-        ntSeqRegex = re.compile(r'[ARNDCEQGHILKMFPSTWYVX]{10,}')
+        aaSeqRegex = re.compile(r'[ARNDCEQGHILKMFPSTWYVX]{10,}')
         stopRegex = re.compile(r'([*]+[A-Z]*)')
         with open(inFileName, 'r') as alignFile:
             allData = alignFile.read()
@@ -437,7 +465,7 @@ else:
             seqClean = stopRegex.sub('',
                                      seqClean
                                      )
-            aaList = ntSeqRegex.findall(seqClean)
+            aaList = aaSeqRegex.findall(seqClean)
             logging.info('Amino acid sequences retrieved from %s.' % inFileName)
 
         # Retrieve well data.
@@ -482,21 +510,26 @@ else:
     # For each amino acid sequence, replace non-diversified regions with dashes.
     ##################
 
-    # Remove amino acid prior to start codon.
+    # Trim first amino acid residue.
     aaShortList = []
-    for seq in aaList:
-        aaShortSeq = seq[1:]
-        aaShortList.append(aaShortSeq)
-    logging.info('Initial non-ubiquitin amino acid residue removed from all sequences.')
+    if trimInput == 'Y':
+        # Remove amino acid prior to start codon.
+        for seq in aaList:
+            aaShortSeq = seq[1:]
+            aaShortList.append(aaShortSeq)
+        logging.info('First amino acid residue removed from all sequences.')
+    else:
+        aaShortList = aaList
+        logging.info('First amino acid residue left in all sequences.')
+        pass
 
     # Compare UbV sequences against a consensus sequence and replace conserved amino acids with dashes.
-    consensusSeq = 'MQIFVKTLTGKTITLEVEPSDTIENVKAKIQDKEGIPPDQQRLIFAGKQLEDGRTLSDYNIQKESTLHLVLRLRGGGG'
     logging.info('''Consensus sequence set to '%s'.''' % consensusSeq)
     consensusLen = len(consensusSeq)
     conservedList = []
-    for ubvSeq in aaShortList:
+    for querySeq in aaShortList:
         conservedList.append(comparestrings(consensusSeq,
-                                            ubvSeq
+                                            querySeq
                                             )
                              )
     logging.info('List of conserved sequences created.')
@@ -585,7 +618,7 @@ else:
     worksheet1 = workbook.add_worksheet(worksheet1Name)
     worksheet1.hide_gridlines(option=2)
     worksheet1.set_column(0, 0, 10)
-    worksheet1.set_column(1, consensusLen, 2)
+    worksheet1.set_column(1, consensusLen, 3)
     worksheet1.set_column(consensusLen + 1, consensusLen + 5, 8)
     worksheet1.freeze_panes(3, 1)
     logging.info('%s worksheet created.' % worksheet1Name)
@@ -784,8 +817,11 @@ else:
         logging.info('No library design selected.')
 
     # Info about how the values were obtained.
-    statsInfo = 'The statistics presented above are for binder:control ratios.'
-    worksheet1.write(len(conservedList) + 6, 1, statsInfo, info_format)
+    if inputFormat == '1':
+        statsInfo = 'The statistics presented above are for binder:control ratios.'
+        worksheet1.write(len(conservedList) + 6, 1, statsInfo, info_format)
+    else:
+        pass
 
     ##################
     # Analyse diversity and biochemical patterns in sequences.
@@ -1429,7 +1465,7 @@ else:
     logging.info('Excel file exported as %s_conservationAnalysis.xlsx.' % inFileName)
     logging.info('Conservation Analysis program finished running.')
     # TODO: Add suggestions to final gui popup.
-    Sg.Popup(' Conservation Analysis program finished running. See log file for details.',
+    Sg.Popup('Conservation Analysis program finished running. See log file for details.',
              title='Analysis Finished',
              grab_anywhere=True,
              text_color='#4276ac')

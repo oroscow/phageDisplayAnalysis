@@ -212,15 +212,15 @@ if inputFormat == '1':
     seqCells = allCells.iloc[1:, 1:]
     seqCells = seqCells.to_string(index=False)
     aaList = seqCells.replace(' ', '')
-    ntSeqRegex = re.compile(r'[ARNDCEQGHILKMFPSTWYVX]{10,}')
-    aaList = ntSeqRegex.findall(aaList)
+    aaSeqRegex = re.compile(r'[ARNDCEQGHILKMFPSTWYVX]{10,}')
+    aaList = aaSeqRegex.findall(aaList)
 
     # Create list of unique amino acid sequences ordered by frequency.
     uniqueDict = dict(zip(aaList, countList))
 
 elif inputFormat == '2':
     # Read alignment file.
-    ntSeqRegex = re.compile(r'[ARNDCEQGHILKMFPSTWYVX]{10,}')
+    aaSeqRegex = re.compile(r'[ARNDCEQGHILKMFPSTWYVX]{10,}')
     stopRegex = re.compile(r'([*]+[A-Z]*)')
     with open(inFileName, 'r') as alignFile:
         allData = alignFile.read()
@@ -231,7 +231,7 @@ elif inputFormat == '2':
         seqClean = stopRegex.sub('',
                                  seqClean
                                  )
-        aaList = ntSeqRegex.findall(seqClean)
+        aaList = aaSeqRegex.findall(seqClean)
         logging.info('Amino acid sequences retrieved from %s.' % inFileName)
 
     # Retrieve well data.
@@ -276,21 +276,69 @@ elif inputFormat == '2':
 # For each amino acid sequence, replace non-diversified regions with dashes.
 ##################
 
-# Remove amino acid prior to start codon.
-aaShortList = []
-for seq in aaList:
-    aaShortSeq = seq[1:]
-    aaShortList.append(aaShortSeq)
-logging.info('Initial non-ubiquitin amino acid residue removed from all sequences.')
+# Choose whether to remove the first amino acid. User prompt.
+cyanprint('''\nTrim the first amino acid residue:
+
+[Y] Trim the first amino acid residue
+* During sequence analysis, if the second codon wasn't conserved and the codon preceding the first codon had to be used,
+this option allows that codon to be trimmed and removed from analysis.
+* Choose this for analysing UbVs.
+
+[N] Do not trim the first amino acid residue
+* If the previous description does not apply, do not trim the first amino acid residue.'''
+          )
+
+while True:
+    trimInput = input()
+    if trimInput.upper() == 'Y':
+        # Remove amino acid prior to start codon.
+        aaShortList = []
+        for seq in aaList:
+            aaShortSeq = seq[1:]
+            aaShortList.append(aaShortSeq)
+        logging.info('First amino acid residue removed from all sequences.')
+        cyanprint('\nTrimmed first amino acid.'
+                  )
+        break
+    elif trimInput.upper() == 'N':
+        # Retain the first amino acid prior to start codon.
+        aaShortList = aaList
+        logging.info('First amino acid residue left in all sequences.')
+        cyanprint('\nSkipped trimming first amino acid.'
+                  )
+        break
+    else:
+        cyanprint('''Invalid input for consensus sequence.
+Please enter a valid IUPAC amino acid sequence at least 10 digits long.'''
+                  )
+
+# Choose a consensus sequence to compare sequences against. User prompt.
+cyanprint('''\nEnter a consensus sequence again which to compare query sequences:
+* To use the default consensus sequence for ubiquitin, type "ubiquitin".'''
+          )
+
+while True:
+    consensusInput = input().upper()
+    aaSeqRegex = re.compile(r'[ARNDCEQGHILKMFPSTWYVX]{10,}', re.IGNORECASE)
+    if consensusInput == 'UBIQUITIN':
+        consensusSeq = 'MQIFVKTLTGKTITLEVEPSDTIENVKAKIQDKEGIPPDQQRLIFAGKQLEDGRTLSDYNIQKESTLHLVLRLRGGGG'
+        logging.info('''Consensus sequence set to '%s'.''' % consensusSeq)
+        break
+    elif re.search(aaSeqRegex, consensusInput):
+        consensusSeq = consensusInput
+        logging.info('''Consensus sequence set to '%s'.''' % consensusSeq)
+        break
+    else:
+        cyanprint('\nInvalid option.'
+                  'Please try again.'
+                  )
 
 # Compare UbV sequences against a consensus sequence and replace conserved amino acids with dashes.
-consensusSeq = 'MQIFVKTLTGKTITLEVEPSDTIENVKAKIQDKEGIPPDQQRLIFAGKQLEDGRTLSDYNIQKESTLHLVLRLRGGGG'
-logging.info('''Consensus sequence set to '%s'.''' % consensusSeq)
 consensusLen = len(consensusSeq)
 conservedList = []
-for ubvSeq in aaShortList:
+for querySeq in aaShortList:
     conservedList.append(comparestrings(consensusSeq,
-                                        ubvSeq
+                                        querySeq
                                         )
                          )
 logging.info('List of conserved sequences created.')
@@ -379,7 +427,7 @@ worksheet1Name = 'Conserved AA'
 worksheet1 = workbook.add_worksheet(worksheet1Name)
 worksheet1.hide_gridlines(option=2)
 worksheet1.set_column(0, 0, 10)
-worksheet1.set_column(1, consensusLen, 2)
+worksheet1.set_column(1, consensusLen, 3)
 worksheet1.set_column(consensusLen + 1, consensusLen + 5, 8)
 worksheet1.freeze_panes(3, 1)
 logging.info('%s worksheet created.' % worksheet1Name)
@@ -611,8 +659,11 @@ while True:
                   'Please try again.')
 
 # Info about how the values were obtained.
-statsInfo = 'The statistics presented above are for binder:control ratios.'
-worksheet1.write(len(conservedList) + 6, 1, statsInfo, info_format)
+if inputFormat == '1':
+    statsInfo = 'The statistics presented above are for binder:control ratios.'
+    worksheet1.write(len(conservedList) + 6, 1, statsInfo, info_format)
+else:
+    pass
 
 ##################
 # Analyse diversity and biochemical patterns in sequences.

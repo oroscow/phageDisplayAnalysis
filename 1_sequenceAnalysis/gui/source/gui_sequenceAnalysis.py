@@ -899,8 +899,8 @@ else:
     worksheet1.hide_gridlines(option=2)
     idColWidth = round(len(aaNameList[0]) * 1.4)
     worksheet1.set_column(0, 0, idColWidth)
-    worksheet1.set_column(1, aaAlignLen, 2)
-    worksheet1.freeze_panes(0, 1)
+    worksheet1.set_column(1, aaAlignLen, 3)
+    worksheet1.freeze_panes(2, 1)
     logging.info('%s worksheet created.' % worksheet1Name)
 
     # Write well IDs.
@@ -945,7 +945,7 @@ else:
     worksheet2.set_column(0, 0, 10)
     worksheet2.set_column(1, aaAlignLen, 2)
     worksheet2.set_column(1, aaAlignLen, 2)
-    worksheet2.freeze_panes(0, 1)
+    worksheet2.freeze_panes(2, 1)
     logging.info('%s worksheet created.' % worksheet2Name)
 
     # Write unique amino acid sequences.
@@ -1015,7 +1015,7 @@ else:
     worksheet3.hide_gridlines(option=2)
     worksheet3.set_column(0, 0, idColWidth)
     worksheet3.set_column(1, ntAlignLen, 3)
-    worksheet3.freeze_panes(0, 1)
+    worksheet3.freeze_panes(2, 1)
     logging.info('%s worksheet created.' % worksheet3Name)
 
     # Write well IDs.
@@ -1059,7 +1059,7 @@ else:
     worksheet4.hide_gridlines(option=2)
     worksheet4.set_column(0, 0, 10)
     worksheet4.set_column(1, ntAlignLen, 3)
-    worksheet4.freeze_panes(0, 1)
+    worksheet4.freeze_panes(2, 1)
     logging.info('%s worksheet created.' % worksheet4Name)
 
     # Write unique nucleotide sequences.

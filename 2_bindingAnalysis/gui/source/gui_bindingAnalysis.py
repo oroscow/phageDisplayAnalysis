@@ -67,38 +67,8 @@ infoLayout = [
 
 inFileLayout = [
 
-    # Input format prompt.
-    [Sg.Text('1. Choose input format:',
-             text_color='white',
-             font=('Segoe UI Bold', 10)
-             )
-     ],
-    [Sg.Radio('Xlsx (one file)',
-              'FORMAT',
-              default=True,
-              key='-XLSX_FORMAT-',
-              text_color='#bfbfbf',
-              font=('Segoe UI Bold', 10),
-              enable_events=True
-              ),
-     Sg.Radio('Fasta (two files)',
-              'FORMAT',
-              default=False,
-              key='-FASTA_FORMAT-',
-              text_color='#bfbfbf',
-              font=('Segoe UI Bold', 10),
-              enable_events=True
-              )
-     ],
-    [Sg.Text('''    * Requires xlsx output from Sequence Analysis program.\n''',
-             text_color='#bfbfbf',
-             font=('Segoe UI', 10),
-             key='-RADIO_TEXT-'
-             )
-     ],
-
     # ELISA file input prompt.
-    [Sg.Text('2. Enter the full path of the raw ELISA data file:',
+    [Sg.Text('1. Enter the full path of the raw ELISA data file:',
              text_color='white',
              font=('Segoe UI Bold', 10)
              )
@@ -113,11 +83,41 @@ inFileLayout = [
                    file_types=(('Excel Files', '*.xlsx'), ('All Files', '*.*'),),
                    )
      ],
-    [Sg.Text('''    * Must be in xlsx format.
+    [Sg.Text('''    * Must be in *.xlsx format.
     * This location will also be the location of the output files.
     * Make sure there are no dashes in the name, replace with an underscore if necessary.\n''',
              text_color='#bfbfbf',
              font=('Segoe UI', 10)
+             )
+     ],
+
+    # Input format prompt.
+    [Sg.Text('2. Choose input format:',
+             text_color='white',
+             font=('Segoe UI Bold', 10)
+             )
+     ],
+    [Sg.Radio('*.xlsx (one file)',
+              'FORMAT',
+              default=True,
+              key='-XLSX_FORMAT-',
+              text_color='#bfbfbf',
+              font=('Segoe UI Bold', 10),
+              enable_events=True
+              ),
+     Sg.Radio('*.fasta (two files)',
+              'FORMAT',
+              default=False,
+              key='-FASTA_FORMAT-',
+              text_color='#bfbfbf',
+              font=('Segoe UI Bold', 10),
+              enable_events=True
+              )
+     ],
+    [Sg.Text('''    * Requires xlsx output from Sequence Analysis program.\n''',
+             text_color='#bfbfbf',
+             font=('Segoe UI', 10),
+             key='-RADIO_TEXT-'
              )
      ],
 
@@ -139,7 +139,7 @@ inFileLayout = [
                    file_types=(('Excel/Fasta Files', '*.xlsx;*.fasta'), ('All Files', '*.*'),)
                    )
      ],
-    [Sg.Text('''    * Must be in fasta format.\n''',
+    [Sg.Text('''    * Must be in *.fasta format.\n''',
              text_color='#bfbfbf',
              font=('Segoe UI', 10),
              key='-XLSX_INPUT_END_TEXT-'
@@ -168,7 +168,7 @@ inFileLayout = [
                    disabled=True
                    )
      ],
-    [Sg.Text('''    * Must be in fasta format.\n''',
+    [Sg.Text('''    * Must be in *.fasta format.\n''',
              text_color='#464646',
              font=('Segoe UI', 10),
              key='-NT_INPUT_END_TEXT-'
@@ -261,9 +261,9 @@ while True:
                  )
 
     elif event == '-XLSX_FORMAT-':
-        window['-RADIO_TEXT-'].update('    * Requires xlsx output from Sequence Analysis program.\n')
+        window['-RADIO_TEXT-'].update('    * Requires *.xlsx output from Sequence Analysis program.\n')
         window['-XLSX_INPUT_START_TEXT-'].update('2. Enter the full path of the excel alignment file:')
-        window['-XLSX_INPUT_END_TEXT-'].update('    * Must be in xlsx format.\n')
+        window['-XLSX_INPUT_END_TEXT-'].update('    * Must be in *.xlsx format.\n')
         window['-NT_INPUT_START_TEXT-'].update(text_color='#464646')
         window['-NT_BROWSE-'].update(disabled=True)
         window['-NT_INPUT-'].update(disabled=True)
@@ -271,10 +271,10 @@ while True:
         continue
 
     elif event == '-FASTA_FORMAT-':
-        window['-RADIO_TEXT-'].update('    * Requires fasta alignment output from sequence analysis program or'
+        window['-RADIO_TEXT-'].update('    * Requires *.fasta alignment output from sequence analysis program or'
                                       ' elsewhere.\n')
         window['-XLSX_INPUT_START_TEXT-'].update('2. Enter the full path of the amino acid alignment file:')
-        window['-XLSX_INPUT_END_TEXT-'].update('    * Must be in fasta format.\n')
+        window['-XLSX_INPUT_END_TEXT-'].update('    * Must be in *.fasta format.\n')
         window['-NT_INPUT_START_TEXT-'].update(text_color='white')
         window['-NT_BROWSE-'].update(disabled=False)
         window['-NT_INPUT-'].update(disabled=False)
@@ -1036,7 +1036,7 @@ else:
     worksheet1.hide_gridlines(option=2)
     idColWidth = round(len(aaShortNameList[0]) * 1.4)
     worksheet1.set_column(0, 0, idColWidth)
-    worksheet1.set_column(1, aaAlignLen, 2)
+    worksheet1.set_column(1, aaAlignLen, 3)
     worksheet1.set_column(aaAlignLen + 1, aaAlignLen + 4, 12)
     worksheet1.set_column(aaAlignLen + 5, aaAlignLen + 5, 15)
     worksheet1.freeze_panes(2, 1)
@@ -1131,7 +1131,7 @@ else:
     worksheet2.set_column(0, 0, 10)
     worksheet2.set_column(1, aaAlignLen, 2)
     worksheet2.set_column(aaAlignLen + 1, aaAlignLen + 5, 8)
-    worksheet2.freeze_panes(0, 1)
+    worksheet2.freeze_panes(2, 1)
     logging.info('%s worksheet created.' % worksheet2Name)
 
     # Write unique amino acid sequences.
