@@ -2,18 +2,18 @@
  
 Analyses the University of Guelph's Advanced Analytics Centre (AAC) Genomics Facility Sanger sequencing output. Original
 files are left unaltered and copies are renamed, reorganised, converted to fasta, trimmed, translated, and aligned.
-Final amino acid/nucleotide alignments are in fasta, clustal, and xlsx formats.
+Final amino acid/nucleotide alignments are in \*.fasta, \*.clustal, and \*.xlsx formats.
 
 ![Sequence Analysis GUI](gui/source/images/gui.png)
 
 ## Details:
 
 **Input:** Raw DNA Sanger sequencing data from the University of Guelph's Advanced Analytics Centre (AAC) Genomics Facility
-(seq and ab1).
+(\*.seq and \*.ab1).
 
-**Output:** Raw DNA sequence data (original seq and ab1 files) are sorted into their own folders, copied and converted
-into fasta format, trimmed at 5' and 3' cut sites, translated to amino acid sequences (fasta), and both amino acid and
-nucleotide sequences are aligned (fasta, clustal, xlsx). The Excel alignment (xlsx) has four worksheets containing all
+**Output:** Raw DNA sequence data (original \*.seq and \*.ab1 files) are sorted into their own folders, copied and converted
+into fasta format, trimmed at 5' and 3' cut sites, translated to amino acid sequences (\*.fasta), and both amino acid and
+nucleotide sequences are aligned (\*.fasta, \*.clustal, \*.xlsx). The Excel alignment (\*.xlsx) has four worksheets containing all
 amino acid sequences, unique amino acid sequences, all nucleotide sequences, and unique nucleotide sequences,
 respectively. Frequency and corresponding sequence IDs are generated for each unique sequence. Sequences that cannot be
 trimmed are moved to their own folder for independent manual analysis.
