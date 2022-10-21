@@ -149,7 +149,7 @@ if inputFormat == '1':
                               inFileName
                               )
 elif inputFormat == '2':
-    outFileNameShort = re.sub(r'[a-zA-Z]{6,}[_]*[a-zA-Z]+[.]fasta',
+    outFileNameShort = re.sub(r'[a-zA-Z]{6,}_*[a-zA-Z]+[.]fasta',
                               'conservationAnalysis',
                               inFileName
                               )

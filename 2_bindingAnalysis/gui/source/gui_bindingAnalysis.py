@@ -469,7 +469,7 @@ else:
 
     # Retrieve blank wells and average.
     blankCells = [dataCellsClean.loc['B'][value] for value in range(0, 23, 2)]
-    # Remove values that contain no data in the excel cell.
+    # Remove values that contain no data in the Excel cell.
     blankValues = [absorbance for absorbance in blankCells if not (pandas.isna(absorbance))]
     # Average blanks.
     blankAve = statistics.mean(blankValues)
@@ -535,7 +535,7 @@ else:
         # Retrieve amino acid sequence names.
         aaNameCells = aaCells.iloc[1:, 0:1]
         aaNameCells = aaNameCells.to_string(index=False)
-        aaNameList = re.sub(r'([_][M][\w]*)',
+        aaNameList = re.sub(r'(_M\w*)',
                             '',
                             aaNameCells
                             )
@@ -547,7 +547,7 @@ else:
         # Retrieve nucleotide sequence names.
         ntNameCells = ntCells.iloc[1:, 0:1]
         ntNameCells = ntNameCells.to_string(index=False)
-        ntNameList = re.sub(r'([_][M][\w]*)',
+        ntNameList = re.sub(r'(_M\w*)',
                             '',
                             ntNameCells
                             )
@@ -567,7 +567,7 @@ else:
         with open(aaInFilePath, 'r') as file:
             aaAllLines = file.read()
             # Remove primer name and 'aaTrimmed' from fasta name.
-            aaAllLinesTrim = re.sub(r'([_][M][\w]*)',
+            aaAllLinesTrim = re.sub(r'(_M\w*)',
                                     '',
                                     aaAllLines
                                     )
@@ -598,7 +598,7 @@ else:
         with open(ntInFilePath, 'r') as file:
             ntAllLines = file.read()
             # Remove primer name and 'aaTrimmed' from fasta name.
-            ntAllLines = re.sub(r'([_][M][\w]*)',
+            ntAllLines = re.sub(r'(_M\w*)',
                                 '',
                                 ntAllLines
                                 )

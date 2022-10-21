@@ -268,13 +268,13 @@ else:
         logging.info('%s directory created.' % rawSeqFolder)
     for fileName in glob.glob('*.seq'):
         # Remove AAC well designation.
-        shortName = re.sub(r'([_][A-H]\d\d[.])',
+        shortName = re.sub(r'(_[A-H]\d\d[.])',
                            '.',
                            fileName
                            )
         # Add leading zero to well IDs.
-        if len(re.findall(r'(\d{2,}[_]\s*\w*)', shortName)) < 1:
-            newName = re.sub(r'(\d[_]\s*\w*)',
+        if len(re.findall(r'(\d{2,}_\s*\w*)', shortName)) < 1:
+            newName = re.sub(r'(\d_\s*\w*)',
                              r'0\g<1>',
                              shortName
                              )
@@ -301,13 +301,13 @@ else:
     if len(glob.glob('*.ab1')) > 0:
         for fileName in glob.glob('*.ab1'):
             # Remove AAC well designation.
-            shortName = re.sub(r'([_][A-H]\d\d[.])',
+            shortName = re.sub(r'(_[A-H]\d\d[.])',
                                '.',
                                fileName
                                )
             # Add leading zero to well IDs.
-            if len(re.findall(r'(\d{2,}[_]\s*\w*)', shortName)) < 1:
-                newName = re.sub(r'(\d[_]\s*\w*)',
+            if len(re.findall(r'(\d{2,}_\s*\w*)', shortName)) < 1:
+                newName = re.sub(r'(\d_\s*\w*)',
                                  r'0\g<1>',
                                  shortName
                                  )
@@ -499,7 +499,7 @@ else:
     logging.info('''3' trim finished.''')
 
     ##################
-    # Delete faulty/incorrect files and and combine all trimmed sequences into a single batch file.
+    # Delete faulty/incorrect files and combine all trimmed sequences into a single batch file.
     ##################
 
     # Delete unnecessary/faulty files.
@@ -576,7 +576,7 @@ else:
     logging.info('Nucleotide sequences translated into amino acid sequences.')
 
     ##################
-    # Delete faulty/incorrect files and and combine all translated sequences into a single batch file.
+    # Delete faulty/incorrect files and combine all translated sequences into a single batch file.
     ##################
 
     # Delete unnecessary/faulty files.
@@ -724,7 +724,7 @@ else:
     fastaNameRegex = re.compile('>(.*)')
     seqRegex = re.compile(r'(?<!>)([A-Z]{5,})(?!\d|[a-z]|_)')
     stopCodonRegex = re.compile('([*]+[A-Z]*)')
-    nameTrimRegex = re.compile(r'([_][M][\w]*)')
+    nameTrimRegex = re.compile(r'(_M\w*)')
     alignSource = folderName + '_aaTrimmed_alignment.fasta'
     with open(alignSource, 'r') as alignFile:
         allDataAa = alignFile.read()
