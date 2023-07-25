@@ -273,34 +273,40 @@ elif inputFormat == '2':
         aaList.append(uniqueSeq)
 
 ##################
-# For each amino acid sequence, replace non-diversified regions with dashes.
+# For each amino acid sequence, trim excess N-terminal residues and replace non-diversified regions with dashes.
 ##################
 
 # Choose whether to remove the first amino acid. User prompt.
-cyanprint('''\nTrim the first amino acid residue:
+cyanprint('''\nTrim N-termini:
 
 [Y] Trim the first amino acid residue
-* During sequence analysis, if the second codon wasn't conserved and the codon preceding the first codon had to be used,
-this option allows that codon to be trimmed and removed from analysis.
+* Trim residues at the beginning and end of the sequence so that only the residues needed for alignment are included.
 * Choose this for analysing UbVs.
 
 [N] Do not trim the first amino acid residue
-* If the previous description does not apply, do not trim the first amino acid residue.'''
+* If the previous description does not apply, do not trim the N-termini.'''
           )
 
 while True:
-    trimInput = input()
-    if trimInput.upper() == 'Y':
-        # Remove amino acid prior to start codon.
-        aaShortList = []
-        for seq in aaList:
-            aaShortSeq = seq[1:]
-            aaShortList.append(aaShortSeq)
-        logging.info('First amino acid residue removed from all sequences.')
-        cyanprint('\nTrimmed first amino acid.'
+    nTrimChoice = input()
+    if nTrimChoice.upper() == 'Y':
+        # Choose amount of residues to trim. User prompt.
+        cyanprint('''\nEnter amount of residues to trim:'''
                   )
+        while True:
+            nTrimInput = input()
+            if re.search(r'[a-zA-Z]+|\s+', nTrimInput):
+                # Remove amino acid prior to start codon.
+                aaShortList = []
+                for seq in aaList:
+                    aaShortSeq = seq[1:]
+                    aaShortList.append(aaShortSeq)
+                logging.info('First amino acid residue removed from all sequences.')
+                cyanprint('\nTrimmed first amino acid.'
+                          )
+                break
         break
-    elif trimInput.upper() == 'N':
+    elif nTrimChoice.upper() == 'N':
         # Retain the first amino acid prior to start codon.
         aaShortList = aaList
         logging.info('First amino acid residue left in all sequences.')
@@ -308,12 +314,13 @@ while True:
                   )
         break
     else:
-        cyanprint('''Invalid input for consensus sequence.
-Please enter a valid IUPAC amino acid sequence at least 10 digits long.'''
+        cyanprint('''Invalid input for trim choice.
+Please enter 'Y' or 'N' to choose.'''
                   )
 
 # Choose a consensus sequence to compare sequences against. User prompt.
-cyanprint('''\nEnter a consensus sequence again which to compare query sequences:
+cyanprint('''\nEnter a consensus sequence against which to compare query sequences:
+
 * To use the default consensus sequence for ubiquitin, type "ubiquitin".'''
           )
 
@@ -329,8 +336,8 @@ while True:
         logging.info('''Consensus sequence set to '%s'.''' % consensusSeq)
         break
     else:
-        cyanprint('\nInvalid option.'
-                  'Please try again.'
+        cyanprint('''Invalid input for consensus sequence.
+Please enter a valid IUPAC amino acid sequence at least 10 digits long.'''
                   )
 
 # Compare UbV sequences against a consensus sequence and replace conserved amino acids with dashes.
@@ -359,64 +366,115 @@ residueList = [*range(1, consensusLen + 1)]
 workbook = xlsxwriter.Workbook(path + '/' + outFileNameShort + '.xlsx')
 logging.info('''Excel spreadsheet created as '%s.xlsx'.''' % outFileNameShort)
 
-# TODO: Find a way to clean up this section's formatting.
 #########
 # Cell formatting rules.
 #########
 
 # General.
-general_format = workbook.add_format()
+general_format = workbook.add_format({'font_size': 10,
+                                     'font_name': 'Segoe UI'
+                                      }
+                                     )
 general_format.set_align('center')
 general_format.set_align('vcenter')
+
 # Titles.
 title_format = workbook.add_format({'bold': True,
-                                    'font_size': 12
+                                    'font_size': 10,
+                                    'font_name': 'Segoe UI'
                                     }
                                    )
 title_format.set_align('center')
 title_format.set_align('vcenter')
-title_format.set_text_wrap()
+
 wellTitle_format = workbook.add_format({'bold': True,
-                                        'font_size': 12
+                                        'font_size': 10,
+                                        'font_name': 'Segoe UI'
                                         }
                                        )
 wellTitle_format.set_align('left')
 wellTitle_format.set_align('vcenter')
-info_format = workbook.add_format({'font_size': 12})
+
+# Information.
+info_format = workbook.add_format({'font_size': 10,
+                                   'font_name': 'Segoe UI'
+                                   }
+                                  )
 info_format.set_align('left')
 info_format.set_align('vcenter')
-# Numbers.
-stats_format = workbook.add_format({'num_format': '#,##0.0'})
+
+# Statistics.
+stats_format = workbook.add_format({'num_format': '#,##0.0',
+                                    'font_size': 10,
+                                    'font_name': 'Segoe UI'
+                                    }
+                                   )
 stats_format.set_align('center')
 stats_format.set_align('vcenter')
-residue_format = workbook.add_format({'font_size': 10})
-residue_format.set_align('center')
-residue_format.set_align('vcenter')
-integer_format = workbook.add_format({'num_format': '#,##0'})
+
+integer_format = workbook.add_format({'num_format': '#,##0',
+                                      'font_size': 10,
+                                      'font_name': 'Segoe UI'
+                                      }
+                                     )
 integer_format.set_align('center')
 integer_format.set_align('vcenter')
-percent_format = workbook.add_format({'num_format': '#,##0.0%'})
+
+percent_format = workbook.add_format({'num_format': '#,##0.0%',
+                                      'font_size': 10,
+                                      'font_name': 'Segoe UI'
+                                      }
+                                     )
 percent_format.set_align('center')
 percent_format.set_align('vcenter')
+
+# Residue numbers.
+residue_format = workbook.add_format({'font_size': 8,
+                                      'font_name': 'Segoe UI'
+                                      }
+                                     )
+residue_format.set_align('center')
+residue_format.set_align('vcenter')
+
 # Wells.
-wellList_format = workbook.add_format({'font_size': 11})
-wellID_format = workbook.add_format({'font_size': 12})
+wellList_format = workbook.add_format({'font_size': 10,
+                                       'font_name': 'Segoe UI'
+                                       }
+                                      )
+
+wellID_format = workbook.add_format({'font_size': 10,
+                                     'font_name': 'Segoe UI'
+                                     }
+                                    )
 wellID_format.set_align('center')
 wellID_format.set_align('vcenter')
+
+# Consensus.
+consensus_format = workbook.add_format({'bg_color': '#F2F2F2',
+                                        'bottom': '3'
+                                        }
+                                       )
+
 # Sequences.
-sequence_format = workbook.add_format({'font_size': 10})
+sequence_format = workbook.add_format({'font_size': 9,
+                                      'font_name': 'Lucida Console'
+                                       }
+                                      )
 sequence_format.set_align('center')
 sequence_format.set_align('vcenter')
-sequence_format.set_font_name('Lucida Console')
+
 # Region 1.
 region1_format = workbook.add_format()
 region1_format.set_bg_color('#BD7191')
+
 # Region 2.
 region2_format = workbook.add_format()
 region2_format.set_bg_color('#8FC1C0')
+
 # Region 3.
 region3_format = workbook.add_format()
 region3_format.set_bg_color('#DCA16A')
+
 logging.info('Cell formatting rules set.')
 
 ##################
@@ -432,23 +490,34 @@ worksheet1.set_column(consensusLen + 1, consensusLen + 5, 8)
 worksheet1.freeze_panes(3, 1)
 logging.info('%s worksheet created.' % worksheet1Name)
 
-# Assign IDs to each unique amino acid sequence.
-worksheet1.merge_range(0, 0, 2, 0, 'ID', title_format)
-idRow = 3
-for ID in IDlist:
-    worksheet1.write(idRow, 0, ID, general_format)
-    idRow += 1
-logging.info('IDs written to %s worksheet.' % worksheet1Name)
-
 # Write amino acid residue numbers above sequences.
+worksheet1.write(3, 0, "Consensus", general_format)
 residueCol = 1
 for residue in residueList:
     worksheet1.write(2, residueCol, residue, residue_format)
     residueCol += 1
 
+# Write consensus amino acid sequence.
+worksheet1.conditional_format(3, 1, 3, len(consensusSeq) + 1,
+                              {'type': 'no_blanks', 'format': consensus_format}
+                              )
+consensusRow = 3
+consensusCol = 1
+for letter in consensusSeq:
+    worksheet1.write(consensusRow, consensusCol, letter, sequence_format)
+    consensusCol += 1
+
+# Assign IDs to each unique amino acid sequence.
+worksheet1.merge_range(0, 0, 2, 0, 'ID', title_format)
+idRow = 4
+for ID in IDlist:
+    worksheet1.write(idRow, 0, ID, general_format)
+    idRow += 1
+logging.info('IDs written to %s worksheet.' % worksheet1Name)
+
 # Write unique amino acid sequences.
 worksheet1.merge_range(0, 1, 0, 9, 'Amino Acid Sequence', title_format)
-seqRow = 3
+seqRow = 4
 seqCol = 1
 for seq in conservedList:
     letterList = list(seq)
@@ -462,7 +531,7 @@ logging.info('Unique conserved sequences written to %s worksheet.' % worksheet1N
 # Write counts for each unique amino acid sequence.
 worksheet1.merge_range(0, consensusLen + 1, 2, consensusLen + 1, 'Count', title_format)
 count = list(uniqueDict.values())
-countRow = 3
+countRow = 4
 countCol = consensusLen + 1
 for number in count:
     worksheet1.write(countRow, countCol, number, general_format)
@@ -472,7 +541,7 @@ logging.info('Counts written to %s worksheet.' % worksheet1Name)
 # Write statistics to worksheet.
 if inputFormat == '1':
     # Max.
-    maxRow = 3
+    maxRow = 4
     maxCol = consensusLen + 2
     worksheet1.merge_range(0, consensusLen + 2, 2, consensusLen + 2, 'Max.', title_format)
     for number in maxList:
@@ -481,7 +550,7 @@ if inputFormat == '1':
     logging.info('Maximum values written to %s worksheet.' % worksheet1Name)
 
     # Min.
-    minRow = 3
+    minRow = 4
     minCol = consensusLen + 3
     worksheet1.merge_range(0, consensusLen + 3, 2, consensusLen + 3, 'Min.', title_format)
     for number in minList:
@@ -490,7 +559,7 @@ if inputFormat == '1':
     logging.info('Minimum values written to %s worksheet.' % worksheet1Name)
 
     # Median.
-    medianRow = 3
+    medianRow = 4
     medianCol = consensusLen + 4
     worksheet1.merge_range(0, consensusLen + 4, 2, consensusLen + 4, 'Median', title_format)
     for number in medianList:
@@ -499,7 +568,7 @@ if inputFormat == '1':
     logging.info('Median values written to %s worksheet.' % worksheet1Name)
 
     # Mean.
-    meanRow = 3
+    meanRow = 4
     meanCol = consensusLen + 5
     worksheet1.merge_range(0, consensusLen + 5, 2, consensusLen + 5, 'Mean', title_format)
     for number in meanList:
@@ -508,7 +577,7 @@ if inputFormat == '1':
     logging.info('Mean values written to %s worksheet.' % worksheet1Name)
 
     # St. dev.
-    stdevRow = 3
+    stdevRow = 4
     stdevCol = consensusLen + 6
     worksheet1.merge_range(0, consensusLen + 6, 2, consensusLen + 6, 'St. Dev.', title_format)
     for number in devList:
@@ -518,7 +587,7 @@ if inputFormat == '1':
 
     # Wells.
     worksheet1.merge_range(0, consensusLen + 7, 2, consensusLen + 7, 'Wells', wellTitle_format)
-    wellRow = 3
+    wellRow = 4
     wellCol = consensusLen + 7
     # Change column width to fit all IDs.
     wellColWidth = round((len(countID[0]) / 1.16))
@@ -533,13 +602,13 @@ if inputFormat == '1':
     for column in range(consensusLen + 2, consensusLen + 7):
         worksheet1.conditional_format(2,
                                       column,
-                                      len(conservedList) + 2,
+                                      len(conservedList) + 3,
                                       column,
                                       {'type': '2_color_scale', 'min_color': '#FFFFFF', 'max_color': '#3D85C6'})
     logging.info('Conditional formatting applied to statistics.')
 
     # Table for statistics.
-    worksheet1.add_table(3, 0, len(conservedList) + 2, consensusLen + 7, {'header_row': False,
+    worksheet1.add_table(3, 0, len(conservedList) + 3, consensusLen + 7, {'header_row': False,
                                                                           'style': None
                                                                           }
                          )
@@ -560,7 +629,7 @@ elif inputFormat == '2':
     logging.info('Amino acid sequence-specific well IDs written to %s worksheet.' % worksheet1Name)
 
     # Table for counts and wells.
-    worksheet1.add_table(3, 0, len(conservedList) + 2, consensusLen + 2, {'header_row': False,
+    worksheet1.add_table(3, 0, len(conservedList) + 3, consensusLen + 2, {'header_row': False,
                                                                           'style': None
                                                                           }
                          )
@@ -598,25 +667,25 @@ while True:
     if libraryInput in libraryOptions:
         if libraryInput == '1':
             # Region 1 formatting.
-            worksheet1.write(len(conservedList) + 4, 1, libraryOptions.get('1'), info_format)
+            worksheet1.write(len(conservedList) + 5, 1, libraryOptions.get('1'), info_format)
             logging.info('Library 1 (Ernst et al., 2013) selected.')
             worksheet1.merge_range(1, 2, 1, 14, 'Region 1', title_format)
             for column in [2, 4, 6, 8, 9, 10, 11, 12, 14]:
-                worksheet1.conditional_format(3, column, len(conservedList) + 2, column,
+                worksheet1.conditional_format(3, column, len(conservedList) + 3, column,
                                               {'type': 'no_blanks', 'format': region1_format}
                                               )
             logging.info('Region 1 coloured.')
             # Region 2 formatting.
             worksheet1.merge_range(1, 35, 1, 49, 'Region 2', title_format)
             for column in [35, 37, 39, 40, 42, 44, 46, 47, 48, 49]:
-                worksheet1.conditional_format(3, column, len(conservedList) + 2, column,
+                worksheet1.conditional_format(3, column, len(conservedList) + 3, column,
                                               {'type': 'no_blanks', 'format': region2_format}
                                               )
             logging.info('Region 2 coloured.')
             # Region 3 formatting.
             worksheet1.merge_range(1, 62, 1, 72, 'Region 3', title_format)
             for column in [62, 63, 64, 66, 68, 70, 71, 72]:
-                worksheet1.conditional_format(3, 62, len(conservedList) + 2, 64,
+                worksheet1.conditional_format(3, 62, len(conservedList) + 3, 64,
                                               {'type': 'no_blanks', 'format': region3_format}
                                               )
             logging.info('Region 3 coloured.')
@@ -624,26 +693,26 @@ while True:
 
         # Library 2 (Ernst et al., 2013).
         elif libraryInput == '2':
-            worksheet1.write(len(conservedList) + 4, 1, libraryOptions.get('2'), info_format)
+            worksheet1.write(len(conservedList) + 5, 1, libraryOptions.get('2'), info_format)
             logging.info('Library 2 (Ernst et al., 2013) selected.')
             # Region 1 formatting.
             worksheet1.merge_range(1, 2, 1, 14, 'Region 1', title_format)
             for column in [2, 4, 6, 8, 9, 10, 11, 12, 14]:
-                worksheet1.conditional_format(3, column, len(conservedList) + 2, column,
+                worksheet1.conditional_format(3, column, len(conservedList) + 3, column,
                                               {'type': 'no_blanks', 'format': region1_format}
                                               )
             logging.info('Region 1 coloured.')
             # Region 2 formatting.
             worksheet1.merge_range(1, 42, 1, 49, 'Region 2', title_format)
             for column in [42, 44, 46, 47, 48, 49]:
-                worksheet1.conditional_format(3, column, len(conservedList) + 2, column,
+                worksheet1.conditional_format(3, column, len(conservedList) + 3, column,
                                               {'type': 'no_blanks', 'format': region2_format}
                                               )
             logging.info('Region 2 coloured.')
             # Region 3 formatting.
             worksheet1.merge_range(1, 62, 1, 78, 'Region 3', title_format)
             for column in [62, 63, 64, 66, 68, 70, 71, 72, 73, 74, 75, 76, 77, 78]:
-                worksheet1.conditional_format(3, column, len(conservedList) + 2, column,
+                worksheet1.conditional_format(3, column, len(conservedList) + 3, column,
                                               {'type': 'no_blanks', 'format': region3_format}
                                               )
             logging.info('Region 3 coloured.')
@@ -660,7 +729,7 @@ while True:
 
 # Info about how the values were obtained.
 if inputFormat == '1':
-    statsInfo = 'The statistics presented above are for binder:control ratios.'
+    statsInfo = 'Statistics presented above are for binder:control ratios.'
     worksheet1.write(len(conservedList) + 6, 1, statsInfo, info_format)
 else:
     pass

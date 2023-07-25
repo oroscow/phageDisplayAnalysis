@@ -32,7 +32,7 @@ class OrderedCounter(Counter, OrderedDict):
 ##################
 
 # Suppresses all warnings, specifically meant for BiopythonWarning: 'Partial codon, len(sequence) not a multiple of
-# three. Explicitly trim the sequence or add trailing N before translation. This may become an error in future.'
+# three. Explicitly trim the sequence or add trailing N before translation. This may become an error in the future.'
 # When troubleshooting, comment out this line.
 warnings.filterwarnings('ignore')
 
@@ -43,34 +43,45 @@ warnings.filterwarnings('ignore')
 # Choose window theme.
 Sg.theme('DarkGrey13')
 
-# Create window layout.
-layout = [
-
+# Create window layouts.
+infoLayout = [
     # Title and introduction.
-    [Sg.Text('Phage Display - Sequence Analysis',
+    [Sg.Text('\n\n\n\n\nPhage Display — Sequence Analysis',
              text_color='#8294cc',
-             font=('Segoe UI Semibold', 16),
-             expand_x=True)
-     ],
-    [Sg.Text('''        Analyses the University of Guelph's Advanced Analytics Centre (AAC)
-        Genomics Facility Sanger sequencing output. Original files are left unaltered
-        and copies are renamed, reorganised, converted to fasta, trimmed, translated,
-        and aligned. Final amino acid/nucleotide alignments are in fasta, clustal,
-        and xlsx formats.\n''',
-             text_color='#8294cc',
-             font=('Segoe UI', 12)
+             font=('Segoe UI Bold', 22),
+             expand_x=True,
+             pad=(50, 0)
              )
      ],
+    [Sg.Text('''Compare phage sequence data and ELISA data (optional) with
+corresponding the wildtype scaffold sequence''',
+             text_color='#8294cc',
+             font=('Segoe UI', 12),
+             pad=(50, 0)
+             )
+     ],
+    [Sg.Text('''Analyses the University of Guelph's Advanced Analytics Centre (AAC) Genomics
+Facility Sanger sequencing output. Original files are left unaltered and copies are
+renamed, reorganised, converted to fasta, trimmed, translated, and aligned.
+Final amino acid/nucleotide alignments are in .fasta, .clustal, and .xlsx formats.''',
+             text_color='#a0a0a2',
+             font=('Segoe UI', 10),
+             pad=(70, 40)
+             )
+     ]
+]
 
+inputLayout = [
     # Working directory input prompt.
-    [Sg.Text('1. Enter/select the parent folder location/path where files are located:',
+    [Sg.Text('\n\n1. Enter/select the parent folder location/path where files are located:',
              text_color='white',
-             font=('Segoe UI Bold', 10)
+             font=('Segoe UI Bold', 10),
+             pad=(20, 0)
              )
      ],
-    [Sg.Input(key='-FOLDERINPUT-',
+    [Sg.Input(key='-FOLDER_INPUT-',
               size=60,
-              pad=(25, 0),
+              pad=(40, 10),
               font=('Segoe UI', 10),
               focus=True
               ),
@@ -78,9 +89,10 @@ layout = [
                      size=(10, 0)
                      ),
      ],
-    [Sg.Text('    * This will also be the location for the output files.\n',
+    [Sg.Text('• This will also be the location for the output files.\n',
              text_color='#bfbfbf',
-             font=('Segoe UI', 10)
+             font=('Segoe UI', 10),
+             pad=(40, 0)
              )
      ],
 
@@ -88,46 +100,51 @@ layout = [
     [Sg.Text('''2. Enter the sequence to begin the 5' trim at:''',
              text_color='white',
              font=('Segoe UI Bold', 10),
+             pad=(20, 0)
              )
      ],
-    [Sg.Input(key='-MOTIFINPUT-',
+    [Sg.Input(key='-MOTIF_INPUT-',
               size=10,
-              pad=(25, 0),
+              pad=(40, 10),
               default_text='AAAATG',
               font=('Segoe UI', 10)
               )
      ],
-    [Sg.Text('''    * Not case-sensitive.
-    * Must be at least six nucleotides long.
-    * Use conserved nucleotides to prevent trimming at multiple sites.
-    * Do not enter nucleotides that contribute to the codons of diversified residues, where possible.
+    [Sg.Text('''• Not case-sensitive.
+• Must be at least six nucleotides long.
+• Use conserved nucleotides to prevent trimming at multiple sites.
+• Do not enter nucleotides that contribute to the codons of diversified residues, where
+  possible.
     
-    E.g. For UbVs, the three nucleotides succeeding the start codon are diversified, so use the
-    preceding three nucleotides to ensure specificity (i.e. AAA ATG; the last FLAG tag codon &
-    the UbV start codon).\n''',
+E.g., For UbVs, the three nucleotides succeeding the start codon are diversified, so use the
+preceding three nucleotides to ensure specificity (i.e., AAA ATG; the last FLAG tag codon &
+the UbV start codon).\n''',
              text_color='#bfbfbf',
-             font=('Segoe UI', 10)
+             font=('Segoe UI', 10),
+             pad=(40, 0)
              )
      ],
 
     # 3' trim input prompt.
     [Sg.Text('''3. Enter the number of nucleotides downstream of the 5' trim site to trim at:''',
              text_color='white',
-             font=('Segoe UI Bold', 10)
+             font=('Segoe UI Bold', 10),
+             pad=(20, 0)
              )
      ],
-    [Sg.Input(key='-LENINPUT-',
+    [Sg.Input(key='-LENGTH_INPUT-',
               size=10,
-              pad=(25, 0),
+              pad=(40, 10),
               default_text='237',
               font=('Segoe UI', 10)
               )
      ],
-    [Sg.Text('''    * Must be at least ten nucleotides long.
+    [Sg.Text('''• Must be at least ten nucleotides long.
     
-    E.g. For UbVs, use 237 (nucleotides downstream of the 5' trim site).\n\n''',
+E.g., For UbVs, use 237 (nucleotides downstream of the 5' trim site).\n\n''',
              text_color='#bfbfbf',
-             font=('Segoe UI', 10)
+             font=('Segoe UI', 10),
+             pad=(40, 0)
              )
      ],
 
@@ -136,18 +153,65 @@ layout = [
                bind_return_key=True,
                font=('Segoe UI Bold', 16),
                size=(10, 0),
-               pad=(30, 0),
+               pad=(40, 30),
                use_ttk_buttons=True
                )
      ]
 ]
 
+# TODO: Add to this and improve visual formatting.
+troubleshootLayout = [
+    [Sg.Text('''Issue #1: Lots of files in the 'noTrim' folder.
+Cause: There's no sequence in the original file or the 5' trim site could not be found.
+Solutions:
+    1. Make sure the correct sequencing files have been chosen.
+    2. Make sure a sufficiently conserved motif has been chosen for the 5' trim site.
+    3. Look at chromatograph files (*.ab1) and assess whether or not bases were
+    called correctly. If not, create copies of the original *.seq and *.ab1 files
+    and move them to another folder. In the copies in the original folder, edit
+    base calls manually (enter called bases in lowercase to distinguish them from
+    bases originally called by the sequencing equipment), export the new sequence
+    into the same folder as all the other sequences, and run this program again.''',
+             text_color='#bfbfbf',
+             font=('Segoe UI', 10),
+             pad=(50, 50)
+             )
+     ]
+]
+
+# Create tab layout.
+tabGroup = [
+    [Sg.TabGroup(
+        [
+            [Sg.Tab('Info',
+                    infoLayout,
+                    border_width=40
+                    ),
+             Sg.Tab('Input Files',
+                    inputLayout,
+                    border_width=40
+                    ),
+             Sg.Tab('Troubleshooting',
+                    troubleshootLayout,
+                    border_width=40
+                    )
+             ]
+        ],
+        tab_location='topleft',
+        border_width=1,
+        font=('Segoe UI Bold', 10),
+        title_color='#bfbfbf',
+        selected_title_color='#8294cc',
+        size=(750, 800)
+    )
+    ]
+]
+
 # Name window, assign layout, and change window behaviour.
 window = Sg.Window('Phage Display - Sequence Analysis',
-                   layout,
+                   tabGroup,
                    alpha_channel=0.95,
-                   grab_anywhere=True,
-                   size=(620, 720),
+                   size=(655, 720),
                    ttk_theme='clam'
                    )
 
@@ -160,32 +224,31 @@ while True:
         window.close()
         break
 
-    # If 'Enter' is pressed, updates variables with input values.
+    # Updates variables with input values when 'Enter' button is pressed.
     elif event == 'Enter':
-        path = str(values['-FOLDERINPUT-'].replace('\\',
-                                                   '/'
-                                                   )
+        path = str(values['-FOLDER_INPUT-'].replace('\\',
+                                                    '/'
+                                                    )
                    )
-        startSite = str(values['-MOTIFINPUT-'])
-        endSite = str(values['-LENINPUT-'])
-        # Stops user if path doesn't exist and prompts to retry.
+        startSite = str(values['-MOTIF_INPUT-'])
+        endSite = str(values['-LENGTH_INPUT-'])
+
+        # Stops user if folder path doesn't exist and prompts to retry.
         if not os.path.exists(path):
-            Sg.Popup('That path does not exist.'
-                     'Please enter it again.',
+            Sg.Popup('''The entered path does not exist.
+Please choose the folder again.''',
                      title='Path Does not Exist',
-                     grab_anywhere=True,
                      text_color='#4276ac'
                      )
             continue
         else:
             os.chdir(path)
 
-        # Stops user if no appropriate files found in the working directory.
+        # Stops user if no appropriate files found in the working directory and prompts to retry.
         if len(glob.glob('*.seq')) < 1:
-            Sg.Popup('No seq files were found in this directory.'
-                     'Please enter it again.',
+            Sg.Popup('''No seq files were found in this directory.
+Please choose the folder again.''',
                      title='No Seq Files Found',
-                     grab_anywhere=True,
                      text_color='#4276ac'
                      )
             continue
@@ -198,7 +261,6 @@ while True:
             Sg.Popup('''Invalid input for 5' trim site.
 Please enter a valid IUPAC nucleotide sequence.''',
                      title='Invalid Start Site Input',
-                     grab_anywhere=True,
                      text_color='#4276ac',
                      any_key_closes=False
                      )
@@ -212,7 +274,6 @@ Please enter a valid IUPAC nucleotide sequence.''',
             Sg.Popup('''Invalid input for 3' trim site.
 Please enter a number greater than or equal to ten.''',
                      title='Invalid End Site Input',
-                     grab_anywhere=True,
                      text_color='#4276ac',
                      any_key_closes=False
                      )
@@ -225,7 +286,6 @@ Please enter a number greater than or equal to ten.''',
                 Sg.Popup('''Invalid input for 3' trim site.
 Please enter a number.''',
                          title='Invalid End Site Input',
-                         grab_anywhere=True,
                          text_color='#4276ac',
                          any_key_closes=False
                          )
@@ -268,14 +328,14 @@ else:
         logging.info('%s directory created.' % rawSeqFolder)
     for fileName in glob.glob('*.seq'):
         # Remove AAC well designation.
-        shortName = re.sub(r'(_[A-H]\d\d[.])',
+        shortName = re.sub(r'(_[A-H]\d{2}[.])',
                            '.',
                            fileName
                            )
         # Add leading zero to well IDs.
-        if len(re.findall(r'(\d{2,}_\s*\w*)', shortName)) < 1:
-            newName = re.sub(r'(\d_\s*\w*)',
-                             r'0\g<1>',
+        if re.findall(r'([A-H])(\d(?!\d))', shortName):
+            newName = re.sub(r'([A-H])(\d(?!\d))',
+                             r'\g<1>0\g<2>',
                              shortName
                              )
         else:
@@ -291,7 +351,6 @@ else:
     # folder. If no ab1 files are found, a text file stating such will be created.
     ##################
 
-    # TODO: Analyse edited ab1 files.
     # Create raw ab1 folder.
     rawAb1Folder = '02_rawAb1'
     rawAb1Path = path + '/' + rawAb1Folder
@@ -301,14 +360,14 @@ else:
     if len(glob.glob('*.ab1')) > 0:
         for fileName in glob.glob('*.ab1'):
             # Remove AAC well designation.
-            shortName = re.sub(r'(_[A-H]\d\d[.])',
+            shortName = re.sub(r'(_[A-H]\d{2}[.])',
                                '.',
                                fileName
                                )
             # Add leading zero to well IDs.
-            if len(re.findall(r'(\d{2,}_\s*\w*)', shortName)) < 1:
-                newName = re.sub(r'(\d_\s*\w*)',
-                                 r'0\g<1>',
+            if re.findall(r'([A-H])(\d(?!\d))', shortName):
+                newName = re.sub(r'([A-H])(\d(?!\d))',
+                                 r'\g<1>0\g<2>',
                                  shortName
                                  )
             else:
@@ -722,7 +781,7 @@ else:
 
     # Amino acid alignment data extraction.
     fastaNameRegex = re.compile('>(.*)')
-    seqRegex = re.compile(r'(?<!>)([A-Z]{5,})(?!\d|[a-z]|_)')
+    aaSeqRegex = re.compile(r'[ARNDCEQGHILKMFPSTWYVX]{10,}')
     stopCodonRegex = re.compile('([*]+[A-Z]*)')
     nameTrimRegex = re.compile(r'(_M\w*)')
     alignSource = folderName + '_aaTrimmed_alignment.fasta'
@@ -743,7 +802,7 @@ else:
                                         formattedDataAa
                                         )
         # Retrieve sequences.
-        aaList = seqRegex.findall(noTruncSeq)
+        aaList = aaSeqRegex.findall(noTruncSeq)
         # Remove '_<primer>_aaTrimmed' from names.
         shorterNamesAa = nameTrimRegex.sub('',
                                            allDataAa
@@ -762,6 +821,7 @@ else:
     #########
 
     # Nucleotide alignment data extraction.
+    ntSeqRegex = re.compile(r'([ATGCNatgc]{10,})')
     alignFile2 = folderName + '_ntTrimmed_alignment.fasta'
     with open(alignFile2, 'r') as alignFile:
         allDataNt = alignFile.read()
@@ -776,7 +836,7 @@ else:
         formattedDataNt = allDataNt.replace('\n',
                                             ''
                                             )
-        ntList = seqRegex.findall(formattedDataNt)
+        ntList = ntSeqRegex.findall(formattedDataNt)
         # Remove '_<primer>_ntTrimmed' from names.
         shorterNamesNt = nameTrimRegex.sub('',
                                            allDataNt
@@ -791,7 +851,7 @@ else:
     logging.info('Dictionary of unique nucleotide sequences created.')
 
     ##################
-    # Order sequences and wells so they can be attributed to unique sequences. Necessary for subsequent statistics.
+    # Order sequences and wells, so they can be attributed to unique sequences. Necessary for subsequent statistics.
     ##################
 
     #########
@@ -850,43 +910,53 @@ else:
     # Create workbook.
     workbook = xlsxwriter.Workbook(alignmentPath + '/' + folderName + '_alignment.xlsx')
 
-    # TODO: Find a way to clean up this section's formatting.
     #########
     # Cell formatting rules.
     #########
 
+    # TODO: Find a way to clean up this section's formatting.
     # General.
-    general_format = workbook.add_format()
+    general_format = workbook.add_format({'font_size': 10})
     general_format.set_align('center')
     general_format.set_align('vcenter')
+    general_format.set_font_name('Segoe UI')
+
     # Titles.
     title_format = workbook.add_format({'bold': True,
-                                        'font_size': 12
+                                        'font_size': 10
                                         }
                                        )
     title_format.set_align('center')
     title_format.set_align('vcenter')
+    title_format.set_font_name('Segoe UI')
+
     wellTitle_format = workbook.add_format({'bold': True,
-                                            'font_size': 12
+                                            'font_size': 10
                                             }
                                            )
     wellTitle_format.set_align('left')
     wellTitle_format.set_align('vcenter')
+    wellTitle_format.set_font_name('Segoe UI')
+
     # Wells.
-    wellList_format = workbook.add_format({'font_size': 11})
-    wellID_format = workbook.add_format({'font_size': 12})
-    wellID_format = workbook.add_format({'font_size': 12})
+    wellList_format = workbook.add_format({'font_size': 10})
+    wellID_format = workbook.add_format({'font_size': 10})
     wellID_format.set_align('center')
     wellID_format.set_align('vcenter')
+    wellID_format.set_font_name('Segoe UI')
+
     # Residue numbers.
-    residue_format = workbook.add_format({'font_size': 10})
+    residue_format = workbook.add_format({'font_size': 8})
     residue_format.set_align('center')
     residue_format.set_align('vcenter')
+    residue_format.set_font_name('Segoe UI')
+
     # Sequences.
-    sequence_format = workbook.add_format({'font_size': 10})
+    sequence_format = workbook.add_format({'font_size': 9})
     sequence_format.set_align('center')
     sequence_format.set_align('vcenter')
     sequence_format.set_font_name('Lucida Console')
+
     logging.info('Cell formatting rules set.')
 
     ##################
@@ -1147,20 +1217,10 @@ else:
     ##################
 
     workbook.close()
-    logging.info('Excel alignment exported as %s_aaTrimmed_aligned.xlsx.' % folderName)
-    Sg.Popup('''Sequence Analysis program finished running, see log file for details.
-\n\nPost-analysis help:
-\nNon-trimmed files are in the 'noTrim' folder and couldn't be trimmed because of one of the following reasons:
-\n      a) There's no sequence.
-In this case, either the sequence was not good enough quality/quantity to be sequenced or no sequence was present in'''
-             '''the sample.'''
-             '''\n      b) The 5' trim site couldn't be found.      
-In this case, look at the corresponding ab1 file and assess whether or not the bases were called correctly. If
-not, create a copy of the ab1 file, edit the base calls (type manually called bases in lowercase to distinguish
-them from bases originally called by the sequencing equipment), move the original unedited ab1 file to a separate'''
-             '''folder, replace its original position with the new edited ab1 file, and run this script again.\n''',
-             title='Analysis Finished',
-             grab_anywhere=True,
+    logging.info('Excel file exported as %s_aaTrimmed_aligned.xlsx.' % folderName)
+    Sg.Popup('''Sequence Analysis program finished running.
+\nSee log file for details.''',
+             title='Sequencing Analysis Completed',
              text_color='#8294cc',
              font=('Segoe UI Semibold', 10)
              )

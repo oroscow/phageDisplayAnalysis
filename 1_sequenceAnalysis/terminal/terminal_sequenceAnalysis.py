@@ -730,43 +730,53 @@ for uniqueSeq, count in ntUniqueDict.items():
 # Create workbook.
 workbook = xlsxwriter.Workbook(alignmentPath + '/' + folderName + '_alignment.xlsx')
 
-# TODO: Find a way to clean up this section's formatting.
 #########
 # Cell formatting rules.
 #########
 
+# TODO: Find a way to clean up this section's formatting.
 # General.
-general_format = workbook.add_format()
+general_format = workbook.add_format({'font_size': 10})
 general_format.set_align('center')
 general_format.set_align('vcenter')
+general_format.set_font_name('Segoe UI')
+
 # Titles.
 title_format = workbook.add_format({'bold': True,
-                                    'font_size': 12
+                                    'font_size': 10
                                     }
                                    )
 title_format.set_align('center')
 title_format.set_align('vcenter')
+title_format.set_font_name('Segoe UI')
+
 wellTitle_format = workbook.add_format({'bold': True,
-                                        'font_size': 12
+                                        'font_size': 10
                                         }
                                        )
 wellTitle_format.set_align('left')
 wellTitle_format.set_align('vcenter')
+wellTitle_format.set_font_name('Segoe UI')
+
 # Wells.
-wellList_format = workbook.add_format({'font_size': 11})
-wellID_format = workbook.add_format({'font_size': 12})
-wellID_format = workbook.add_format({'font_size': 12})
+wellList_format = workbook.add_format({'font_size': 10})
+wellID_format = workbook.add_format({'font_size': 10})
 wellID_format.set_align('center')
 wellID_format.set_align('vcenter')
+wellID_format.set_font_name('Segoe UI')
+
 # Residue numbers.
-residue_format = workbook.add_format({'font_size': 10})
+residue_format = workbook.add_format({'font_size': 8})
 residue_format.set_align('center')
 residue_format.set_align('vcenter')
+residue_format.set_font_name('Segoe UI')
+
 # Sequences.
-sequence_format = workbook.add_format({'font_size': 10})
+sequence_format = workbook.add_format({'font_size': 9})
 sequence_format.set_align('center')
 sequence_format.set_align('vcenter')
 sequence_format.set_font_name('Lucida Console')
+
 logging.info('Cell formatting rules set.')
 
 ##################

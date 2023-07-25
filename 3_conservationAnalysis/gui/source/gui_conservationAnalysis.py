@@ -44,27 +44,39 @@ class OrderedCounter(Counter, OrderedDict):
 # Choose window theme.
 Sg.theme('DarkGrey13')
 
-# Create window layout.
-layout = [
-
+# Create window layouts.
+infoLayout = [
     # Title and introduction.
-    [Sg.Text('Phage Display - Conservation Analysis',
+    [Sg.Text('\n\n\n\n\n\nPhage Display — Conservation Analysis',
              text_color='#8294cc',
-             font=('Segoe UI Semibold', 16),
-             expand_x=True)
-     ],
-    [Sg.Text('''    Analyses UbV ELISA and/or sequencing data by showing only non-conserved amino acid
-    residues, highlighting regions that were targeted for diversification in the original 
-    phage display library, and calculating diversity and biochemistry metrics.\n''',
-             text_color='#8294cc',
-             font=('Segoe UI', 12)
+             font=('Segoe UI Bold', 22),
+             expand_x=True,
+             pad=(50, 0)
              )
      ],
+    [Sg.Text('''Compare phage sequence data and ELISA data (optional) with
+corresponding the wildtype scaffold sequence''',
+             text_color='#8294cc',
+             font=('Segoe UI', 12),
+             pad=(50, 0)
+             )
+     ],
+    [Sg.Text('''Analyses sequencing and optional ELISA data by showing non-conserved amino acid residues,
+highlighting regions that were targeted for diversification in the original phage display
+library, and calculating diversity/biochemistry metrics.''',
+             text_color='#a0a0a2',
+             font=('Segoe UI', 10),
+             pad=(70, 40)
+             )
+     ]
+]
 
+inputLayout = [
     # Input format prompt.
-    [Sg.Text('1. Choose input format:',
+    [Sg.Text('\n\n1. Choose input format:',
              text_color='white',
-             font=('Segoe UI Bold', 10)
+             font=('Segoe UI Bold', 10),
+             pad=(20, 0)
              )
      ],
     [Sg.Radio('Binding and sequencing data',
@@ -73,6 +85,7 @@ layout = [
               key='-ELISA_SEQ_DATA-',
               text_color='#bfbfbf',
               font=('Segoe UI Bold', 10),
+              pad=(40, 0),
               enable_events=True
               ),
      Sg.Radio('Sequencing data only',
@@ -84,10 +97,11 @@ layout = [
               enable_events=True
               )
      ],
-    [Sg.Text('''    * Requires xlsx output from Binding Analysis program.\n''',
+    [Sg.Text('• Requires xlsx output from Binding Analysis program.\n',
              text_color='#bfbfbf',
              font=('Segoe UI', 10),
-             key='-RADIO_TEXT-'
+             key='-RADIO_TEXT-',
+             pad=(40, 0)
              )
      ],
 
@@ -95,12 +109,13 @@ layout = [
     [Sg.Text('2. Enter the full path of the ELISA file:',
              text_color='white',
              font=('Segoe UI Bold', 10),
-             key='-INFILE_BEGIN_TEXT-'
+             key='-INFILE_BEGIN_TEXT-',
+             pad=(20, 0)
              )
      ],
-    [Sg.Input(key='-FILEINPUT-',
+    [Sg.Input(key='-FILE_INPUT-',
               size=70,
-              pad=(25, 0),
+              pad=(40, 10),
               font=('Segoe UI', 10),
               focus=True
               ),
@@ -109,62 +124,75 @@ layout = [
                    file_types=(('Excel/Fasta Files', '*.xlsx;*.fasta'), ('All Files', '*.*'),),
                    )
      ],
-    [Sg.Text('''    * Must be in xlsx format.''',
+    [Sg.Text('''• Must be in xlsx format.''',
              text_color='#bfbfbf',
              font=('Segoe UI', 10),
-             key='-INFILE_END_TEXT-'
+             key='-INFILE_END_TEXT-',
+             pad=(40, 0)
              )
      ],
 
     # Trim prompt.
-    [Sg.Radio('Trim first amino acid',
-              'TRIM',
-              default=True,
-              key='-TRIM-',
-              text_color='#bfbfbf',
-              font=('Segoe UI Bold', 10),
-              enable_events=True
-              ),
-     Sg.Radio('Do not trim first amino acid',
-              'TRIM',
-              default=False,
-              key='-NOTRIM-',
-              text_color='#bfbfbf',
-              font=('Segoe UI Bold', 10),
-              enable_events=True
+    [Sg.Text('\n3. Choose whether to trim N-termini of aligned sequences:',
+             text_color='white',
+             font=('Segoe UI Bold', 10),
+             pad=(20, 0)
+             )
+     ],
+    [Sg.Checkbox(key='-N_TRIM_CHOICE-',
+                 text="If checked, enter the number of residues to trim below",
+                 text_color='#bfbfbf',
+                 font=('Segoe UI Italic', 10),
+                 pad=(40, 0),
+                 default=True,
+                 enable_events=True
+                 ),
+     ],
+    [Sg.Input(key='-N_TRIM_INPUT-',
+              size=3,
+              pad=(40, 10),
+              font=('Segoe UI', 10),
+              default_text='1',
+              disabled_readonly_background_color='#161616',
+              disabled=False
               )
      ],
-    [Sg.Text('''    * During sequence analysis, if the second codon wasn't conserved and the codon preceding the first 
-      codon had to be used, this option allows that codon to be trimmed and removed from analysis.''',
+    [Sg.Text('''• Trim residues at the beginning and end of the sequence so that only the residues needed
+   for alignment are included.
+• For UbVs, typically only one residue at the beginning of the amino acid sequences needs to be trimmed.''',
              text_color='#bfbfbf',
-             font=('Segoe UI', 10)
+             font=('Segoe UI', 10),
+             pad=(40, 0)
              )
      ],
 
     # Consensus sequence input prompt.
-    [Sg.Text('\n3. Enter the consensus sequence for comparison:',
+    [Sg.Text('\n4. Enter the consensus sequence for comparison:',
              text_color='white',
-             font=('Segoe UI Bold', 10)
+             font=('Segoe UI Bold', 10),
+             pad=(20, 0)
              )
      ],
-    [Sg.Input(key='-CONSENSUSINPUT-',
-              size=100,
-              pad=(25, 0),
+    [Sg.Input(key='-CONSENSUS_INPUT-',
+              size=90,
+              pad=(40, 10),
               font=('Segoe UI', 10),
               default_text='MQIFVKTLTGKTITLEVEPSDTIENVKAKIQDKEGIPPDQQRLIFAGKQLEDGRTLSDYNIQKESTLHLVLRLRGGGG'
               )
      ],
-    [Sg.Text('''    * Not case-sensitive.
-    * Default is human ubiquitin (accession: AAA36789, PDB: 1UBQ).\n''',
+    [Sg.Text('''• Not case-sensitive.
+• Default is human ubiquitin (accession: AAA36789, PDB: 1UBQ).\n''',
              text_color='#bfbfbf',
-             font=('Segoe UI', 10)
+             font=('Segoe UI', 10),
+             pad=(40, 0)
              )
      ],
 
     # Library format prompt.
-    [Sg.Text('4. Choose library design:',
+    [Sg.Text('5. Choose library design:',
              text_color='white',
-             font=('Segoe UI Bold', 10)
+             font=('Segoe UI Bold', 10),
+             pad=(20, 0)
              )
      ],
     [Sg.Radio('Library 1 (Ernst et al., 2013)',
@@ -173,6 +201,7 @@ layout = [
               key='-LIBRARY1-',
               text_color='#bfbfbf',
               font=('Segoe UI Bold', 10),
+              pad=(40, 0),
               enable_events=True
               ),
      Sg.Radio('Library 2 (Ernst et al., 2013)',
@@ -186,20 +215,21 @@ layout = [
      Sg.Radio('N/A',
               'LIBRARY',
               default=False,
-              key='-LIBRARY0-',
+              key='-NO_LIBRARY-',
               text_color='#bfbfbf',
               font=('Segoe UI Bold', 10),
               enable_events=True
               )
      ],
 
-    [Sg.Text('''    Diversified residues:
-        (Region 1) 2, 4, 6, 8-12, 14
-        (Region 2) 35, 37, 39-40, 42, 44, 46-49
-        (Region 3) 62-64, 66, 68, 70-72\n''',
+    [Sg.Text('''Diversified residues:
+    (Region 1) 2, 4, 6, 8-12, 14
+    (Region 2) 35, 37, 39-40, 42, 44, 46-49
+    (Region 3) 62-64, 66, 68, 70-72\n''',
              text_color='#bfbfbf',
              font=('Segoe UI', 10),
-             key='-LIBRARY_END_TEXT-'
+             key='-LIBRARY_END_TEXT-',
+             pad=(50, 0)
              )
      ],
 
@@ -208,19 +238,57 @@ layout = [
                bind_return_key=True,
                font=('Segoe UI Bold', 16),
                size=(10, 0),
-               pad=(30, 0),
+               pad=(40, 30),
                use_ttk_buttons=True
                )
      ],
 ]
 
-# Name window, assign layout, and change window behaviour.
+# TODO: Add to this and improve visual formatting.
+troubleshootLayout = [
+    [Sg.Text('''Issue #1: There are no conserved residues.
+Cause: N-terminal residues were likely trimmed incorrectly (trimmed too much or too little).
+Solution: Make sure the correct number of N-terminal residues are trimmed.''',
+             text_color='#bfbfbf',
+             font=('Segoe UI', 10),
+             pad=(50, 50)
+             )
+     ]
+]
+
+# Create tab layout.
+tabGroup = [
+    [Sg.TabGroup(
+        [
+            [Sg.Tab('Info',
+                    infoLayout,
+                    border_width=40
+                    ),
+             Sg.Tab('Input Files',
+                    inputLayout,
+                    border_width=40
+                    ),
+             Sg.Tab('Troubleshooting',
+                    troubleshootLayout,
+                    border_width=40
+                    )
+             ]
+        ],
+        tab_location='topleft',
+        border_width=1,
+        font=('Segoe UI Bold', 10),
+        title_color='#bfbfbf',
+        selected_title_color='#8294cc',
+        size=(750, 800)
+    )
+    ]
+]
+
+# Set up window behaviour.
 window = Sg.Window('Phage Display - Conservation Analysis',
-                   layout,
+                   tabGroup,
                    alpha_channel=0.95,
-                   grab_anywhere=True,
-                   resizable=True,
-                   size=(675, 775),
+                   size=(750, 825),
                    ttk_theme='clam'
                    )
 
@@ -233,36 +301,43 @@ while True:
         window.close()
         break
 
-    # Update elements based on radio buttons.
+    # Update elements based on radio buttons and checkboxes.
+    if event == '-N_TRIM_CHOICE-':
+        if values['-N_TRIM_CHOICE-']:
+            window['-N_TRIM_INPUT-'].update(disabled=False)
+            continue
+        if not values['-N_TRIM_CHOICE-']:
+            window['-N_TRIM_INPUT-'].update(disabled=True)
+            continue
     elif event == '-ELISA_SEQ_DATA-':
         window['-INFILE_BEGIN_TEXT-'].update('2. Enter the full path of the ELISA file:')
-        window['-RADIO_TEXT-'].update('    * Requires xlsx output from Binding Analysis program.\n')
-        window['-INFILE_END_TEXT-'].update('    * Must be in xlsx format.\n')
+        window['-RADIO_TEXT-'].update('• Requires xlsx output from Binding Analysis program.\n')
+        window['-INFILE_END_TEXT-'].update('• Must be in *.xlsx format.')
         continue
     elif event == '-SEQ_DATA-':
         window['-INFILE_BEGIN_TEXT-'].update('2. Enter the full path of the amino acid alignment file:')
-        window['-RADIO_TEXT-'].update('    * Requires amino acid fasta alignment output from Sequence Analysis program'
+        window['-RADIO_TEXT-'].update('• Requires amino acid fasta alignment output from Sequence Analysis program'
                                       ' or elsewhere.\n')
-        window['-INFILE_END_TEXT-'].update('    * Must be in fasta format.\n')
+        window['-INFILE_END_TEXT-'].update('• Must be in *.fasta format.')
         continue
     elif event == '-LIBRARY1-':
-        window['-LIBRARY_END_TEXT-'].update('''    Diversified residues:
-        (Region 1) 2, 4, 6, 8-12, 14
-        (Region 2) 35, 37, 39-40, 42, 44, 46-49
-        (Region 3) 62-64, 66, 68, 70-72\n''')
+        window['-LIBRARY_END_TEXT-'].update('''Diversified residues:
+    (Region 1) 2, 4, 6, 8-12, 14
+    (Region 2) 35, 37, 39-40, 42, 44, 46-49
+    (Region 3) 62-64, 66, 68, 70-72\n''')
         continue
     elif event == '-LIBRARY2-':
-        window['-LIBRARY_END_TEXT-'].update('''    Diversified residues:
-        (Region 1) 2, 4, 6, 8-12, 14
-        (Region 2) 42, 44, 46-49
-        (Region 3) 62-64, 66, 68, 70-78\n''')
+        window['-LIBRARY_END_TEXT-'].update('''Diversified residues:
+    (Region 1) 2, 4, 6, 8-12, 14
+    (Region 2) 42, 44, 46-49
+    (Region 3) 62-64, 66, 68, 70-78\n''')
         continue
-    elif event == '-LIBRARY0-':
-        window['-LIBRARY_END_TEXT-'].update('''    Diversified residues:
+    elif event == '-NO_LIBRARY-':
+        window['-LIBRARY_END_TEXT-'].update('''Diversified residues:
         N/A\n\n\n''')
         continue
 
-    # If 'Enter' is pressed, updates variables with input values.
+    # Updates variables with input values when 'Enter' button is pressed.
     elif event == 'Enter':
         inputOptions = {'1': 'ELISA and sequencing',
                         '2': 'sequencing'
@@ -271,17 +346,16 @@ while True:
                           '2': 'Library 2 (Ernst et al., 2013)',
                           'pass': 'No library chosen'
                           }
-        consensusSeq = str(values['-CONSENSUSINPUT-'])
+        consensusSeq = str(values['-CONSENSUS_INPUT-'])
         consensusSeq = consensusSeq.upper()
         aaSeqRegex = re.compile(r'[ARNDCEQGHILKMFPSTWYVX]{10,}')
         consensusSeqInput = aaSeqRegex.search(consensusSeq, re.IGNORECASE)
-        trimInput = 'N'
 
         if values['-ELISA_SEQ_DATA-']:
             inputFormat = '1'
-            inFilePath = str(values['-FILEINPUT-'])
+            inFilePath = str(values['-FILE_INPUT-'])
             inFilePath = inFilePath.replace('\\', '/')
-            # Stops user if incorrect file type is chosen.
+            # Stops user if ELISA filetype isn't valid and prompts to retry.
             if not re.search('.xlsx$', inFilePath):
                 Sg.Popup('''The entered file is not an xlsx file.
 Please choose the file again.''',
@@ -290,7 +364,7 @@ Please choose the file again.''',
                          text_color='#4276ac'
                          )
                 continue
-            # Stops user if no file is found in the working directory.
+            # Stops user if ELISA path isn't valid and prompts to retry.
             if not os.path.exists(inFilePath):
                 Sg.Popup('''The entered ELISA file does not exist in this location.
 Please choose the file again.''',
@@ -304,23 +378,13 @@ Please choose the file again.''',
             inFileName = re.findall(r'[a-zA-Z0-9_]+\.xlsx$', inFilePath)
             inFileName = inFileName[0]
 
-            if consensusSeqInput is None:
-                Sg.Popup('''Invalid input for consensus sequence.
-Please enter a valid IUPAC amino acid sequence at least 10 digits long.''',
-                         title='Invalid Consensus Sequence',
-                         grab_anywhere=True,
-                         text_color='#4276ac',
-                         any_key_closes=False
-                         )
-                continue
-
+        # Stops user if sequence file path isn't valid and prompts to retry.
         if values['-SEQ_DATA-']:
             inputFormat = '2'
-            inFilePath = str(values['-FILEINPUT-'])
+            inFilePath = str(values['-FILE_INPUT-'])
             inFilePath = inFilePath.replace('\\', '/')
-            # Stops user if incorrect file type is chosen.
             if not re.search('.fasta$', inFilePath):
-                Sg.Popup('''The entered file is not a fasta file.
+                Sg.Popup('''The sequence file is not in fasta format.
 Please choose the file again.''',
                          title='File Not Found',
                          grab_anywhere=True,
@@ -329,7 +393,7 @@ Please choose the file again.''',
                 continue
             # Stops user if no file is found in the working directory.
             if not os.path.exists(inFilePath):
-                Sg.Popup('''The entered amino acid alignment file does not exist in this location.
+                Sg.Popup('''The  amino acid alignment file does not exist in this location.
 Please choose the file again.''',
                          title='File Not Found',
                          grab_anywhere=True,
@@ -341,12 +405,29 @@ Please choose the file again.''',
             inFileName = re.findall(r'[a-zA-Z0-9_]+\.fasta$', inFilePath)
             inFileName = inFileName[0]
 
-        if values['-TRIM-']:
-            trimInput = 'Y'
+        # Stops user if trim input is invalid and prompts to retry.
+        if values['-N_TRIM_CHOICE-']:
+            nTrimChoice = 'Y'
+            nTrimInput = values['-N_TRIM_INPUT-']
+            # Stops user if trim input isn't valid and prompts to retry.
+            if re.search(r'[a-zA-Z]+|\s+', nTrimInput):
+                Sg.Popup('''Invalid input for trim.
+Please enter a number.''',
+                         title='Invalid Trim Input',
+                         grab_anywhere=True,
+                         text_color='#4276ac'
+                         )
+                continue
+            else:
+                nTrimInput = int(values['-N_TRIM_INPUT-'])
+        else:
+            nTrimChoice = 'N'
+            nTrimInput = 0
 
+        # Stops user if consensus sequence input is invalid and prompts to retry.
         if consensusSeqInput is None:
             Sg.Popup('''Invalid input for consensus sequence.
-Please enter a valid IUPAC amino acid sequence at least 10 digits long.''',
+Please enter a valid IUPAC amino acid sequence at least ten residues long.''',
                      title='Invalid Consensus Sequence',
                      grab_anywhere=True,
                      text_color='#4276ac',
@@ -362,18 +443,22 @@ Please enter a valid IUPAC amino acid sequence at least 10 digits long.''',
             libraryInput = '2'
             break
 
-        if values['-LIBRARY0-']:
+        if values['-NO_LIBRARY-']:
             libraryInput = 'pass'
             break
 
 ##################
-# Setup.
+#    MAIN
 ##################
 
 # Skip performing any processes if window is closed.
 if event == Sg.WIN_CLOSED:
     pass
-# Carry on with code otherwise.
+
+##################
+# Set up working directory and logging file.
+##################
+
 else:
     # Setup logging file.
     if inputFormat == '1':
@@ -398,6 +483,7 @@ else:
                                                            inputOptions[inputFormat]
                                                            )
                  )
+    logging.info('%i residues trimmed from sequence N-termini.' % nTrimInput)
     logging.info('%s chosen as the data source.' % inFileName)
 
     ##################
@@ -512,18 +598,18 @@ else:
 
     # Trim first amino acid residue.
     aaShortList = []
-    if trimInput == 'Y':
+    if nTrimChoice == 'Y':
         # Remove amino acid prior to start codon.
         for seq in aaList:
-            aaShortSeq = seq[1:]
+            aaShortSeq = seq[nTrimInput:]
             aaShortList.append(aaShortSeq)
         logging.info('First amino acid residue removed from all sequences.')
-    else:
+    elif nTrimChoice == 'N':
         aaShortList = aaList
         logging.info('First amino acid residue left in all sequences.')
         pass
 
-    # Compare UbV sequences against a consensus sequence and replace conserved amino acids with dashes.
+    # Compare binder sequences against a consensus sequence and replace conserved amino acids with dashes.
     logging.info('''Consensus sequence set to '%s'.''' % consensusSeq)
     consensusLen = len(consensusSeq)
     conservedList = []
@@ -550,64 +636,136 @@ else:
     workbook = xlsxwriter.Workbook(path + '/' + outFileNameShort + '.xlsx')
     logging.info('''Excel spreadsheet created as '%s.xlsx'.''' % outFileNameShort)
 
-    # TODO: Find a way to clean up this section's formatting.
     #########
     # Cell formatting rules.
     #########
 
     # General.
-    general_format = workbook.add_format()
+    general_format = workbook.add_format({'font_size': 10,
+                                          'font_name': 'Segoe UI'
+                                          }
+                                         )
     general_format.set_align('center')
     general_format.set_align('vcenter')
+
     # Titles.
     title_format = workbook.add_format({'bold': True,
-                                        'font_size': 12
+                                        'font_size': 10,
+                                        'font_name': 'Segoe UI'
                                         }
                                        )
     title_format.set_align('center')
     title_format.set_align('vcenter')
     title_format.set_text_wrap()
+
     wellTitle_format = workbook.add_format({'bold': True,
-                                            'font_size': 12
+                                            'font_size': 10,
+                                            'font_name': 'Segoe UI'
                                             }
                                            )
     wellTitle_format.set_align('left')
     wellTitle_format.set_align('vcenter')
-    info_format = workbook.add_format({'font_size': 12})
+
+    # Information.
+    info_format = workbook.add_format({'font_size': 10,
+                                       'font_name': 'Segoe UI'
+                                       }
+                                      )
     info_format.set_align('left')
     info_format.set_align('vcenter')
-    # Numbers.
-    stats_format = workbook.add_format({'num_format': '#,##0.0'})
+
+    # Statistics.
+    stats_format = workbook.add_format({'num_format': '#,##0.0',
+                                        'font_size': 10,
+                                        'font_name': 'Segoe UI'
+                                        }
+                                       )
     stats_format.set_align('center')
     stats_format.set_align('vcenter')
-    residue_format = workbook.add_format({'font_size': 10})
-    residue_format.set_align('center')
-    residue_format.set_align('vcenter')
-    integer_format = workbook.add_format({'num_format': '#,##0'})
+
+    integer_format = workbook.add_format({'num_format': '#,##0',
+                                          'font_size': 10,
+                                          'font_name': 'Segoe UI'
+                                          }
+                                         )
     integer_format.set_align('center')
     integer_format.set_align('vcenter')
-    percent_format = workbook.add_format({'num_format': '#,##0.0%'})
+
+    percent_format = workbook.add_format({'num_format': '#,##0.0%',
+                                          'font_size': 10,
+                                          'font_name': 'Segoe UI'
+                                          }
+                                         )
     percent_format.set_align('center')
     percent_format.set_align('vcenter')
+    percent_format.set_right(3)
+
+    # Residue numbers.
+    residue_format = workbook.add_format({'font_size': 8,
+                                          'font_name': 'Segoe UI'
+                                          }
+                                         )
+    residue_format.set_align('center')
+    residue_format.set_align('vcenter')
+
     # Wells.
-    wellList_format = workbook.add_format({'font_size': 11})
-    wellID_format = workbook.add_format({'font_size': 12})
+    wellList_format = workbook.add_format({'font_size': 10,
+                                           'font_name': 'Segoe UI'
+                                           }
+                                          )
+
+    wellID_format = workbook.add_format({'font_size': 10,
+                                         'font_name': 'Segoe UI'
+                                         }
+                                        )
     wellID_format.set_align('center')
     wellID_format.set_align('vcenter')
+
+    # Consensus.
+    consensusSeq_format = workbook.add_format({'bg_color': '#F2F2F2'
+                                               }
+                                              )
+    consensusSeq_format.set_bottom(3)
+
+    consensusInteger_format = workbook.add_format({'num_format': '#,##0',
+                                                   'font_size': 10,
+                                                   'font_name': 'Segoe UI'
+                                                   }
+                                                  )
+    consensusInteger_format.set_align('center')
+    consensusInteger_format.set_align('vcenter')
+    consensusInteger_format.set_bottom(8)
+
+    consensusPercent_format = workbook.add_format({'num_format': '#,##0.0%',
+                                                   'font_size': 10,
+                                                   'font_name': 'Segoe UI'
+                                                   }
+                                                  )
+    consensusPercent_format.set_align('center')
+    consensusPercent_format.set_align('vcenter')
+    consensusPercent_format.set_bottom(8)
+    consensusPercent_format.set_right(3)
+
     # Sequences.
-    sequence_format = workbook.add_format({'font_size': 10})
+    sequence_format = workbook.add_format({'font_size': 9,
+                                           'font_name': 'Lucida Console'
+                                           }
+                                          )
     sequence_format.set_align('center')
     sequence_format.set_align('vcenter')
-    sequence_format.set_font_name('Lucida Console')
+
     # Region 1.
     region1_format = workbook.add_format()
     region1_format.set_bg_color('#BD7191')
+
     # Region 2.
     region2_format = workbook.add_format()
     region2_format.set_bg_color('#8FC1C0')
+
     # Region 3.
     region3_format = workbook.add_format()
     region3_format.set_bg_color('#DCA16A')
+
     logging.info('Cell formatting rules set.')
 
     ##################
@@ -623,23 +781,34 @@ else:
     worksheet1.freeze_panes(3, 1)
     logging.info('%s worksheet created.' % worksheet1Name)
 
-    # Assign IDs to each unique amino acid sequence.
-    worksheet1.merge_range(0, 0, 2, 0, 'ID', title_format)
-    idRow = 3
-    for ID in IDlist:
-        worksheet1.write(idRow, 0, ID, general_format)
-        idRow += 1
-    logging.info('IDs written to %s worksheet.' % worksheet1Name)
-
     # Write amino acid residue numbers above sequences.
     residueCol = 1
     for residue in residueList:
         worksheet1.write(2, residueCol, residue, residue_format)
         residueCol += 1
 
+    # Write consensus amino acid sequence.
+    worksheet1.write(3, 0, "Consensus", general_format)
+    worksheet1.conditional_format(3, 1, 3, len(consensusSeq) + 1,
+                                  {'type': 'no_blanks', 'format': consensusSeq_format}
+                                  )
+    consensusRow = 3
+    consensusCol = 1
+    for letter in consensusSeq:
+        worksheet1.write(consensusRow, consensusCol, letter, sequence_format)
+        consensusCol += 1
+
+    # Assign IDs to each unique amino acid sequence.
+    worksheet1.merge_range(0, 0, 2, 0, 'ID', title_format)
+    idRow = 4
+    for ID in IDlist:
+        worksheet1.write(idRow, 0, ID, general_format)
+        idRow += 1
+    logging.info('IDs written to %s worksheet.' % worksheet1Name)
+
     # Write unique amino acid sequences.
     worksheet1.merge_range(0, 1, 0, 9, 'Amino Acid Sequence', title_format)
-    seqRow = 3
+    seqRow = 4
     seqCol = 1
     for seq in conservedList:
         letterList = list(seq)
@@ -653,7 +822,7 @@ else:
     # Write counts for each unique amino acid sequence.
     worksheet1.merge_range(0, consensusLen + 1, 2, consensusLen + 1, 'Count', title_format)
     count = list(uniqueDict.values())
-    countRow = 3
+    countRow = 4
     countCol = consensusLen + 1
     for number in count:
         worksheet1.write(countRow, countCol, number, general_format)
@@ -663,7 +832,7 @@ else:
     # Write statistics to worksheet.
     if inputFormat == '1':
         # Max.
-        maxRow = 3
+        maxRow = 4
         maxCol = consensusLen + 2
         worksheet1.merge_range(0, consensusLen + 2, 2, consensusLen + 2, 'Max.', title_format)
         for number in maxList:
@@ -672,7 +841,7 @@ else:
         logging.info('Maximum values written to %s worksheet.' % worksheet1Name)
 
         # Min.
-        minRow = 3
+        minRow = 4
         minCol = consensusLen + 3
         worksheet1.merge_range(0, consensusLen + 3, 2, consensusLen + 3, 'Min.', title_format)
         for number in minList:
@@ -681,7 +850,7 @@ else:
         logging.info('Minimum values written to %s worksheet.' % worksheet1Name)
 
         # Median.
-        medianRow = 3
+        medianRow = 4
         medianCol = consensusLen + 4
         worksheet1.merge_range(0, consensusLen + 4, 2, consensusLen + 4, 'Median', title_format)
         for number in medianList:
@@ -690,7 +859,7 @@ else:
         logging.info('Median values written to %s worksheet.' % worksheet1Name)
 
         # Mean.
-        meanRow = 3
+        meanRow = 4
         meanCol = consensusLen + 5
         worksheet1.merge_range(0, consensusLen + 5, 2, consensusLen + 5, 'Mean', title_format)
         for number in meanList:
@@ -699,7 +868,7 @@ else:
         logging.info('Mean values written to %s worksheet.' % worksheet1Name)
 
         # St. dev.
-        stdevRow = 3
+        stdevRow = 4
         stdevCol = consensusLen + 6
         worksheet1.merge_range(0, consensusLen + 6, 2, consensusLen + 6, 'St. Dev.', title_format)
         for number in devList:
@@ -709,7 +878,7 @@ else:
 
         # Wells.
         worksheet1.merge_range(0, consensusLen + 7, 2, consensusLen + 7, 'Wells', wellTitle_format)
-        wellRow = 3
+        wellRow = 4
         wellCol = consensusLen + 7
         # Change column width to fit all IDs.
         wellColWidth = round((len(countID[0]) / 1.16))
@@ -724,13 +893,15 @@ else:
         for column in range(consensusLen + 2, consensusLen + 7):
             worksheet1.conditional_format(2,
                                           column,
-                                          len(conservedList) + 2,
+                                          len(conservedList) + 3,
                                           column,
-                                          {'type': '2_color_scale', 'min_color': '#FFFFFF', 'max_color': '#3D85C6'})
+                                          {'type': '2_color_scale',
+                                           'min_color': '#FFFFFF',
+                                           'max_color': '#3D85C6'})
         logging.info('Conditional formatting applied to statistics.')
 
         # Table for statistics.
-        worksheet1.add_table(3, 0, len(conservedList) + 2, consensusLen + 7, {'header_row': False,
+        worksheet1.add_table(4, 0, len(conservedList) + 3, consensusLen + 7, {'header_row': False,
                                                                               'style': None
                                                                               }
                              )
@@ -738,7 +909,7 @@ else:
     elif inputFormat == '2':
         # Wells.
         worksheet1.write(1, consensusLen + 2, 'Wells', wellTitle_format)
-        wellRow = 3
+        wellRow = 4
         wellCol = consensusLen + 2
         # Change column width to fit all IDs.
         wellColWidth = round((len(countID[0]) / 1.16))
@@ -751,7 +922,7 @@ else:
         logging.info('Amino acid sequence-specific well IDs written to %s worksheet.' % worksheet1Name)
 
         # Table for counts and wells.
-        worksheet1.add_table(3, 0, len(conservedList) + 2, consensusLen + 2, {'header_row': False,
+        worksheet1.add_table(3, 0, len(conservedList) + 3, consensusLen + 2, {'header_row': False,
                                                                               'style': None
                                                                               }
                              )
@@ -763,51 +934,51 @@ else:
     # Library 1 (Ernst et al., 2013).
     if libraryInput == '1':
         # Region 1 formatting.
-        worksheet1.write(len(conservedList) + 4, 1, libraryOptions.get('1'), info_format)
+        worksheet1.write(len(conservedList) + 5, 1, libraryOptions.get('1'), info_format)
         logging.info('Library 1 (Ernst et al., 2013) selected.')
         worksheet1.merge_range(1, 2, 1, 14, 'Region 1', title_format)
         for column in [2, 4, 6, 8, 9, 10, 11, 12, 14]:
-            worksheet1.conditional_format(3, column, len(conservedList) + 2, column,
+            worksheet1.conditional_format(3, column, len(conservedList) + 3, column,
                                           {'type': 'no_blanks', 'format': region1_format}
                                           )
         logging.info('Region 1 coloured.')
         # Region 2 formatting.
         worksheet1.merge_range(1, 35, 1, 49, 'Region 2', title_format)
         for column in [35, 37, 39, 40, 42, 44, 46, 47, 48, 49]:
-            worksheet1.conditional_format(3, column, len(conservedList) + 2, column,
+            worksheet1.conditional_format(3, column, len(conservedList) + 3, column,
                                           {'type': 'no_blanks', 'format': region2_format}
                                           )
         logging.info('Region 2 coloured.')
         # Region 3 formatting.
         worksheet1.merge_range(1, 62, 1, 72, 'Region 3', title_format)
         for column in [62, 63, 64, 66, 68, 70, 71, 72]:
-            worksheet1.conditional_format(3, 62, len(conservedList) + 2, 64,
+            worksheet1.conditional_format(3, 62, len(conservedList) + 3, 64,
                                           {'type': 'no_blanks', 'format': region3_format}
                                           )
         logging.info('Region 3 coloured.')
 
     # Library 2 (Ernst et al., 2013).
     elif libraryInput == '2':
-        worksheet1.write(len(conservedList) + 4, 1, libraryOptions.get('2'), info_format)
+        worksheet1.write(len(conservedList) + 5, 1, libraryOptions.get('2'), info_format)
         logging.info('Library 2 (Ernst et al., 2013) selected.')
         # Region 1 formatting.
         worksheet1.merge_range(1, 2, 1, 14, 'Region 1', title_format)
         for column in [2, 4, 6, 8, 9, 10, 11, 12, 14]:
-            worksheet1.conditional_format(3, column, len(conservedList) + 2, column,
+            worksheet1.conditional_format(3, column, len(conservedList) + 3, column,
                                           {'type': 'no_blanks', 'format': region1_format}
                                           )
         logging.info('Region 1 coloured.')
         # Region 2 formatting.
         worksheet1.merge_range(1, 42, 1, 49, 'Region 2', title_format)
         for column in [42, 44, 46, 47, 48, 49]:
-            worksheet1.conditional_format(3, column, len(conservedList) + 2, column,
+            worksheet1.conditional_format(3, column, len(conservedList) + 3, column,
                                           {'type': 'no_blanks', 'format': region2_format}
                                           )
         logging.info('Region 2 coloured.')
         # Region 3 formatting.
         worksheet1.merge_range(1, 62, 1, 78, 'Region 3', title_format)
         for column in [62, 63, 64, 66, 68, 70, 71, 72, 73, 74, 75, 76, 77, 78]:
-            worksheet1.conditional_format(3, column, len(conservedList) + 2, column,
+            worksheet1.conditional_format(3, column, len(conservedList) + 3, column,
                                           {'type': 'no_blanks', 'format': region3_format}
                                           )
         logging.info('Region 3 coloured.')
@@ -818,8 +989,8 @@ else:
 
     # Info about how the values were obtained.
     if inputFormat == '1':
-        statsInfo = 'The statistics presented above are for binder:control ratios.'
-        worksheet1.write(len(conservedList) + 6, 1, statsInfo, info_format)
+        statsInfo = 'Statistics presented above are for binder:control binding ratios.'
+        worksheet1.write(len(conservedList) + 5, consensusLen + 2, statsInfo, info_format)
     else:
         pass
 
@@ -834,7 +1005,87 @@ else:
                'aromatic': ['F', 'W', 'Y'],
                'aliphatic': ['A', 'G', 'I', 'L', 'P', 'V'],
                }
+    # Consensus sequence analysis.
+    resHydrophobicCon = []
+    percentHydrophobicCon = []
+    resPolarCon = []
+    percentPolarCon = []
+    resAcidicCon = []
+    percentAcidicCon = []
+    resBasicCon = []
+    percentBasicCon = []
+    resAromaticCon = []
+    percentAromaticCon = []
+    resAliphaticCon = []
+    percentAliphaticCon = []
 
+    # Total hydrophobic residues.
+    totalHydrophobic = 0
+    for residue in consensusSeq:
+        if residue in aaTypes['hydrophobic']:
+            totalHydrophobic += 1
+    resHydrophobicCon.append(totalHydrophobic)
+    try:
+        percentHydrophobicCon.append(totalHydrophobic / len(consensusSeq))
+    except ZeroDivisionError:
+        percentHydrophobicCon.append('0')
+
+    # Total polar residues.
+    totalPolar = 0
+    for residue in consensusSeq:
+        if residue in aaTypes['polar']:
+            totalPolar += 1
+    resPolarCon.append(totalPolar)
+    try:
+        percentPolarCon.append(totalPolar / len(consensusSeq))
+    except ZeroDivisionError:
+        percentPolarCon.append('0')
+
+    # Total diversified acidic residues.
+    totalAcidic = 0
+    for residue in consensusSeq:
+        if residue in aaTypes['acidic']:
+            totalAcidic += 1
+    resAcidicCon.append(totalAcidic)
+    try:
+        percentAcidicCon.append(totalAcidic / len(consensusSeq))
+    except ZeroDivisionError:
+        percentAcidicCon.append('0')
+
+    # Total basic residues.
+    totalBasic = 0
+    for residue in consensusSeq:
+        if residue in aaTypes['basic']:
+            totalBasic += 1
+    resBasicCon.append(totalBasic)
+    try:
+        percentBasicCon.append(totalBasic / len(consensusSeq))
+    except ZeroDivisionError:
+        percentBasicCon.append('0')
+
+    # Total aromatic residues.
+    totalAromatic = 0
+    for residue in consensusSeq:
+        if residue in aaTypes['aromatic']:
+            totalAromatic += 1
+    resAromaticCon.append(totalAromatic)
+    try:
+        percentAromaticCon.append(totalAromatic / len(consensusSeq))
+    except ZeroDivisionError:
+        percentAromaticCon.append('0')
+
+    # Total aliphatic residues.
+    totalAliphatic = 0
+    for residue in consensusSeq:
+        if residue in aaTypes['aliphatic']:
+            totalAliphatic += 1
+    resAliphaticCon.append(totalAliphatic)
+    try:
+        percentAliphaticCon.append(totalAliphatic / len(consensusSeq))
+    except ZeroDivisionError:
+        percentAliphaticCon.append('0')
+
+    # Binder sequence analysis.
     if libraryInput == '1' or libraryInput == '2':
         if libraryInput == '1':
             region1index = [index - 1 for index in [2, 4, 6, 8, 9, 10, 11, 12, 14]]
@@ -875,6 +1126,7 @@ else:
         percentAliphatic = []
 
         for sequence in conservedList:
+            # Diversity analysis.
             # Total diversified residues.
             totalDiversified = 0
             for residue in sequence:
@@ -885,8 +1137,11 @@ else:
             # Total diversified residues in targeted regions.
             totalTargeted = 0
             for index in allRegionIndex:
-                if sequence[index] != '-':
-                    totalTargeted += 1
+                try:
+                    if sequence[index] != '-':
+                        totalTargeted += 1
+                except IndexError:
+                    continue
             resTargeted.append(totalTargeted)
             percentTargeted.append(totalTargeted / len(allRegionIndex))
 
@@ -901,27 +1156,41 @@ else:
             # Total diversified residues in region 1.
             totalResReg1 = 0
             for index in region1index:
-                if sequence[index] != '-':
-                    totalResReg1 += 1
+                try:
+                    if sequence[index] != '-':
+                        totalResReg1 += 1
+                except IndexError:
+                    continue
             resDiversifiedReg1.append(totalResReg1)
             percentDiversifiedReg1.append(totalResReg1 / len(region1index))
 
             # Total diversified residues in region 2.
             totalResReg2 = 0
             for index in region2index:
-                if sequence[index] != '-':
-                    totalResReg2 += 1
+                try:
+                    if sequence[index] != '-':
+                        totalResReg2 += 1
+                except IndexError:
+                    continue
             resDiversifiedReg2.append(totalResReg2)
             percentDiversifiedReg2.append(totalResReg2 / len(region2index))
 
             # Total diversified residues in region 3.
             totalResReg3 = 0
             for index in region3index:
-                if sequence[index] != '-':
-                    totalResReg3 += 1
+                try:
+                    if sequence[index] != '-':
+                        totalResReg3 += 1
+                except IndexError:
+                    continue
             resDiversifiedReg3.append(totalResReg3)
             percentDiversifiedReg3.append(totalResReg3 / len(region3index))
+        logging.info('Diversity statistics calculated.')
 
+        # Biochemical analysis.
+        conBinderSeq = aaShortList
+        conBinderSeq.insert(0, consensusSeq)
+        for sequence in conBinderSeq:
             # Total diversified hydrophobic residues.
             totalHydrophobic = 0
             for residue in sequence:
@@ -929,7 +1198,7 @@ else:
                     totalHydrophobic += 1
             resHydrophobic.append(totalHydrophobic)
             try:
-                percentHydrophobic.append(totalHydrophobic / allRegionLength)
+                percentHydrophobic.append(totalHydrophobic / len(sequence))
             except ZeroDivisionError:
                 percentHydrophobic.append('0')
 
@@ -987,12 +1256,12 @@ else:
                 percentAliphatic.append(totalAliphatic / len(sequence))
             except ZeroDivisionError:
                 percentAliphatic.append('0')
-        logging.info('Diversity and biochemical analyses calculated.')
+        logging.info('Biochemical statistics calculated.')
 
         diversityTable = {'Total Untargeted Diversified': resUntargeted,
-                          'Untargeted: Percent of Untargeted Regions': percentUntargeted,
+                          'Untargeted: Percent of Untargeted Residues': percentUntargeted,
                           'Total Targeted Diversified': resTargeted,
-                          'Targeted: Percent of Targeted Regions': percentTargeted,
+                          'Targeted: Percent of Targeted Residues': percentTargeted,
                           'Region 1 Diversified': resDiversifiedReg1,
                           'Percent of Region 1': percentDiversifiedReg1,
                           'Region 2 Diversified': resDiversifiedReg2,
@@ -1003,19 +1272,22 @@ else:
         diversityDataframe = pandas.DataFrame(diversityTable)
 
         biochemicalTable = {'Total Hydrophobic Residues': resHydrophobic,
-                            'Hydrophobic: Percent of Entire Sequence': percentHydrophobic,
+                            'Hydrophobic: Percent of Sequence': percentHydrophobic,
                             'Total Polar Residues': resPolar,
-                            'Polar: Percent of Entire Sequence': percentPolar,
+                            'Polar: Percent of Sequence': percentPolar,
                             'Total Acidic Residues': resAcidic,
-                            'Acidic: Percent of Entire Sequence': percentAcidic,
+                            'Acidic: Percent of Sequence': percentAcidic,
                             'Total Basic Residues': resBasic,
-                            'Basic: Percent of Entire Sequence': percentBasic,
+                            'Basic: Percent of Sequence': percentBasic,
                             'Total Aromatic Residues': resAromatic,
-                            'Aromatic: Percent of Entire Sequence': percentAromatic,
+                            'Aromatic: Percent of Sequence': percentAromatic,
                             'Total Aliphatic Residues': resAliphatic,
-                            'Aliphatic: Percent of Entire Sequence': percentAliphatic
+                            'Aliphatic: Percent of Sequence': percentAliphatic
                             }
         biochemicalDataframe = pandas.DataFrame(biochemicalTable)
+        binderBiochemicalDataframe = biochemicalDataframe.drop([0, 0])
+        biochemicalDataframe = pandas.DataFrame(biochemicalTable)
+        consensusBiochemicalDataframe = biochemicalDataframe.loc[0]
 
     elif libraryInput == 'pass':
         resDiversified = []
@@ -1107,30 +1379,33 @@ else:
                 percentAliphatic.append(totalAliphatic / len(sequence))
             except ZeroDivisionError:
                 percentAliphatic.append('0')
-        logging.info('Diversity and biochemical analyses calculated.')
+        logging.info('Diversity and biochemical statistics calculated.')
 
         diversityTable = {'Total Diversified': resDiversified,
-                          'Diversified: Percent of Entire Sequence': resDiversifiedPercent
+                          'Diversified: Percent of Sequence': resDiversifiedPercent
                           }
         diversityDataframe = pandas.DataFrame(diversityTable)
 
         biochemicalTable = {'Total Hydrophobic Residues': resHydrophobic,
-                            'Hydrophobic: Percent of Entire Sequence': percentHydrophobic,
+                            'Hydrophobic: Percent of Sequence': percentHydrophobic,
                             'Total Polar Residues': resPolar,
-                            'Polar: Percent of Entire Sequence': percentPolar,
+                            'Polar: Percent of Sequence': percentPolar,
                             'Total Acidic Residues': resAcidic,
-                            'Acidic: Percent of Entire Sequence': percentAcidic,
+                            'Acidic: Percent of Sequence': percentAcidic,
                             'Total Basic Residues': resBasic,
-                            'Basic: Percent of Entire Sequence': percentBasic,
+                            'Basic: Percent of Sequence': percentBasic,
                             'Total Aromatic Residues': resAromatic,
-                            'Aromatic: Percent of Entire Sequence': percentAromatic,
+                            'Aromatic: Percent of Sequence': percentAromatic,
                             'Total Aliphatic Residues': resAliphatic,
-                            'Aliphatic: Percent of Entire Sequence': percentAliphatic
+                            'Aliphatic: Percent of Sequence': percentAliphatic
                             }
         biochemicalDataframe = pandas.DataFrame(biochemicalTable)
+        binderBiochemicalDataframe = biochemicalDataframe.drop([0, 0])
+        biochemicalDataframe = pandas.DataFrame(biochemicalTable)
+        consensusBiochemicalDataframe = biochemicalDataframe.loc[0]
 
     ##################
-    # Create worksheet for unique amino acid diversity analyses.
+    # Create worksheet for diversity analyses.
     ##################
 
     if libraryInput == '1' or libraryInput == '2':
@@ -1139,9 +1414,9 @@ else:
         worksheet2.hide_gridlines(option=2)
         worksheet2.set_column(0, 0, 10)
         for column in [1, 3, 5, 7, 9]:
-            worksheet2.set_column(column, column, 12)
+            worksheet2.set_column(column, column, 15)
         for column in [2, 4, 6, 8, 10]:
-            worksheet2.set_column(column, column, 17)
+            worksheet2.set_column(column, column, 20)
         worksheet2.freeze_panes(2, 1)
         logging.info('%s worksheet created.' % worksheet2Name)
 
@@ -1156,7 +1431,7 @@ else:
         # Write untargeted diversified residues.
         untargetedRow = 2
         untargetedCol = 1
-        worksheet2.merge_range(0, 1, 1, 1, 'Untargeted', title_format)
+        worksheet2.merge_range(0, 1, 1, 1, 'Untargeted Diversified', title_format)
         for untargeted in diversityDataframe['Total Untargeted Diversified']:
             worksheet2.write(untargetedRow, untargetedCol, untargeted, integer_format)
             untargetedRow += 1
@@ -1165,8 +1440,8 @@ else:
         # Write untargeted diversified residues as a percent of untargeted regions.
         untargetedPercentRow = 2
         untargetedPercentCol = 2
-        worksheet2.merge_range(0, 2, 1, 2, '% of Untargeted Regions', title_format)
-        for untargetedPercent in diversityDataframe['Untargeted: Percent of Untargeted Regions']:
+        worksheet2.merge_range(0, 2, 1, 2, '% of Untargeted', title_format)
+        for untargetedPercent in diversityDataframe['Untargeted: Percent of Untargeted Residues']:
             worksheet2.write(untargetedPercentRow, untargetedPercentCol, untargetedPercent, percent_format)
             untargetedPercentRow += 1
         logging.info('Untargeted residues as a percent of untargeted regions written to %s worksheet.' % worksheet2Name)
@@ -1174,7 +1449,7 @@ else:
         # Write targeted diversified residues.
         targetedRow = 2
         targetedCol = 3
-        worksheet2.merge_range(0, 3, 1, 3, 'Targeted', title_format)
+        worksheet2.merge_range(0, 3, 1, 3, 'Targeted Diversified', title_format)
         for targeted in diversityDataframe['Total Targeted Diversified']:
             worksheet2.write(targetedRow, targetedCol, targeted, integer_format)
             targetedRow += 1
@@ -1183,8 +1458,8 @@ else:
         # Write targeted diversified residues as a percent of targeted regions.
         targetedPercentRow = 2
         targetedPercentCol = 4
-        worksheet2.merge_range(0, 4, 1, 4, '% of Targeted Regions', title_format)
-        for targetedPercent in diversityDataframe['Targeted: Percent of Targeted Regions']:
+        worksheet2.merge_range(0, 4, 1, 4, '% of Targeted', title_format)
+        for targetedPercent in diversityDataframe['Targeted: Percent of Targeted Residues']:
             worksheet2.write(targetedPercentRow, targetedPercentCol, targetedPercent, percent_format)
             targetedPercentRow += 1
         logging.info('Targeted residues as a percent of targeted regions written to %s worksheet.' % worksheet2Name)
@@ -1248,7 +1523,7 @@ else:
             worksheet2.conditional_format(2, column, len(conservedList) + 2, column,
                                           {'type': '2_color_scale',
                                            'min_color': '#FFFFFF',
-                                           'max_color': '#3D85C6'
+                                           'max_color': '#8C198C'
                                            }
                                           )
 
@@ -1290,8 +1565,8 @@ else:
         # Write total diversified residues as a percent of the entire sequence.
         diversifiedPercentRow = 2
         diversifiedPercentCol = 2
-        worksheet2.merge_range(0, 2, 1, 2, '% of Entire Sequence', title_format)
-        for diversifiedPercent in diversityDataframe['Diversified: Percent of Entire Sequence']:
+        worksheet2.merge_range(0, 2, 1, 2, '% of Sequence', title_format)
+        for diversifiedPercent in diversityDataframe['Diversified: Percent of Sequence']:
             worksheet2.write(diversifiedPercentRow, diversifiedPercentCol, diversifiedPercent, percent_format)
             diversifiedPercentRow += 1
         logging.info('Diversified residues as a percent of entire sequence written to %s worksheet.' % worksheet2Name)
@@ -1312,7 +1587,7 @@ else:
                               }
                              )
     ##################
-    # Create worksheet for unique amino acid biochemical analyses.
+    # Create worksheet for biochemical analyses.
     ##################
 
     worksheet3Name = 'Biochemical Analyses'
@@ -1326,118 +1601,131 @@ else:
     worksheet3.freeze_panes(2, 1)
     logging.info('%s worksheet created.' % worksheet3Name)
 
-    # Write unique sequence IDs.
+    # Write consensus sequence data.
+    worksheet3.write(2, 0, 'Consensus', general_format)
+    conRow = 2
+    conCol = 1
+    for integer in consensusBiochemicalDataframe.iloc[range(0, 12, 2)]:
+        worksheet3.write(conRow, conCol, integer, consensusInteger_format)
+        conCol += 2
+    conCol = 2
+    for percent in consensusBiochemicalDataframe.iloc[range(1, 12, 2)]:
+        worksheet3.write(conRow, conCol, percent, consensusPercent_format)
+        conCol += 2
+    logging.info('Consensus sequence data written to %s worksheet.' % worksheet3Name)
+
+    # Write sequence IDs.
     worksheet3.merge_range(0, 0, 1, 0, 'ID', title_format)
-    idRow = 2
+    idRow = 3
     for ID in IDlist:
         worksheet3.write(idRow, 0, ID, general_format)
         idRow += 1
     logging.info('IDs written to %s worksheet.' % worksheet3Name)
 
     # Write diversified hydrophobic residues.
-    hydrophobicRow = 2
+    hydrophobicRow = 3
     hydrophobicCol = 1
     worksheet3.merge_range(0, 1, 1, 1, 'Hydrophobic', title_format)
-    for hydrophobic in biochemicalDataframe['Total Hydrophobic Residues']:
+    for hydrophobic in binderBiochemicalDataframe['Total Hydrophobic Residues']:
         worksheet3.write(hydrophobicRow, hydrophobicCol, hydrophobic, integer_format)
         hydrophobicRow += 1
     logging.info('Hydrophobic residues written to %s worksheet.' % worksheet3Name)
 
     # Write diversified hydrophobic residues as a percent of the entire sequence.
-    hydrophobicPercentRow = 2
+    hydrophobicPercentRow = 3
     hydrophobicPercentCol = 2
-    worksheet3.merge_range(0, 2, 1, 2, '% of Entire Sequence', title_format)
-    for hydrophobicPercent in biochemicalDataframe['Hydrophobic: Percent of Entire Sequence']:
+    worksheet3.merge_range(0, 2, 1, 2, '% of Sequence', title_format)
+    for hydrophobicPercent in binderBiochemicalDataframe['Hydrophobic: Percent of Sequence']:
         worksheet3.write(hydrophobicPercentRow, hydrophobicPercentCol, hydrophobicPercent, percent_format)
         hydrophobicPercentRow += 1
     logging.info('Hydrophobic residues as a percent of the entire sequence written to %s worksheet.' % worksheet3Name)
 
     # Write diversified polar residues.
-    polarRow = 2
+    polarRow = 3
     polarCol = 3
     worksheet3.merge_range(0, 3, 1, 3, 'Polar', title_format)
-    for polar in biochemicalDataframe['Total Polar Residues']:
+    for polar in binderBiochemicalDataframe['Total Polar Residues']:
         worksheet3.write(polarRow, polarCol, polar, integer_format)
         polarRow += 1
     logging.info('Polar residues written to %s worksheet.' % worksheet3Name)
 
     # Write diversified polar residues as a percent of the entire sequence.
-    polarPercentRow = 2
+    polarPercentRow = 3
     polarPercentCol = 4
-    worksheet3.merge_range(0, 4, 1, 4, '% of Entire Sequence', title_format)
-    for polarPercent in biochemicalDataframe['Polar: Percent of Entire Sequence']:
+    worksheet3.merge_range(0, 4, 1, 4, '% of Sequence', title_format)
+    for polarPercent in binderBiochemicalDataframe['Polar: Percent of Sequence']:
         worksheet3.write(polarPercentRow, polarPercentCol, polarPercent, percent_format)
         polarPercentRow += 1
     logging.info('Polar residues as a percent of the entire sequence written to %s worksheet.' % worksheet3Name)
 
     # Write diversified acidic residues.
-    acidicRow = 2
+    acidicRow = 3
     acidicCol = 5
     worksheet3.merge_range(0, 5, 1, 5, 'Acidic', title_format)
-    for acidic in biochemicalDataframe['Total Acidic Residues']:
+    for acidic in binderBiochemicalDataframe['Total Acidic Residues']:
         worksheet3.write(acidicRow, acidicCol, acidic, integer_format)
         acidicRow += 1
     logging.info('Acidic residues written to %s worksheet.' % worksheet3Name)
 
     # Write diversified acidic residues as a percent of targeted regions.
-    acidicPercentRow = 2
+    acidicPercentRow = 3
     acidicPercentCol = 6
-    worksheet3.merge_range(0, 6, 1, 6, '% of Entire Sequence', title_format)
-    for acidicPercent in biochemicalDataframe['Acidic: Percent of Entire Sequence']:
+    worksheet3.merge_range(0, 6, 1, 6, '% of Sequence', title_format)
+    for acidicPercent in binderBiochemicalDataframe['Acidic: Percent of Sequence']:
         worksheet3.write(acidicPercentRow, acidicPercentCol, acidicPercent, percent_format)
         acidicPercentRow += 1
     logging.info('Acidic residues as a percent of the entire sequence written to %s worksheet.' % worksheet3Name)
 
     # Write diversified basic residues.
-    basicRow = 2
+    basicRow = 3
     basicCol = 7
     worksheet3.merge_range(0, 7, 1, 7, 'Basic', title_format)
-    for basic in biochemicalDataframe['Total Basic Residues']:
+    for basic in binderBiochemicalDataframe['Total Basic Residues']:
         worksheet3.write(basicRow, basicCol, basic, integer_format)
         basicRow += 1
     logging.info('Basic residues written to %s worksheet.' % worksheet3Name)
 
     # Write diversified basic residues as a percent of the entire sequence.
-    basicPercentRow = 2
+    basicPercentRow = 3
     basicPercentCol = 8
-    worksheet3.merge_range(0, 8, 1, 8, '% of Entire Sequence', title_format)
-    for basicPercent in biochemicalDataframe['Basic: Percent of Entire Sequence']:
+    worksheet3.merge_range(0, 8, 1, 8, '% of Sequence', title_format)
+    for basicPercent in binderBiochemicalDataframe['Basic: Percent of Sequence']:
         worksheet3.write(basicPercentRow, basicPercentCol, basicPercent, percent_format)
         basicPercentRow += 1
     logging.info('Basic residues as a percent of the entire sequence written to %s worksheet.' % worksheet3Name)
 
     # Write diversified aromatic residues.
-    aromaticRow = 2
+    aromaticRow = 3
     aromaticCol = 9
     worksheet3.merge_range(0, 9, 1, 9, 'Aromatic', title_format)
-    for aromatic in biochemicalDataframe['Total Aromatic Residues']:
+    for aromatic in binderBiochemicalDataframe['Total Aromatic Residues']:
         worksheet3.write(aromaticRow, aromaticCol, aromatic, integer_format)
         aromaticRow += 1
     logging.info('Aromatic residues written to %s worksheet.' % worksheet3Name)
 
     # Write diversified aromatic residues as a percent of the entire sequence.
-    aromaticPercentRow = 2
+    aromaticPercentRow = 3
     aromaticPercentCol = 10
-    worksheet3.merge_range(0, 10, 1, 10, '% of Entire Sequence', title_format)
-    for aromaticPercent in biochemicalDataframe['Aromatic: Percent of Entire Sequence']:
+    worksheet3.merge_range(0, 10, 1, 10, '% of Sequence', title_format)
+    for aromaticPercent in binderBiochemicalDataframe['Aromatic: Percent of Sequence']:
         worksheet3.write(aromaticPercentRow, aromaticPercentCol, aromaticPercent, percent_format)
         aromaticPercentRow += 1
     logging.info('Aromatic residues as a percent of the entire sequence written to %s worksheet.' % worksheet3Name)
 
     # Write diversified aliphatic residues.
-    aliphaticRow = 2
+    aliphaticRow = 3
     aliphaticCol = 11
     worksheet3.merge_range(0, 11, 1, 11, 'Aliphatic', title_format)
-    for aliphatic in biochemicalDataframe['Total Aliphatic Residues']:
+    for aliphatic in binderBiochemicalDataframe['Total Aliphatic Residues']:
         worksheet3.write(aliphaticRow, aliphaticCol, aliphatic, integer_format)
         aliphaticRow += 1
     logging.info('Aliphatic residues written to %s worksheet.' % worksheet3Name)
 
     # Write diversified aliphatic residues as a percent of the entire sequence.
-    aliphaticPercentRow = 2
+    aliphaticPercentRow = 3
     aliphaticPercentCol = 12
-    worksheet3.merge_range(0, 12, 1, 12, '% of Entire Sequence', title_format)
-    for aliphaticPercent in biochemicalDataframe['Aliphatic: Percent of Entire Sequence']:
+    worksheet3.merge_range(0, 12, 1, 12, '% of Sequence', title_format)
+    for aliphaticPercent in binderBiochemicalDataframe['Aliphatic: Percent of Sequence']:
         worksheet3.write(aliphaticPercentRow, aliphaticPercentCol, aliphaticPercent, percent_format)
         aliphaticPercentRow += 1
     logging.info('Aliphatic residues as a percent of the entire sequence written to %s worksheet.' % worksheet3Name)
@@ -1447,11 +1735,11 @@ else:
         worksheet3.conditional_format(2, column, len(conservedList) + 2, column,
                                       {'type': '2_color_scale',
                                        'min_color': '#FFFFFF',
-                                       'max_color': '#3D85C6'}
+                                       'max_color': '#B77600'}
                                       )
 
     # Table formatting for biochemical analyses.
-    worksheet3.add_table(2, 0, len(conservedList) + 1, 12,
+    worksheet3.add_table(2, 0, len(conservedList) + 2, 12,
                          {'header_row': False,
                           'style': None
                           }
@@ -1464,10 +1752,9 @@ else:
     workbook.close()
     logging.info('Excel file exported as %s_conservationAnalysis.xlsx.' % inFileName)
     logging.info('Conservation Analysis program finished running.')
-    # TODO: Add suggestions to final gui popup.
-    Sg.Popup('Conservation Analysis program finished running. See log file for details.',
-             title='Analysis Finished',
-             grab_anywhere=True,
+    Sg.Popup('''Conservation Analysis program finished running.
+\nSee log file for details.''',
+             title='Conservation Analysis Completed',
              text_color='#4276ac')
     logging.shutdown()
     window.close()

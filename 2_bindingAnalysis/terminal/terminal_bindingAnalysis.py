@@ -103,6 +103,7 @@ logging.info('Raw data read from ELISA file.')
 # Remove rows where the last column isn't equal to the emission absorbance.
 lastColName = 'Unnamed: ' + str(allCells.shape[1] - 1)
 emissionAbs = 450
+logging.info('Emission absorbance set to %i by default.' % emissionAbs)
 dataCellsRaw = allCells[allCells[lastColName] == emissionAbs]
 # Remove the emission absorbance column.
 dataCellsRaw = dataCellsRaw.iloc[:, :-1]
@@ -379,6 +380,31 @@ Please try again.'''
     ntAlignLen = ntAlignment.get_alignment_length()
     greenprint('''\nData retrieved from nucleotide alignment file.''')
     logging.info('Nucleotide alignment length calculated to be %s.' % ntAlignLen)
+
+##################
+# Select the compound used for blanks.
+##################
+
+cyanprint('''\nSelect the compound used as the blank:
+    \n[1] BSA
+    \n[2] GST
+    \n[3] PBS-T'''
+          )
+blankOptions = {'1': 'BSA',
+                '2': 'GST',
+                '3': 'PBS-T'
+                }
+while True:
+    blankID = input()
+    if blankID in blankOptions:
+        cyanprint('\n%s selected as the blank compound.' % blankOptions[blankID]
+                  )
+        blankID = blankOptions[blankID]
+        break
+    else:
+        cyanprint('''\nInvalid option.
+    Please try again.''')
+logging.info('%s selected as the blank compound.' % blankID)
 
 ##################
 # Correlate sequence data with ELISA data and remove ELISA data that don't have sequencing counterparts.
@@ -741,46 +767,86 @@ logging.info('Excel spreadsheet created as "%s.xlsx".' % elisaInFileName)
 # Cell formatting rules. 
 #########
 
-# TODO: Find a way to clean up this section's formatting.
 # General.
-general_format = workbook.add_format()
+general_format = workbook.add_format({'font_size': 10,
+                                      'font_name': 'Segoe UI'
+                                      }
+                                     )
 general_format.set_align('center')
 general_format.set_align('vcenter')
+
 # Titles.
 title_format = workbook.add_format({'bold': True,
-                                    'font_size': 12
+                                    'font_size': 10,
+                                    'font_name': 'Segoe UI'
                                     }
                                    )
 title_format.set_align('center')
 title_format.set_align('vcenter')
+
 wellTitle_format = workbook.add_format({'bold': True,
-                                        'font_size': 12
+                                        'font_size': 10,
+                                        'font_name': 'Segoe UI'
                                         }
                                        )
 wellTitle_format.set_align('left')
 wellTitle_format.set_align('vcenter')
+
+# Absorbance.
+abs_format = workbook.add_format({'num_format': '#,##0.00',
+                                  'font_size': 10,
+                                  'font_name': 'Segoe UI'
+                                  }
+                                 )
+abs_format.set_align('center')
+abs_format.set_align('vcenter')
+
 # Statistics.
-stats_format = workbook.add_format({'num_format': '#,##0.0'})
+stats_format = workbook.add_format({'num_format': '#,##0.0',
+                                    'font_size': 10,
+                                    'font_name': 'Segoe UI'
+                                    }
+                                   )
 stats_format.set_align('center')
 stats_format.set_align('vcenter')
+
 # Wells.
-wellList_format = workbook.add_format({'font_size': 11})
-wellID_format = workbook.add_format({'font_size': 12})
+wellList_format = workbook.add_format({'font_size': 10,
+                                       'font_name': 'Segoe UI'
+                                       }
+                                      )
+
+wellID_format = workbook.add_format({'font_size': 10,
+                                     'font_name': 'Segoe UI'
+                                     }
+                                    )
 wellID_format.set_align('center')
 wellID_format.set_align('vcenter')
+
 # Residue numbers.
-residue_format = workbook.add_format({'font_size': 10})
+residue_format = workbook.add_format({'font_size': 8,
+                                      'font_name': 'Segoe UI'
+                                      }
+                                     )
 residue_format.set_align('center')
 residue_format.set_align('vcenter')
+
 # Sequences.
-sequence_format = workbook.add_format({'font_size': 10})
+sequence_format = workbook.add_format({'font_size': 9,
+                                       'font_name': 'Segoe UI'
+                                       }
+                                      )
 sequence_format.set_align('center')
 sequence_format.set_align('vcenter')
-sequence_format.set_font_name('Lucida Console')
+
 # Information.
-info_format = workbook.add_format({'font_size': 12})
+info_format = workbook.add_format({'font_size': 10,
+                                   'font_name': 'Segoe UI'
+                                   }
+                                  )
 info_format.set_align('left')
 info_format.set_align('vcenter')
+
 logging.info('Cell formatting rules set.')
 
 ##################
@@ -827,7 +893,7 @@ worksheet1.merge_range(0, absCol, 0, absCol + 1, 'Raw', title_format)
 worksheet1.merge_range(0, absCol + 2, 0, absCol + 3, 'Normalised', title_format)
 worksheet1.write(1, absCol, 'Binder', title_format)
 for absorbance in aaRawListShort:
-    worksheet1.write(absRow, absCol, absorbance, stats_format)
+    worksheet1.write(absRow, absCol, absorbance, abs_format)
     absRow += 1
 logging.info('All raw binder absorbances written to %s worksheet.' % worksheet1Name)
 
@@ -836,7 +902,7 @@ absRow = 2
 absCol = aaAlignLen + 2
 worksheet1.write(1, absCol, 'Control', title_format)
 for absorbance in aaControlListRaw:
-    worksheet1.write(absRow, absCol, absorbance, stats_format)
+    worksheet1.write(absRow, absCol, absorbance, abs_format)
     absRow += 1
 logging.info('All raw control absorbances written to %s worksheet.' % worksheet1Name)
 
@@ -845,7 +911,7 @@ absRow = 2
 absCol = aaAlignLen + 3
 worksheet1.write(1, absCol, 'Binder', title_format)
 for absorbance in aaRelAveListShort:
-    worksheet1.write(absRow, absCol, absorbance, stats_format)
+    worksheet1.write(absRow, absCol, absorbance, abs_format)
     absRow += 1
 logging.info('All normalised binder absorbances written to %s worksheet.' % worksheet1Name)
 
@@ -854,7 +920,7 @@ absRow = 2
 absCol = aaAlignLen + 4
 worksheet1.write(1, absCol, 'Control', title_format)
 for absorbance in aaControlListRel:
-    worksheet1.write(absRow, absCol, absorbance, stats_format)
+    worksheet1.write(absRow, absCol, absorbance, abs_format)
     absRow += 1
 logging.info('All normalised control absorbances written to %s worksheet.' % worksheet1Name)
 
@@ -1039,7 +1105,7 @@ worksheet3.merge_range(0, absCol, 0, absCol + 1, 'Raw', title_format)
 worksheet3.merge_range(0, absCol + 2, 0, absCol + 3, 'Normalised', title_format)
 worksheet3.write(1, absCol, 'Binder', title_format)
 for absorbance in ntRawListShort:
-    worksheet3.write(absRow, absCol, absorbance, stats_format)
+    worksheet3.write(absRow, absCol, absorbance, abs_format)
     absRow += 1
 logging.info('All raw binder absorbances written to %s worksheet.' % worksheet3Name)
 
@@ -1048,7 +1114,7 @@ absRow = 2
 absCol = ntAlignLen + 2
 worksheet3.write(1, absCol, 'Control', title_format)
 for absorbance in ntControlListRaw:
-    worksheet3.write(absRow, absCol, absorbance, stats_format)
+    worksheet3.write(absRow, absCol, absorbance, abs_format)
     absRow += 1
 logging.info('All raw control absorbances written to %s worksheet.' % worksheet3Name)
 
@@ -1057,7 +1123,7 @@ absRow = 2
 absCol = ntAlignLen + 3
 worksheet3.write(1, absCol, 'Binder', title_format)
 for absorbance in ntRelAveListShort:
-    worksheet3.write(absRow, absCol, absorbance, stats_format)
+    worksheet3.write(absRow, absCol, absorbance, abs_format)
     absRow += 1
 logging.info('All normalised binder absorbances written to %s worksheet.' % worksheet3Name)
 
@@ -1066,7 +1132,7 @@ absRow = 2
 absCol = ntAlignLen + 4
 worksheet3.write(1, absCol, 'Control', title_format)
 for absorbance in ntControlListRel:
-    worksheet3.write(absRow, absCol, absorbance, stats_format)
+    worksheet3.write(absRow, absCol, absorbance, abs_format)
     absRow += 1
 logging.info('All normalised control absorbances written to %s worksheet.' % worksheet3Name)
 
@@ -1212,22 +1278,22 @@ logging.info('Arbitrary unique nucleotide sequence IDs written to %s worksheet.'
 ##################
 
 # Info about how the values were obtained.
-blankInfo = 'Normalised against the average absorbance of %i blanks (%s).' % (len(blankValues), round(blankAve, 2))
-worksheet1.write(len(aaShortNameList) + 3, 1, blankInfo, info_format)
+blankInfo = 'Normalised against the average absorbance of %i %s blanks (%s).' \
+                % (len(blankValues), blankID, round(blankAve, 3))
+worksheet1.write(len(aaShortNameList) + 3, aaAlignLen + 1, blankInfo, info_format)
 worksheet3.write(len(ntShortNameList) + 3, 1, blankInfo, info_format)
 
-statsInfo = 'The statistics presented above are for binder:control ratios.'
-worksheet2.write(len(aaUnique) + 3, 1, statsInfo, info_format)
-worksheet4.write(len(ntUnique) + 3, 1, statsInfo, info_format)
+calcInfo = 'Manual calculation may produce slightly different results due to rounding.'
+worksheet1.write(len(aaShortNameList) + 5, aaAlignLen + 1, calcInfo, info_format)
+worksheet2.write(len(aaUnique) + 5, aaAlignLen + 2, calcInfo, info_format)
+worksheet3.write(len(ntShortNameList) + 5, ntAlignLen + 1, calcInfo, info_format)
+worksheet4.write(len(ntUnique) + 5, ntAlignLen + 2, calcInfo, info_format)
 
-calcInfo = 'Values were rounded after calculation, not before. As a result, manual calculation will produce slightly ' \
-           'different results.'
-worksheet1.write(len(aaShortNameList) + 5, 1, calcInfo, info_format)
-worksheet2.write(len(aaUnique) + 5, 1, calcInfo, info_format)
-worksheet3.write(len(ntShortNameList) + 5, 1, calcInfo, info_format)
-worksheet4.write(len(ntUnique) + 5, 1, calcInfo, info_format)
+statsInfo = 'Statistics presented above are for binder:control binding ratios.'
+worksheet2.write(len(aaUnique) + 3, aaAlignLen + 2, statsInfo, info_format)
+worksheet4.write(len(ntUnique) + 3, ntAlignLen + 2, statsInfo, info_format)
 
-# TODO: Clean up formatting here.
+# TODO: Clean up formatting with a "for" loop.
 # Conditionally format columns.
 worksheet1.conditional_format(1, aaAlignLen + 1, len(aaShortNameList) + 1, aaAlignLen + 2,
                               {'type': '2_color_scale',

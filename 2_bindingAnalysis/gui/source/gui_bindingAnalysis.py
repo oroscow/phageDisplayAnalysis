@@ -31,51 +31,60 @@ class OrderedCounter(Counter, OrderedDict):
 # Choose window theme.
 Sg.theme('DarkGrey13')
 
-# Create window layout.
+# Establish negative control options.
+negControls = ("BSA", "PBS-T", "GST")
+
+# Create window layouts.
 infoLayout = [
     # Title and introduction.
-    [Sg.Text('\nPhage Display - Binding Analysis\n',
+    [Sg.Text('\n\n\n\n\n\nPhage Display — Binding Analysis',
              text_color='#8294cc',
-             font=('Segoe UI Semibold', 16)
+             font=('Segoe UI Bold', 22),
+             pad=(30, 0)
              )
      ],
-    [Sg.Text('''        Analyses ELISA binding data along with corresponding sequence data.
-    
-        Calculates the average of duplicate absorbances for each protein,
-        calculates the binder:control absorbance ratio, and normalizes them
-        against the average of the blanks. ELISA data that don't have
-        corresponding sequencing data are excluded from the final results.\n\n''',
+    [Sg.Text('Analyse phage ELISA data along with corresponding sequence data\n',
              text_color='#8294cc',
-             font=('Segoe UI', 12)
+             font=('Segoe UI', 12),
+             pad=(30, 0)
+             )
+     ],
+    [Sg.Text('''Calculates the average of duplicate absorbances for each protein, normalizes absorbances
+against the average of the blanks, and calculates the binder:control absorbance ratios.
+ELISA data that don't have corresponding sequencing data are excluded from the final results.''',
+             text_color='#a0a0a2',
+             font=('Segoe UI', 10),
+             pad=(50, 40)
              )
      ],
 
     # 'Plate layout' button.
-    [Sg.Text('        To use this program, ELISA data must correspond to the following plate layout:\n',
-             text_color='#8294cc',
-             font=('Segoe UI', 12)
+    [Sg.Text('To use this program, ELISA data must correspond to the following plate layout:\n',
+             text_color='#a0a0a2',
+             font=('Segoe UI', 10),
+             pad=(50, 0)
              )
      ],
     [Sg.Button('Plate Layout',
                font=('Segoe UI Bold', 10),
                size=(13, 0),
-               pad=(40, 0),
+               pad=(75, 0),
                use_ttk_buttons=True
                )
      ]
 ]
 
-inFileLayout = [
-
+inputLayout = [
     # ELISA file input prompt.
-    [Sg.Text('1. Enter the full path of the raw ELISA data file:',
+    [Sg.Text('\n\n1. Enter the full path of the raw ELISA data file:',
              text_color='white',
-             font=('Segoe UI Bold', 10)
+             font=('Segoe UI Bold', 10),
+             pad=(20, 0)
              )
      ],
     [Sg.Input(key='-ELISA_INPUT-',
               size=60,
-              pad=(25, 0),
+              pad=(40, 0),
               font=('Segoe UI', 10)
               ),
      Sg.FileBrowse(font=('Segoe UI Bold', 10),
@@ -83,18 +92,20 @@ inFileLayout = [
                    file_types=(('Excel Files', '*.xlsx'), ('All Files', '*.*'),),
                    )
      ],
-    [Sg.Text('''    * Must be in *.xlsx format.
-    * This location will also be the location of the output files.
-    * Make sure there are no dashes in the name, replace with an underscore if necessary.\n''',
+    [Sg.Text('''• Must be in *.xlsx format.
+• This location will also be the location of the output files.
+• Make sure there are no dashes in the name, replace with an underscore if necessary.\n''',
              text_color='#bfbfbf',
-             font=('Segoe UI', 10)
+             font=('Segoe UI', 10),
+             pad=(40, 0)
              )
      ],
 
     # Input format prompt.
-    [Sg.Text('2. Choose input format:',
+    [Sg.Text('\n2. Choose input format:',
              text_color='white',
-             font=('Segoe UI Bold', 10)
+             font=('Segoe UI Bold', 10),
+             pad=(20, 0)
              )
      ],
     [Sg.Radio('*.xlsx (one file)',
@@ -103,6 +114,7 @@ inFileLayout = [
               key='-XLSX_FORMAT-',
               text_color='#bfbfbf',
               font=('Segoe UI Bold', 10),
+              pad=(40, 0),
               enable_events=True
               ),
      Sg.Radio('*.fasta (two files)',
@@ -114,23 +126,25 @@ inFileLayout = [
               enable_events=True
               )
      ],
-    [Sg.Text('''    * Requires xlsx output from Sequence Analysis program.\n''',
+    [Sg.Text('''• Requires xlsx output from Sequence Analysis program.\n''',
              text_color='#bfbfbf',
              font=('Segoe UI', 10),
-             key='-RADIO_TEXT-'
+             key='-RADIO_TEXT-',
+             pad=(40, 0)
              )
      ],
 
     # Xlsx alignment file input prompt (changes to amino acid alignment input prompt depending on radio buttons).
-    [Sg.Text('3. Enter the full path of the excel alignment file:',
+    [Sg.Text('\n3. Enter the full path of the excel alignment file:',
              text_color='white',
              font=('Segoe UI Bold', 10),
-             key='-XLSX_INPUT_START_TEXT-'
+             key='-XLSX_INPUT_START_TEXT-',
+             pad=(20, 0)
              )
      ],
     [Sg.Input(key='-SWITCH_INPUT-',
               size=60,
-              pad=(25, 0),
+              pad=(40, 0),
               font=('Segoe UI', 10),
               do_not_clear=False
               ),
@@ -139,23 +153,25 @@ inFileLayout = [
                    file_types=(('Excel/Fasta Files', '*.xlsx;*.fasta'), ('All Files', '*.*'),)
                    )
      ],
-    [Sg.Text('''    * Must be in *.fasta format.\n''',
+    [Sg.Text('''• Must be in *.fasta format.\n''',
              text_color='#bfbfbf',
              font=('Segoe UI', 10),
-             key='-XLSX_INPUT_END_TEXT-'
+             key='-XLSX_INPUT_END_TEXT-',
+             pad=(40, 0)
              )
      ],
 
     # Nucleotide alignment file input prompt.
-    [Sg.Text('4. Enter the full path of the nucleotide alignment file:',
+    [Sg.Text('\n4. Enter the full path of the nucleotide alignment file:',
              text_color='#464646',
              font=('Segoe UI Bold', 10),
              key='-NT_INPUT_START_TEXT-',
+             pad=(20, 0)
              )
      ],
     [Sg.Input(key='-NT_INPUT-',
               size=60,
-              pad=(25, 0),
+              pad=(40, 0),
               font=('Segoe UI', 10),
               disabled_readonly_background_color='#161616',
               disabled=True,
@@ -168,45 +184,74 @@ inFileLayout = [
                    disabled=True
                    )
      ],
-    [Sg.Text('''    * Must be in *.fasta format.\n''',
+    [Sg.Text('''• Must be in *.fasta format.\n''',
              text_color='#464646',
              font=('Segoe UI', 10),
-             key='-NT_INPUT_END_TEXT-'
+             key='-NT_INPUT_END_TEXT-',
+             pad=(40, 0)
              )
-     ]
-]
+     ],
 
-settingsLayout = [
+    # Negative control selection prompt.
+    [Sg.Text('\n5. Select the compound used as the blank:',
+             text_color='white',
+             font=('Segoe UI Bold', 10),
+             pad=(20, 0)
+             )
+     ],
+    [Sg.Combo(key='-BLANK_INPUT-',
+              values=negControls,
+              default_value=negControls[0],
+              size=(15, len(negControls)),
+              pad=(40, 5),
+              font=('Segoe UI', 10)
+              )
+     ],
 
     # Emission absorbance input prompt.
-    [Sg.Text('5. Enter the wavelength of the emission peak (nm):',
+    [Sg.Text('\n6. Enter the wavelength of the emission peak (nm):',
              text_color='white',
-             font=('Segoe UI Bold', 10)
+             font=('Segoe UI Bold', 10),
+             pad=(20, 0)
              )
      ],
     [Sg.Input(key='-EMISSION_INPUT-',
               size=5,
-              pad=(25, 0),
+              pad=(40, 5),
               default_text='450',
               font=('Segoe UI', 10)
               )
      ],
-    [Sg.Text('''    * In most cases it will be 450 nm and does not need to be changed.\n''',
+    [Sg.Text('''• In most cases it will be 450 nm and does not need to be changed.''',
              text_color='#bfbfbf',
-             font=('Segoe UI', 10)
+             font=('Segoe UI', 10),
+             pad=(40, 0)
              )
      ],
+
+    # Enter button.
     [Sg.Button('Enter',
                bind_return_key=True,
                font=('Segoe UI Bold', 16),
                size=(10, 0),
-               pad=(30, 25),
+               pad=(40, 50),
                use_ttk_buttons=True
                )
      ]
 ]
 
-# TODO: Possibly remove tab layout.
+# TODO: Add to this and improve visual formatting.
+troubleshootLayout = [
+    [Sg.Text('''Issue #1: .
+Cause: .
+Solution: .''',
+             text_color='#bfbfbf',
+             font=('Segoe UI', 10),
+             pad=(50, 50)
+             )
+     ]
+]
+
 # Create tab layout.
 tabGroup = [
     [Sg.TabGroup(
@@ -216,11 +261,11 @@ tabGroup = [
                     border_width=40
                     ),
              Sg.Tab('Input Files',
-                    inFileLayout,
+                    inputLayout,
                     border_width=40
                     ),
-             Sg.Tab('Settings',
-                    settingsLayout,
+             Sg.Tab('Troubleshooting',
+                    troubleshootLayout,
                     border_width=40
                     )
              ]
@@ -230,7 +275,7 @@ tabGroup = [
         font=('Segoe UI Bold', 10),
         title_color='#bfbfbf',
         selected_title_color='#8294cc',
-        size=(650, 550)
+        size=(650, 850)
     )
     ]
 ]
@@ -239,7 +284,7 @@ tabGroup = [
 window = Sg.Window('Phage Display - Binding Analysis',
                    tabGroup,
                    alpha_channel=0.95,
-                   grab_anywhere=True,
+                   size=(650, 850),
                    ttk_theme='clam'
                    )
 
@@ -247,19 +292,19 @@ window = Sg.Window('Phage Display - Binding Analysis',
 while True:
     event, values = window.read()
 
-    # If 'Exit' or close window buttons are pressed, break the loop and close the window.
+    # Break the loop and close the window if 'Exit' or close window buttons are pressed.
     if event == Sg.WIN_CLOSED:
         window.close()
         break
 
-    # If 'Plate Layout' is pressed, a popup will show the plate layout picture.
+    # Popup will show the plate layout picture if 'Plate Layout' is pressed.
     elif event == 'Plate Layout':
         # Make sure the path for the image corresponds to the location of the image in the executable's folder.
         Sg.Popup(image='.\\images\\plateLayout.png',
-                 title='Plate Layout',
-                 grab_anywhere=True
+                 title='Plate Layout'
                  )
 
+    # Update elements based on radio buttons.
     elif event == '-XLSX_FORMAT-':
         window['-RADIO_TEXT-'].update('    * Requires *.xlsx output from Sequence Analysis program.\n')
         window['-XLSX_INPUT_START_TEXT-'].update('2. Enter the full path of the excel alignment file:')
@@ -281,7 +326,7 @@ while True:
         window['-NT_INPUT_END_TEXT-'].update(text_color='#bfbfbf')
         continue
 
-    # If 'Enter' is pressed, updates variables with input values.
+    # Updates variables with input values when 'Enter' button is pressed.
     elif event == 'Enter':
         inputOptions = {'1': 'xlsx file',
                         '2': 'fasta files'
@@ -289,13 +334,22 @@ while True:
         elisaInFilePath = str(values['-ELISA_INPUT-'].replace('\\',
                                                               '/')
                               )
-        # blankWells = str(values['-BLANK_INPUT-'])
+        blankID = str(values['-BLANK_INPUT-'])
         emissionAbs = str(values['-EMISSION_INPUT-'])
 
-        # Stops user if no ELISA file is found in the working directory.
+        # Stops user if ELISA filetype isn't valid and prompts to retry.
+        if not re.search('.xlsx$', elisaInFilePath):
+            Sg.Popup('''The entered file is not an xlsx file.
+Please choose the file again.''',
+                     title='File Not Found',
+                     grab_anywhere=True,
+                     text_color='#4276ac'
+                     )
+            continue
+        # Stops user if ELISA file path isn't valid and prompts to retry.
         if not os.path.exists(elisaInFilePath):
-            Sg.Popup('''The entered raw ELISA xlsx file does not exist in this location.
-Please enter it again.''',
+            Sg.Popup('''The entered ELISA file does not exist in this location.
+Please choose the file again.''',
                      title='File Not Found',
                      grab_anywhere=True,
                      text_color='#8294cc'
@@ -308,27 +362,28 @@ Please enter it again.''',
                           )
             os.chdir(path)
 
+        # Stops user if alignment file path isn't valid and prompts to retry.
         if values['-XLSX_FORMAT-']:
             inputFormat = '1'
             xlsxInFilePath = str(values['-SWITCH_INPUT-'].replace('\\',
                                                                   '/')
                                  )
             if not os.path.exists(xlsxInFilePath):
-                Sg.Popup('''The entered xlsx alignment file does not exist in this location.
+                Sg.Popup('''The alignment file does not exist in this location.
 Please choose the file again.''',
                          title='File Not Found',
                          grab_anywhere=True,
                          text_color='#4276ac')
                 continue
 
+        # Stops user if amino acid/nucleotide alignment paths aren't valid and prompts to retry.
         if values['-FASTA_FORMAT-']:
             inputFormat = '2'
-            # Stops user if no amino acid alignment file is found in the working directory.
             aaInFilePath = str(values['-SWITCH_INPUT-'].replace('\\',
                                                                 '/')
                                )
             if not os.path.exists(aaInFilePath):
-                Sg.Popup('''The entered amino acid alignment file does not exist in this location.
+                Sg.Popup('''The amino acid alignment file does not exist in this location.
 Please choose the file again.''',
                          title='File Not Found',
                          grab_anywhere=True,
@@ -338,12 +393,11 @@ Please choose the file again.''',
                                       aaInFilePath
                                       )
 
-            # Stops user if no nucleotide alignment file is found in the working directory.
             ntInFilePath = str(values['-NT_INPUT-'].replace('\\',
                                                             '/')
                                )
             if not os.path.exists(ntInFilePath):
-                Sg.Popup('''The entered nucleotide alignment file does not exist in this location.
+                Sg.Popup('''The nucleotide alignment file does not exist in this location.
 Please choose the file again.''',
                          title='File Not Found',
                          grab_anywhere=True,
@@ -353,20 +407,7 @@ Please choose the file again.''',
                                       ntInFilePath
                                       )
 
-        #         # Stops user if well formatting is incorrect.
-        #         blankWellsInput = re.match(r'[pP]\d{2}[,]*',
-        #                                    blankWells
-        #                                    )
-        #         if blankWellsInput is None:
-        #             Sg.Popup('''Invalid input for blank wells.
-        # Please make sure there are commas (no spaces) between each entry and try again.''',
-        #                      title='Invalid Blank Wells Input',
-        #                      grab_anywhere=True,
-        #                      text_color='#8294cc'
-        #                      )
-        #             continue
-
-        # Stops user if emission absorbance formatting is incorrect.
+        # Stops user if emission absorbance isn't valid and prompts to retry.
         emissionAbsInput = re.match(r'\d{3}',
                                     emissionAbs
                                     )
@@ -416,6 +457,9 @@ else:
     elif inputFormat == '2':
         logging.info('%s chosen as the amino acid sequence source.' % aaInFilePath)
         logging.info('%s chosen as the nucleotide sequence source.' % ntInFilePath)
+
+    logging.info('%s chosen as the blank compound.' % blankID)
+    logging.info('%i nm chosen as emission wavelength.' % emissionAbs)
 
     ##################
     # Retrieve and parse raw ELISA data.
@@ -512,7 +556,7 @@ else:
         ntCells = pandas.read_excel(xlsxInFilePath, sheet_name=2)
 
         aaSeqRegex = re.compile(r'[ARNDCEQGHILKMFPSTWYVX]{10,}')
-        ntSeqRegex = re.compile('[AGTCURYNWSMKBHDV]{10,}')
+        ntSeqRegex = re.compile('[AGTCNagtc]{10,}')
 
         # Retrieve amino acid sequences.
         aaSeqCells = aaCells.iloc[1:, 1:]
@@ -984,46 +1028,86 @@ else:
     # Cell formatting rules.
     #########
 
-    # TODO: Find a way to clean up this section's formatting.
     # General.
-    general_format = workbook.add_format()
+    general_format = workbook.add_format({'font_size': 10,
+                                          'font_name': 'Segoe UI'
+                                          }
+                                         )
     general_format.set_align('center')
     general_format.set_align('vcenter')
+
     # Titles.
     title_format = workbook.add_format({'bold': True,
-                                        'font_size': 12
+                                        'font_size': 10,
+                                        'font_name': 'Segoe UI'
                                         }
                                        )
     title_format.set_align('center')
     title_format.set_align('vcenter')
+
     wellTitle_format = workbook.add_format({'bold': True,
-                                            'font_size': 12
+                                            'font_size': 10,
+                                            'font_name': 'Segoe UI'
                                             }
                                            )
     wellTitle_format.set_align('left')
     wellTitle_format.set_align('vcenter')
+
+    # Absorbance.
+    abs_format = workbook.add_format({'num_format': '#,##0.00',
+                                      'font_size': 10,
+                                      'font_name': 'Segoe UI'
+                                      }
+                                     )
+    abs_format.set_align('center')
+    abs_format.set_align('vcenter')
+
     # Statistics.
-    stats_format = workbook.add_format({'num_format': '#,##0.0'})
+    stats_format = workbook.add_format({'num_format': '#,##0.0',
+                                        'font_size': 10,
+                                        'font_name': 'Segoe UI'
+                                        }
+                                       )
     stats_format.set_align('center')
     stats_format.set_align('vcenter')
+
     # Wells.
-    wellList_format = workbook.add_format({'font_size': 11})
-    wellID_format = workbook.add_format({'font_size': 12})
+    wellList_format = workbook.add_format({'font_size': 10,
+                                           'font_name': 'Segoe UI'
+                                           }
+                                          )
+
+    wellID_format = workbook.add_format({'font_size': 10,
+                                         'font_name': 'Segoe UI'
+                                         }
+                                        )
     wellID_format.set_align('center')
     wellID_format.set_align('vcenter')
+
     # Residue numbers.
-    residue_format = workbook.add_format({'font_size': 10})
+    residue_format = workbook.add_format({'font_size': 8,
+                                          'font_name': 'Segoe UI'
+                                          }
+                                         )
     residue_format.set_align('center')
     residue_format.set_align('vcenter')
+
     # Sequences.
-    sequence_format = workbook.add_format({'font_size': 10})
+    sequence_format = workbook.add_format({'font_size': 9,
+                                           'font_name': 'Segoe UI'
+                                           }
+                                          )
     sequence_format.set_align('center')
     sequence_format.set_align('vcenter')
-    sequence_format.set_font_name('Lucida Console')
+
     # Information.
-    info_format = workbook.add_format({'font_size': 12})
+    info_format = workbook.add_format({'font_size': 10,
+                                       'font_name': 'Segoe UI'
+                                       }
+                                      )
     info_format.set_align('left')
     info_format.set_align('vcenter')
+
     logging.info('Cell formatting rules set.')
 
     ##################
@@ -1070,7 +1154,7 @@ else:
     worksheet1.merge_range(0, absCol + 2, 0, absCol + 3, 'Normalised', title_format)
     worksheet1.write(1, absCol, 'Binder', title_format)
     for absorbance in aaRawListShort:
-        worksheet1.write(absRow, absCol, absorbance, stats_format)
+        worksheet1.write(absRow, absCol, absorbance, abs_format)
         absRow += 1
     logging.info('All raw binder absorbances written to %s worksheet.' % worksheet1Name)
 
@@ -1079,7 +1163,7 @@ else:
     absCol = aaAlignLen + 2
     worksheet1.write(1, absCol, 'Control', title_format)
     for absorbance in aaControlListRaw:
-        worksheet1.write(absRow, absCol, absorbance, stats_format)
+        worksheet1.write(absRow, absCol, absorbance, abs_format)
         absRow += 1
     logging.info('All raw control absorbances written to %s worksheet.' % worksheet1Name)
 
@@ -1088,7 +1172,7 @@ else:
     absCol = aaAlignLen + 3
     worksheet1.write(1, absCol, 'Binder', title_format)
     for absorbance in aaRelAveListShort:
-        worksheet1.write(absRow, absCol, absorbance, stats_format)
+        worksheet1.write(absRow, absCol, absorbance, abs_format)
         absRow += 1
     logging.info('All normalised binder absorbances written to %s worksheet.' % worksheet1Name)
 
@@ -1097,7 +1181,7 @@ else:
     absCol = aaAlignLen + 4
     worksheet1.write(1, absCol, 'Control', title_format)
     for absorbance in aaControlListRel:
-        worksheet1.write(absRow, absCol, absorbance, stats_format)
+        worksheet1.write(absRow, absCol, absorbance, abs_format)
         absRow += 1
     logging.info('All normalised control absorbances written to %s worksheet.' % worksheet1Name)
 
@@ -1282,7 +1366,7 @@ else:
     worksheet3.merge_range(0, absCol + 2, 0, absCol + 3, 'Normalised', title_format)
     worksheet3.write(1, absCol, 'Binder', title_format)
     for absorbance in ntRawListShort:
-        worksheet3.write(absRow, absCol, absorbance, stats_format)
+        worksheet3.write(absRow, absCol, absorbance, abs_format)
         absRow += 1
     logging.info('All raw binder absorbances written to %s worksheet.' % worksheet3Name)
 
@@ -1291,7 +1375,7 @@ else:
     absCol = ntAlignLen + 2
     worksheet3.write(1, absCol, 'Control', title_format)
     for absorbance in ntControlListRaw:
-        worksheet3.write(absRow, absCol, absorbance, stats_format)
+        worksheet3.write(absRow, absCol, absorbance, abs_format)
         absRow += 1
     logging.info('All raw control absorbances written to %s worksheet.' % worksheet3Name)
 
@@ -1300,7 +1384,7 @@ else:
     absCol = ntAlignLen + 3
     worksheet3.write(1, absCol, 'Binder', title_format)
     for absorbance in ntRelAveListShort:
-        worksheet3.write(absRow, absCol, absorbance, stats_format)
+        worksheet3.write(absRow, absCol, absorbance, abs_format)
         absRow += 1
     logging.info('All normalised binder absorbances written to %s worksheet.' % worksheet3Name)
 
@@ -1309,7 +1393,7 @@ else:
     absCol = ntAlignLen + 4
     worksheet3.write(1, absCol, 'Control', title_format)
     for absorbance in ntControlListRel:
-        worksheet3.write(absRow, absCol, absorbance, stats_format)
+        worksheet3.write(absRow, absCol, absorbance, abs_format)
         absRow += 1
     logging.info('All normalised control absorbances written to %s worksheet.' % worksheet3Name)
 
@@ -1455,77 +1539,53 @@ else:
     ##################
 
     # Info about how the values were obtained.
-    blankInfo = 'Normalised against the average absorbance of %i blanks (%s).' % (len(blankValues), round(blankAve, 2))
-    worksheet1.write(len(aaShortNameList) + 3, 1, blankInfo, info_format)
+    blankInfo = 'Normalised against the average absorbance of %i %s blanks (%s).' \
+                % (len(blankValues), blankID, round(blankAve, 3))
+    worksheet1.write(len(aaShortNameList) + 3, aaAlignLen + 1, blankInfo, info_format)
     worksheet3.write(len(ntShortNameList) + 3, 1, blankInfo, info_format)
 
-    statsInfo = 'The statistics presented above are for binder:control ratios.'
-    worksheet2.write(len(aaUnique) + 3, 1, statsInfo, info_format)
-    worksheet4.write(len(ntUnique) + 3, 1, statsInfo, info_format)
+    calcInfo = 'Manual calculation may produce slightly different results due to rounding.'
+    worksheet1.write(len(aaShortNameList) + 5, aaAlignLen + 1, calcInfo, info_format)
+    worksheet2.write(len(aaUnique) + 5, aaAlignLen + 2, calcInfo, info_format)
+    worksheet3.write(len(ntShortNameList) + 5, ntAlignLen + 1, calcInfo, info_format)
+    worksheet4.write(len(ntUnique) + 5, ntAlignLen + 2, calcInfo, info_format)
 
-    calcInfo = 'Values were rounded after calculation, not before. As a result, manual calculation will produce ' \
-               'slightly different results.'
-    worksheet1.write(len(aaShortNameList) + 5, 1, calcInfo, info_format)
-    worksheet2.write(len(aaUnique) + 5, 1, calcInfo, info_format)
-    worksheet3.write(len(ntShortNameList) + 5, 1, calcInfo, info_format)
-    worksheet4.write(len(ntUnique) + 5, 1, calcInfo, info_format)
+    statsInfo = 'Statistics presented above are for binder:control binding ratios.'
+    worksheet2.write(len(aaUnique) + 3, aaAlignLen + 2, statsInfo, info_format)
+    worksheet4.write(len(ntUnique) + 3, ntAlignLen + 2, statsInfo, info_format)
 
-    # TODO: Clean up formatting here.
     # Conditionally format columns.
-    worksheet1.conditional_format(1, aaAlignLen + 1, len(aaShortNameList) + 1, aaAlignLen + 2,
-                                  {'type': '2_color_scale',
-                                   'min_color': '#FFFFFF',
-                                   'max_color': '#3D85C6'
-                                   }
-                                  )
-    worksheet1.conditional_format(1, aaAlignLen + 3, len(aaShortNameList) + 1, aaAlignLen + 4,
-                                  {'type': '2_color_scale',
-                                   'min_color': '#FFFFFF',
-                                   'max_color': '#3D85C6'
-                                   }
-                                  )
-    worksheet1.conditional_format(1, aaAlignLen + 5, len(aaShortNameList) + 1, aaAlignLen + 5,
-                                  {'type': '2_color_scale',
-                                   'min_color': '#FFFFFF',
-                                   'max_color': '#3D85C6'
-                                   }
-                                  )
-    worksheet2.conditional_format(1, aaAlignLen + 2, len(aaUnique) + 1, aaAlignLen + 7,
-                                  {'type': '2_color_scale',
-                                   'min_color': '#FFFFFF',
-                                   'max_color': '#3D85C6'
-                                   }
-                                  )
-    worksheet3.conditional_format(1, ntAlignLen + 1, len(ntShortNameList) + 1, ntAlignLen + 2,
-                                  {'type': '2_color_scale',
-                                   'min_color': '#FFFFFF',
-                                   'max_color': '#3D85C6'
-                                   }
-                                  )
-    worksheet3.conditional_format(1, ntAlignLen + 3, len(ntShortNameList) + 1, ntAlignLen + 4,
-                                  {'type': '2_color_scale',
-                                   'min_color': '#FFFFFF',
-                                   'max_color': '#3D85C6'
-                                   }
-                                  )
-    worksheet3.conditional_format(1, ntAlignLen + 5, len(ntShortNameList) + 1, ntAlignLen + 5,
-                                  {'type': '2_color_scale',
-                                   'min_color': '#FFFFFF',
-                                   'max_color': '#3D85C6'
-                                   }
-                                  )
-    worksheet3.conditional_format(1, ntAlignLen + 2, len(ntUnique) + 1, ntAlignLen + 7,
-                                  {'type': '2_color_scale',
-                                   'min_color': '#FFFFFF',
-                                   'max_color': '#3D85C6'
-                                   }
-                                  )
-    worksheet4.conditional_format(1, ntAlignLen + 2, len(ntUnique) + 1, ntAlignLen + 7,
-                                  {'type': '2_color_scale',
-                                   'min_color': '#FFFFFF',
-                                   'max_color': '#3D85C6'
-                                   }
-                                  )
+    for column in range(1, 6, 2):
+        worksheet1.conditional_format(2, aaAlignLen + column, len(aaShortNameList) + 2, aaAlignLen + column + 1,
+                                      {'type': '2_color_scale',
+                                       'min_color': '#FFFFFF',
+                                       'max_color': '#3D85C6'
+                                       }
+                                      )
+
+    for column in range(2, 7):
+        worksheet2.conditional_format(2, aaAlignLen + column, len(aaUnique) + 2, aaAlignLen + column,
+                                      {'type': '2_color_scale',
+                                       'min_color': '#FFFFFF',
+                                       'max_color': '#3D85C6'
+                                       }
+                                      )
+
+    for column in range(1, 6, 2):
+        worksheet3.conditional_format(2, ntAlignLen + column, len(ntShortNameList) + 2, ntAlignLen + column + 1,
+                                      {'type': '2_color_scale',
+                                       'min_color': '#FFFFFF',
+                                       'max_color': '#3D85C6'
+                                       }
+                                      )
+
+    for column in range(2, 7):
+        worksheet4.conditional_format(2, ntAlignLen + column, len(aaUnique) + 2, ntAlignLen + column,
+                                      {'type': '2_color_scale',
+                                       'min_color': '#FFFFFF',
+                                       'max_color': '#3D85C6'
+                                       }
+                                      )
 
     # Transform data into proper Excel-formatted tables without any design style applied.
     worksheet1.add_table(2, 0, len(aaShortNameList) + 1, aaAlignLen + 5,
@@ -1555,9 +1615,9 @@ else:
 
     workbook.close()
     logging.info('Excel file exported as %s_analysed.xlsx.' % elisaInFileNameShort)
-    # TODO: Add suggestions to final GUI popup.
-    Sg.Popup('Binding Analysis program finished running. See log file for details.',
-             title='Analysis Finished',
+    Sg.Popup('''Binding Analysis program finished running.
+\nSee log file for details.''',
+             title='Binding Analysis Completed',
              grab_anywhere=True,
              text_color='#8294cc'
              )
