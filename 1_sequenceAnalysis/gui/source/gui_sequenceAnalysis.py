@@ -53,17 +53,18 @@ infoLayout = [
              pad=(50, 0)
              )
      ],
-    [Sg.Text('''Compare phage sequence data and ELISA data (optional) with
-corresponding the wildtype scaffold sequence''',
+    [Sg.Text('''Analyse raw phage sequencing data''',
              text_color='#8294cc',
              font=('Segoe UI', 12),
              pad=(50, 0)
              )
      ],
-    [Sg.Text('''Analyses the University of Guelph's Advanced Analytics Centre (AAC) Genomics
-Facility Sanger sequencing output. Original files are left unaltered and copies are
-renamed, reorganised, converted to fasta, trimmed, translated, and aligned.
-Final amino acid/nucleotide alignments are in .fasta, .clustal, and .xlsx formats.''',
+    [Sg.Text('''Analyses Sanger sequencing output from  the University of Guelph's Advanced
+Analytics Centre's (UoG AAC) Genomics Facility. Original files are left unaltered
+and copies are renamed, reorganised, converted to fasta, trimmed, translated,
+and aligned.
+
+Final amino acid/nucleotide alignments are in *.fasta, *.clustal, and *.xlsx formats.''',
              text_color='#a0a0a2',
              font=('Segoe UI', 10),
              pad=(70, 40)
@@ -159,24 +160,47 @@ E.g., For UbVs, use 237 (nucleotides downstream of the 5' trim site).\n\n''',
      ]
 ]
 
-# TODO: Add to this and improve visual formatting.
+# TODO: Add to this.
 troubleshootLayout = [
-    [Sg.Text('''Issue #1: Lots of files in the 'noTrim' folder.
-Cause: There's no sequence in the original file or the 5' trim site could not be found.
-Solutions:
-    1. Make sure the correct sequencing files have been chosen.
-    2. Make sure a sufficiently conserved motif has been chosen for the 5' trim site.
-    3. Look at chromatograph files (*.ab1) and assess whether or not bases were
-    called correctly. If not, create copies of the original *.seq and *.ab1 files
-    and move them to another folder. In the copies in the original folder, edit
-    base calls manually (enter called bases in lowercase to distinguish them from
-    bases originally called by the sequencing equipment), export the new sequence
-    into the same folder as all the other sequences, and run this program again.''',
-             text_color='#bfbfbf',
+    [Sg.Text('''Issue #1:
+    Lots of sequences in the 'noTrim' folder.''',
+             text_color='#f44336',
              font=('Segoe UI', 10),
-             pad=(50, 50)
+             pad=((50, 50), (50, 0))
              )
-     ]
+     ],
+    [Sg.Text(
+        '''Cause:
+    There's no full-length sequence in the original file or the 5' & 3' trim sites could not be found.''',
+        text_color='#bfbfbf',
+        font=('Segoe UI', 10),
+        pad=((50, 50), (0, 0))
+    )
+    ],
+    [Sg.Text('''Solutions:
+    1. Ensure the correct sequencing files have been chosen.
+    2. Ensure a sufficiently conserved motif has been chosen for the 5' trim site.
+    3. Look at chromatograph files (*.ab1) and assess whether or not bases were
+       called incorrectly. If so, create copies of the original *.seq file and move it
+       to another folder. Edit the new copy and manually enter base calls in lowercase to
+       distinguish them from bases originally called by the computer), export the new
+       sequence into the same folder as all the other sequences, and re-run this program.''',
+             text_color='#93c47d',
+             font=('Segoe UI', 10),
+             pad=((50, 50), (0, 0))
+             )
+     ],
+]
+
+notesLayout = [
+    [Sg.Text(
+        '''• Bases that are lowercase in the final output indicate bases that were manually called due to being
+    miscalled or not called at all as a result of machine error.''',
+        text_color='#bfbfbf',
+        font=('Segoe UI', 10),
+        pad=((50, 50), (50, 0))
+            )
+    ]
 ]
 
 # Create tab layout.
@@ -193,6 +217,10 @@ tabGroup = [
                     ),
              Sg.Tab('Troubleshooting',
                     troubleshootLayout,
+                    border_width=40
+                    ),
+             Sg.Tab('Notes',
+                    notesLayout,
                     border_width=40
                     )
              ]
@@ -665,7 +693,6 @@ else:
                                   '_noTrunc.fasta',
                                   correctAaTrimBatchPath
                                   )
-    # with open(truncAaTrimBatchPath, 'x') as truncBatchFile:
     with open(correctAaTrimBatchPath, 'r') as fullBatchFile:
         batchData = fullBatchFile.readlines()
     seqBatchList = []

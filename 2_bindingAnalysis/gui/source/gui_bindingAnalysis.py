@@ -43,15 +43,16 @@ infoLayout = [
              pad=(30, 0)
              )
      ],
-    [Sg.Text('Analyse phage ELISA data along with corresponding sequence data\n',
+    [Sg.Text('Analyse raw phage ELISA with corresponding phage sequence data\n',
              text_color='#8294cc',
              font=('Segoe UI', 12),
              pad=(30, 0)
              )
      ],
-    [Sg.Text('''Calculates the average of duplicate absorbances for each protein, normalizes absorbances
-against the average of the blanks, and calculates the binder:control absorbance ratios.
-ELISA data that don't have corresponding sequencing data are excluded from the final results.''',
+    [Sg.Text('''Calculates the average of duplicate absorbances for each protein, normalizes
+absorbances against the average of the blanks, and calculates the binder:control
+absorbance ratios. ELISA data that don't have corresponding sequencing data are
+excluded from the final results.''',
              text_color='#a0a0a2',
              font=('Segoe UI', 10),
              pad=(50, 40)
@@ -240,16 +241,50 @@ inputLayout = [
      ]
 ]
 
-# TODO: Add to this and improve visual formatting.
+# TODO: Add to this.
 troubleshootLayout = [
-    [Sg.Text('''Issue #1: .
-Cause: .
-Solution: .''',
-             text_color='#bfbfbf',
+    [Sg.Text('''Issue #1:
+    Program crashes after pressing "Enter'.''',
+             text_color='#f44336',
              font=('Segoe UI', 10),
-             pad=(50, 50)
+             pad=((50, 50), (50, 0))
              )
-     ]
+     ],
+    [Sg.Text(
+        '''Cause:
+    The raw ELISA data input is incorrectly formatted.''',
+        text_color='#bfbfbf',
+        font=('Segoe UI', 10),
+        pad=((50, 50), (0, 0))
+    )
+    ],
+    [Sg.Text('''Solutions:
+    1. Ensure the correct ELISA file has been chosen.
+    2. Ensure the data is in *.xlsx format.
+    3. In Gen5, make sure the 'Phage Display' export format has been chosen; this format is specifically made for
+       this program, which will not work with any other differently formatted data.''',
+             text_color='#93c47d',
+             font=('Segoe UI', 10),
+             pad=((50, 50), (0, 0))
+             )
+     ],
+]
+
+notesLayout = [
+    [Sg.Text(
+        '''• Bases that are lowercase in the final output indicate bases that were manually called
+   due to being miscalled or not called at all as a result of machine error.
+    
+• Blanks are not coated with the target protein and contain BSA or another
+  appropriate control protein.
+
+• Controls are not coated with the target protein and contain their corresponding
+  phage.''',
+        text_color='#bfbfbf',
+        font=('Segoe UI', 10),
+        pad=((50, 50), (50, 0))
+            )
+    ]
 ]
 
 # Create tab layout.
@@ -266,6 +301,10 @@ tabGroup = [
                     ),
              Sg.Tab('Troubleshooting',
                     troubleshootLayout,
+                    border_width=40
+                    ),
+             Sg.Tab('Notes',
+                    notesLayout,
                     border_width=40
                     )
              ]

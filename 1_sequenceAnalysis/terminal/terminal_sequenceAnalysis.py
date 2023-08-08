@@ -486,7 +486,6 @@ truncAaTrimBatchPath = re.sub('.fasta',
                               '_noTrunc.fasta',
                               correctAaTrimBatchPath
                               )
-# with open(truncAaTrimBatchPath, 'x') as truncBatchFile:
 with open(correctAaTrimBatchPath, 'r') as fullBatchFile:
     batchData = fullBatchFile.readlines()
 seqBatchList = []

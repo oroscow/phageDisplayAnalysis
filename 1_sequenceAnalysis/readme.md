@@ -1,10 +1,19 @@
 # Sequence Analysis
  
-Analyses the University of Guelph's Advanced Analytics Centre (AAC) Genomics Facility Sanger sequencing output. Original
-files are left unaltered and copies are renamed, reorganised, converted to fasta, trimmed, translated, and aligned.
-Final amino acid/nucleotide alignments are in \*.fasta, \*.clustal, and \*.xlsx formats.
+Analyses Sanger sequencing output from  the University of Guelph's Advanced
+Analytics Centre's (UoG AAC) Genomics Facility. Original files are left unaltered
+and copies are renamed, reorganised, converted to fasta, trimmed, translated,
+and aligned.
 
-![Sequence Analysis GUI](gui/source/images/gui.png)
+Final amino acid/nucleotide alignments are in *.fasta, *.clustal, and *.xlsx formats..
+
+![Sequence Analysis GUI](gui/source/images/gui1.png)
+
+![Sequence Analysis GUI](gui/source/images/gui2.png)
+
+![Sequence Analysis GUI](gui/source/images/gui3.png)
+
+![Sequence Analysis GUI](gui/source/images/gui4.png)
 
 ## Details:
 
@@ -13,7 +22,7 @@ Final amino acid/nucleotide alignments are in \*.fasta, \*.clustal, and \*.xlsx 
 
 **Output:** Raw DNA sequence data (original \*.seq and \*.ab1 files) are sorted into their own folders, copied and converted
 into fasta format, trimmed at 5' and 3' cut sites, translated to amino acid sequences (\*.fasta), and both amino acid and
-nucleotide sequences are aligned (\*.fasta, \*.clustal, \*.xlsx). The Excel alignment (\*.xlsx) has four worksheets containing all
+nucleotide sequences are aligned (\*.fasta, *.clustal, *.xlsx). The Excel alignment (\*.xlsx) has four worksheets containing all
 amino acid sequences, unique amino acid sequences, all nucleotide sequences, and unique nucleotide sequences,
 respectively. Frequency and corresponding sequence IDs are generated for each unique sequence. Sequences that cannot be
 trimmed are moved to their own folder for independent manual analysis.
@@ -35,7 +44,7 @@ to a separate folder for manual analysis.
 for has conflicts with the xlsxwriter package and may get stuck on importing modules.
 * Confirmed to work with Python 3.9. Later/earlier versions may work but have not been tested.
 * Confirmed to work in Windows and unconfirmed in Macs and Linux. Path names may need to be changed to suit Macs
-and Linux' formats.
+and Linux formats.
 
 ## Usage:
 
@@ -49,9 +58,9 @@ desktop.
 5. The first time the program is run, Windows may try to prevent you from opening the file in order to protect your PC
 (see below). Click on 'More info' and then click on 'Run anyway'. Once you've done this once, it won't ask again.
 
-![Windows Warning](https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fmonstersocial.net%2Fwp-content%2Fuploads%2F2015%2F08%2Fwindowsprotectedyourpc.jpg&f=1&nofb=1)
+![Windows Warning](https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fsupport.mycrypto.com%2Fstatic%2F6198fff64c525adbce55c9c1f9477af3%2F4af8e%2Fwindows-error-run-anyway.png&f=1&nofb=1&ipt=6f7b2b3c7a59ba142ee5853e6dd44402c970413ae8b58c8ac847e0c0de57f60d&ipo=images)
 
-###### Image credit to [monstersocial.net](https://monstersocial.net/).
+###### Image credit to [mycrypto.com](https://support.mycrypto.com/).
 
 Note: Only do this for trusted sources. Be very careful about opening executables sent by strangers and make sure to do
 your due diligence and carefully examine all sources online.

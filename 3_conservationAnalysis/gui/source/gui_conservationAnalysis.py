@@ -54,16 +54,16 @@ infoLayout = [
              pad=(50, 0)
              )
      ],
-    [Sg.Text('''Compare phage sequence data and ELISA data (optional) with
-corresponding the wildtype scaffold sequence''',
+    [Sg.Text('''Compare phage sequence and ELISA (optional) data with the corresponding
+wildtype scaffold sequence''',
              text_color='#8294cc',
              font=('Segoe UI', 12),
              pad=(50, 0)
              )
      ],
-    [Sg.Text('''Analyses sequencing and optional ELISA data by showing non-conserved amino acid residues,
+    [Sg.Text('''Analyses sequencing and ELISA data (optional) by showing non-conserved amino acid residues,
 highlighting regions that were targeted for diversification in the original phage display
-library, and calculating diversity/biochemistry metrics.''',
+library, and calculating diversity/biochemical metrics.''',
              text_color='#a0a0a2',
              font=('Segoe UI', 10),
              pad=(70, 40)
@@ -166,14 +166,14 @@ inputLayout = [
              )
      ],
 
-    # Consensus sequence input prompt.
-    [Sg.Text('\n4. Enter the consensus sequence for comparison:',
+    # Reference sequence input prompt.
+    [Sg.Text('\n4. Enter the reference sequence for comparison:',
              text_color='white',
              font=('Segoe UI Bold', 10),
              pad=(20, 0)
              )
      ],
-    [Sg.Input(key='-CONSENSUS_INPUT-',
+    [Sg.Input(key='-REFERENCE_INPUT-',
               size=90,
               pad=(40, 10),
               font=('Segoe UI', 10),
@@ -244,16 +244,40 @@ inputLayout = [
      ],
 ]
 
-# TODO: Add to this and improve visual formatting.
+# TODO: Add to this.
 troubleshootLayout = [
-    [Sg.Text('''Issue #1: There are no conserved residues.
-Cause: N-terminal residues were likely trimmed incorrectly (trimmed too much or too little).
-Solution: Make sure the correct number of N-terminal residues are trimmed.''',
-             text_color='#bfbfbf',
+    [Sg.Text('''Issue #1:
+    .''',
+             text_color='#f44336',
              font=('Segoe UI', 10),
-             pad=(50, 50)
+             pad=((50, 50), (50, 0))
              )
-     ]
+     ],
+    [Sg.Text(
+        '''Cause:
+    .''',
+        text_color='#bfbfbf',
+        font=('Segoe UI', 10),
+        pad=((50, 50), (0, 0))
+    )
+    ],
+    [Sg.Text('''Solutions:
+    1. .''',
+             text_color='#93c47d',
+             font=('Segoe UI', 10),
+             pad=((50, 50), (0, 0))
+             )
+     ],
+]
+
+notesLayout = [
+    [Sg.Text(
+        '''• .''',
+        text_color='#bfbfbf',
+        font=('Segoe UI', 10),
+        pad=((50, 50), (50, 0))
+    )
+    ]
 ]
 
 # Create tab layout.
@@ -270,6 +294,10 @@ tabGroup = [
                     ),
              Sg.Tab('Troubleshooting',
                     troubleshootLayout,
+                    border_width=40
+                    ),
+             Sg.Tab('Notes',
+                    notesLayout,
                     border_width=40
                     )
              ]
@@ -346,10 +374,10 @@ while True:
                           '2': 'Library 2 (Ernst et al., 2013)',
                           'pass': 'No library chosen'
                           }
-        consensusSeq = str(values['-CONSENSUS_INPUT-'])
-        consensusSeq = consensusSeq.upper()
+        referenceSeq = str(values['-REFERENCE_INPUT-'])
+        referenceSeq = referenceSeq.upper()
         aaSeqRegex = re.compile(r'[ARNDCEQGHILKMFPSTWYVX]{10,}')
-        consensusSeqInput = aaSeqRegex.search(consensusSeq, re.IGNORECASE)
+        referenceSeqInput = aaSeqRegex.search(referenceSeq, re.IGNORECASE)
 
         if values['-ELISA_SEQ_DATA-']:
             inputFormat = '1'
@@ -424,11 +452,11 @@ Please enter a number.''',
             nTrimChoice = 'N'
             nTrimInput = 0
 
-        # Stops user if consensus sequence input is invalid and prompts to retry.
-        if consensusSeqInput is None:
-            Sg.Popup('''Invalid input for consensus sequence.
+        # Stops user if reference sequence input is invalid and prompts to retry.
+        if referenceSeqInput is None:
+            Sg.Popup('''Invalid input for reference sequence.
 Please enter a valid IUPAC amino acid sequence at least ten residues long.''',
-                     title='Invalid Consensus Sequence',
+                     title='Invalid Reference Sequence',
                      grab_anywhere=True,
                      text_color='#4276ac',
                      any_key_closes=False
@@ -609,12 +637,12 @@ else:
         logging.info('First amino acid residue left in all sequences.')
         pass
 
-    # Compare binder sequences against a consensus sequence and replace conserved amino acids with dashes.
-    logging.info('''Consensus sequence set to '%s'.''' % consensusSeq)
-    consensusLen = len(consensusSeq)
+    # Compare binder sequences against a reference sequence and replace conserved amino acids with dashes.
+    logging.info('''Reference sequence set to '%s'.''' % referenceSeq)
+    referenceLen = len(referenceSeq)
     conservedList = []
     for querySeq in aaShortList:
-        conservedList.append(comparestrings(consensusSeq,
+        conservedList.append(comparestrings(referenceSeq,
                                             querySeq
                                             )
                              )
@@ -626,7 +654,7 @@ else:
 
     IDlist = [*range(1, len(uniqueDict) + 1)]
 
-    residueList = [*range(1, consensusLen + 1)]
+    residueList = [*range(1, referenceLen + 1)]
 
     ##################
     # Export data as a single xlsx file.
@@ -721,30 +749,30 @@ else:
     wellID_format.set_align('center')
     wellID_format.set_align('vcenter')
 
-    # Consensus.
-    consensusSeq_format = workbook.add_format({'bg_color': '#F2F2F2'
+    # Reference.
+    referenceSeq_format = workbook.add_format({'bg_color': '#F2F2F2'
                                                }
                                               )
-    consensusSeq_format.set_bottom(3)
+    referenceSeq_format.set_bottom(3)
 
-    consensusInteger_format = workbook.add_format({'num_format': '#,##0',
+    referenceInteger_format = workbook.add_format({'num_format': '#,##0',
                                                    'font_size': 10,
                                                    'font_name': 'Segoe UI'
                                                    }
                                                   )
-    consensusInteger_format.set_align('center')
-    consensusInteger_format.set_align('vcenter')
-    consensusInteger_format.set_bottom(8)
+    referenceInteger_format.set_align('center')
+    referenceInteger_format.set_align('vcenter')
+    referenceInteger_format.set_bottom(8)
 
-    consensusPercent_format = workbook.add_format({'num_format': '#,##0.0%',
+    referencePercent_format = workbook.add_format({'num_format': '#,##0.0%',
                                                    'font_size': 10,
                                                    'font_name': 'Segoe UI'
                                                    }
                                                   )
-    consensusPercent_format.set_align('center')
-    consensusPercent_format.set_align('vcenter')
-    consensusPercent_format.set_bottom(8)
-    consensusPercent_format.set_right(3)
+    referencePercent_format.set_align('center')
+    referencePercent_format.set_align('vcenter')
+    referencePercent_format.set_bottom(8)
+    referencePercent_format.set_right(3)
 
     # Sequences.
     sequence_format = workbook.add_format({'font_size': 9,
@@ -776,8 +804,8 @@ else:
     worksheet1 = workbook.add_worksheet(worksheet1Name)
     worksheet1.hide_gridlines(option=2)
     worksheet1.set_column(0, 0, 10)
-    worksheet1.set_column(1, consensusLen, 3)
-    worksheet1.set_column(consensusLen + 1, consensusLen + 5, 8)
+    worksheet1.set_column(1, referenceLen, 3)
+    worksheet1.set_column(referenceLen + 1, referenceLen + 5, 8)
     worksheet1.freeze_panes(3, 1)
     logging.info('%s worksheet created.' % worksheet1Name)
 
@@ -787,16 +815,16 @@ else:
         worksheet1.write(2, residueCol, residue, residue_format)
         residueCol += 1
 
-    # Write consensus amino acid sequence.
-    worksheet1.write(3, 0, "Consensus", general_format)
-    worksheet1.conditional_format(3, 1, 3, len(consensusSeq) + 1,
-                                  {'type': 'no_blanks', 'format': consensusSeq_format}
+    # Write reference amino acid sequence.
+    worksheet1.write(3, 0, "Reference", general_format)
+    worksheet1.conditional_format(3, 1, 3, len(referenceSeq) + 1,
+                                  {'type': 'no_blanks', 'format': referenceSeq_format}
                                   )
-    consensusRow = 3
-    consensusCol = 1
-    for letter in consensusSeq:
-        worksheet1.write(consensusRow, consensusCol, letter, sequence_format)
-        consensusCol += 1
+    referenceRow = 3
+    referenceCol = 1
+    for letter in referenceSeq:
+        worksheet1.write(referenceRow, referenceCol, letter, sequence_format)
+        referenceCol += 1
 
     # Assign IDs to each unique amino acid sequence.
     worksheet1.merge_range(0, 0, 2, 0, 'ID', title_format)
@@ -820,10 +848,10 @@ else:
     logging.info('Unique conserved sequences written to %s worksheet.' % worksheet1Name)
 
     # Write counts for each unique amino acid sequence.
-    worksheet1.merge_range(0, consensusLen + 1, 2, consensusLen + 1, 'Count', title_format)
+    worksheet1.merge_range(0, referenceLen + 1, 2, referenceLen + 1, 'Count', title_format)
     count = list(uniqueDict.values())
     countRow = 4
-    countCol = consensusLen + 1
+    countCol = referenceLen + 1
     for number in count:
         worksheet1.write(countRow, countCol, number, general_format)
         countRow += 1
@@ -833,8 +861,8 @@ else:
     if inputFormat == '1':
         # Max.
         maxRow = 4
-        maxCol = consensusLen + 2
-        worksheet1.merge_range(0, consensusLen + 2, 2, consensusLen + 2, 'Max.', title_format)
+        maxCol = referenceLen + 2
+        worksheet1.merge_range(0, referenceLen + 2, 2, referenceLen + 2, 'Max.', title_format)
         for number in maxList:
             worksheet1.write(maxRow, maxCol, number, stats_format)
             maxRow += 1
@@ -842,8 +870,8 @@ else:
 
         # Min.
         minRow = 4
-        minCol = consensusLen + 3
-        worksheet1.merge_range(0, consensusLen + 3, 2, consensusLen + 3, 'Min.', title_format)
+        minCol = referenceLen + 3
+        worksheet1.merge_range(0, referenceLen + 3, 2, referenceLen + 3, 'Min.', title_format)
         for number in minList:
             worksheet1.write(minRow, minCol, number, stats_format)
             minRow += 1
@@ -851,8 +879,8 @@ else:
 
         # Median.
         medianRow = 4
-        medianCol = consensusLen + 4
-        worksheet1.merge_range(0, consensusLen + 4, 2, consensusLen + 4, 'Median', title_format)
+        medianCol = referenceLen + 4
+        worksheet1.merge_range(0, referenceLen + 4, 2, referenceLen + 4, 'Median', title_format)
         for number in medianList:
             worksheet1.write(medianRow, medianCol, number, stats_format)
             medianRow += 1
@@ -860,8 +888,8 @@ else:
 
         # Mean.
         meanRow = 4
-        meanCol = consensusLen + 5
-        worksheet1.merge_range(0, consensusLen + 5, 2, consensusLen + 5, 'Mean', title_format)
+        meanCol = referenceLen + 5
+        worksheet1.merge_range(0, referenceLen + 5, 2, referenceLen + 5, 'Mean', title_format)
         for number in meanList:
             worksheet1.write(meanRow, meanCol, number, stats_format)
             meanRow += 1
@@ -869,20 +897,20 @@ else:
 
         # St. dev.
         stdevRow = 4
-        stdevCol = consensusLen + 6
-        worksheet1.merge_range(0, consensusLen + 6, 2, consensusLen + 6, 'St. Dev.', title_format)
+        stdevCol = referenceLen + 6
+        worksheet1.merge_range(0, referenceLen + 6, 2, referenceLen + 6, 'St. Dev.', title_format)
         for number in devList:
             worksheet1.write(stdevRow, stdevCol, number, stats_format)
             stdevRow += 1
         logging.info('Standard deviation values written to %s worksheet.' % worksheet1Name)
 
         # Wells.
-        worksheet1.merge_range(0, consensusLen + 7, 2, consensusLen + 7, 'Wells', wellTitle_format)
+        worksheet1.merge_range(0, referenceLen + 7, 2, referenceLen + 7, 'Wells', wellTitle_format)
         wellRow = 4
-        wellCol = consensusLen + 7
+        wellCol = referenceLen + 7
         # Change column width to fit all IDs.
         wellColWidth = round((len(countID[0]) / 1.16))
-        worksheet1.set_column(consensusLen + 7, consensusLen + 7, wellColWidth)
+        worksheet1.set_column(referenceLen + 7, referenceLen + 7, wellColWidth)
         # Write specific IDs to worksheet.
         for wellList in countID:
             worksheet1.write(wellRow, wellCol, wellList, wellList_format)
@@ -890,7 +918,7 @@ else:
         logging.info('Wells written to %s worksheet.' % worksheet1Name)
 
         # Conditional formatting for statistics.
-        for column in range(consensusLen + 2, consensusLen + 7):
+        for column in range(referenceLen + 2, referenceLen + 7):
             worksheet1.conditional_format(2,
                                           column,
                                           len(conservedList) + 3,
@@ -901,19 +929,19 @@ else:
         logging.info('Conditional formatting applied to statistics.')
 
         # Table for statistics.
-        worksheet1.add_table(4, 0, len(conservedList) + 3, consensusLen + 7, {'header_row': False,
+        worksheet1.add_table(4, 0, len(conservedList) + 3, referenceLen + 7, {'header_row': False,
                                                                               'style': None
                                                                               }
                              )
 
     elif inputFormat == '2':
         # Wells.
-        worksheet1.write(1, consensusLen + 2, 'Wells', wellTitle_format)
+        worksheet1.write(1, referenceLen + 2, 'Wells', wellTitle_format)
         wellRow = 4
-        wellCol = consensusLen + 2
+        wellCol = referenceLen + 2
         # Change column width to fit all IDs.
         wellColWidth = round((len(countID[0]) / 1.16))
-        worksheet1.set_column(consensusLen + 2, consensusLen + 2, wellColWidth)
+        worksheet1.set_column(referenceLen + 2, referenceLen + 2, wellColWidth)
 
         # Write specific IDs to worksheet.
         for wellList in countID:
@@ -922,7 +950,7 @@ else:
         logging.info('Amino acid sequence-specific well IDs written to %s worksheet.' % worksheet1Name)
 
         # Table for counts and wells.
-        worksheet1.add_table(3, 0, len(conservedList) + 3, consensusLen + 2, {'header_row': False,
+        worksheet1.add_table(3, 0, len(conservedList) + 3, referenceLen + 2, {'header_row': False,
                                                                               'style': None
                                                                               }
                              )
@@ -990,7 +1018,7 @@ else:
     # Info about how the values were obtained.
     if inputFormat == '1':
         statsInfo = 'Statistics presented above are for binder:control binding ratios.'
-        worksheet1.write(len(conservedList) + 5, consensusLen + 2, statsInfo, info_format)
+        worksheet1.write(len(conservedList) + 5, referenceLen + 2, statsInfo, info_format)
     else:
         pass
 
@@ -1005,7 +1033,7 @@ else:
                'aromatic': ['F', 'W', 'Y'],
                'aliphatic': ['A', 'G', 'I', 'L', 'P', 'V'],
                }
-    # Consensus sequence analysis.
+    # Reference sequence analysis.
     resHydrophobicCon = []
     percentHydrophobicCon = []
     resPolarCon = []
@@ -1021,67 +1049,67 @@ else:
 
     # Total hydrophobic residues.
     totalHydrophobic = 0
-    for residue in consensusSeq:
+    for residue in referenceSeq:
         if residue in aaTypes['hydrophobic']:
             totalHydrophobic += 1
     resHydrophobicCon.append(totalHydrophobic)
     try:
-        percentHydrophobicCon.append(totalHydrophobic / len(consensusSeq))
+        percentHydrophobicCon.append(totalHydrophobic / len(referenceSeq))
     except ZeroDivisionError:
         percentHydrophobicCon.append('0')
 
     # Total polar residues.
     totalPolar = 0
-    for residue in consensusSeq:
+    for residue in referenceSeq:
         if residue in aaTypes['polar']:
             totalPolar += 1
     resPolarCon.append(totalPolar)
     try:
-        percentPolarCon.append(totalPolar / len(consensusSeq))
+        percentPolarCon.append(totalPolar / len(referenceSeq))
     except ZeroDivisionError:
         percentPolarCon.append('0')
 
     # Total diversified acidic residues.
     totalAcidic = 0
-    for residue in consensusSeq:
+    for residue in referenceSeq:
         if residue in aaTypes['acidic']:
             totalAcidic += 1
     resAcidicCon.append(totalAcidic)
     try:
-        percentAcidicCon.append(totalAcidic / len(consensusSeq))
+        percentAcidicCon.append(totalAcidic / len(referenceSeq))
     except ZeroDivisionError:
         percentAcidicCon.append('0')
 
     # Total basic residues.
     totalBasic = 0
-    for residue in consensusSeq:
+    for residue in referenceSeq:
         if residue in aaTypes['basic']:
             totalBasic += 1
     resBasicCon.append(totalBasic)
     try:
-        percentBasicCon.append(totalBasic / len(consensusSeq))
+        percentBasicCon.append(totalBasic / len(referenceSeq))
     except ZeroDivisionError:
         percentBasicCon.append('0')
 
     # Total aromatic residues.
     totalAromatic = 0
-    for residue in consensusSeq:
+    for residue in referenceSeq:
         if residue in aaTypes['aromatic']:
             totalAromatic += 1
     resAromaticCon.append(totalAromatic)
     try:
-        percentAromaticCon.append(totalAromatic / len(consensusSeq))
+        percentAromaticCon.append(totalAromatic / len(referenceSeq))
     except ZeroDivisionError:
         percentAromaticCon.append('0')
 
     # Total aliphatic residues.
     totalAliphatic = 0
-    for residue in consensusSeq:
+    for residue in referenceSeq:
         if residue in aaTypes['aliphatic']:
             totalAliphatic += 1
     resAliphaticCon.append(totalAliphatic)
     try:
-        percentAliphaticCon.append(totalAliphatic / len(consensusSeq))
+        percentAliphaticCon.append(totalAliphatic / len(referenceSeq))
     except ZeroDivisionError:
         percentAliphaticCon.append('0')
 
@@ -1189,7 +1217,7 @@ else:
 
         # Biochemical analysis.
         conBinderSeq = aaShortList
-        conBinderSeq.insert(0, consensusSeq)
+        conBinderSeq.insert(0, referenceSeq)
         for sequence in conBinderSeq:
             # Total diversified hydrophobic residues.
             totalHydrophobic = 0
@@ -1287,7 +1315,7 @@ else:
         biochemicalDataframe = pandas.DataFrame(biochemicalTable)
         binderBiochemicalDataframe = biochemicalDataframe.drop([0, 0])
         biochemicalDataframe = pandas.DataFrame(biochemicalTable)
-        consensusBiochemicalDataframe = biochemicalDataframe.loc[0]
+        referenceBiochemicalDataframe = biochemicalDataframe.loc[0]
 
     elif libraryInput == 'pass':
         resDiversified = []
@@ -1402,7 +1430,7 @@ else:
         biochemicalDataframe = pandas.DataFrame(biochemicalTable)
         binderBiochemicalDataframe = biochemicalDataframe.drop([0, 0])
         biochemicalDataframe = pandas.DataFrame(biochemicalTable)
-        consensusBiochemicalDataframe = biochemicalDataframe.loc[0]
+        referenceBiochemicalDataframe = biochemicalDataframe.loc[0]
 
     ##################
     # Create worksheet for diversity analyses.
@@ -1417,102 +1445,102 @@ else:
             worksheet2.set_column(column, column, 15)
         for column in [2, 4, 6, 8, 10]:
             worksheet2.set_column(column, column, 20)
-        worksheet2.freeze_panes(2, 1)
+        worksheet2.freeze_panes(3, 1)
         logging.info('%s worksheet created.' % worksheet2Name)
 
         # Write unique sequence IDs.
-        worksheet2.merge_range(0, 0, 1, 0, 'ID', title_format)
-        idRow = 2
+        worksheet2.merge_range(0, 0, 2, 0, 'ID', title_format)
+        idRow = 3
         for ID in IDlist:
             worksheet2.write(idRow, 0, ID, general_format)
             idRow += 1
         logging.info('IDs written to %s worksheet.' % worksheet2Name)
 
         # Write untargeted diversified residues.
-        untargetedRow = 2
+        untargetedRow = 3
         untargetedCol = 1
-        worksheet2.merge_range(0, 1, 1, 1, 'Untargeted Diversified', title_format)
+        worksheet2.merge_range(0, 1, 2, 1, 'Untargeted Diversified', title_format)
         for untargeted in diversityDataframe['Total Untargeted Diversified']:
             worksheet2.write(untargetedRow, untargetedCol, untargeted, integer_format)
             untargetedRow += 1
         logging.info('Untargeted residues written to %s worksheet.' % worksheet2Name)
 
         # Write untargeted diversified residues as a percent of untargeted regions.
-        untargetedPercentRow = 2
+        untargetedPercentRow = 3
         untargetedPercentCol = 2
-        worksheet2.merge_range(0, 2, 1, 2, '% of Untargeted', title_format)
+        worksheet2.merge_range(0, 2, 2, 2, '% of Untargeted', title_format)
         for untargetedPercent in diversityDataframe['Untargeted: Percent of Untargeted Residues']:
             worksheet2.write(untargetedPercentRow, untargetedPercentCol, untargetedPercent, percent_format)
             untargetedPercentRow += 1
         logging.info('Untargeted residues as a percent of untargeted regions written to %s worksheet.' % worksheet2Name)
 
         # Write targeted diversified residues.
-        targetedRow = 2
+        targetedRow = 3
         targetedCol = 3
-        worksheet2.merge_range(0, 3, 1, 3, 'Targeted Diversified', title_format)
+        worksheet2.merge_range(0, 3, 2, 3, 'Targeted Diversified', title_format)
         for targeted in diversityDataframe['Total Targeted Diversified']:
             worksheet2.write(targetedRow, targetedCol, targeted, integer_format)
             targetedRow += 1
         logging.info('Targeted residues written to %s worksheet.' % worksheet2Name)
 
         # Write targeted diversified residues as a percent of targeted regions.
-        targetedPercentRow = 2
+        targetedPercentRow = 3
         targetedPercentCol = 4
-        worksheet2.merge_range(0, 4, 1, 4, '% of Targeted', title_format)
+        worksheet2.merge_range(0, 4, 2, 4, '% of Targeted', title_format)
         for targetedPercent in diversityDataframe['Targeted: Percent of Targeted Residues']:
             worksheet2.write(targetedPercentRow, targetedPercentCol, targetedPercent, percent_format)
             targetedPercentRow += 1
         logging.info('Targeted residues as a percent of targeted regions written to %s worksheet.' % worksheet2Name)
 
         # Write region 1 diversified residues.
-        reg1Row = 2
+        reg1Row = 3
         reg1Col = 5
-        worksheet2.merge_range(0, 5, 1, 5, 'Region 1 Diversified', title_format)
+        worksheet2.merge_range(0, 5, 2, 5, 'Region 1 Diversified', title_format)
         for reg1 in diversityDataframe['Region 1 Diversified']:
             worksheet2.write(reg1Row, reg1Col, reg1, integer_format)
             reg1Row += 1
         logging.info('Region 1 diversified residues written to %s worksheet.' % worksheet2Name)
 
         # Write region 1 diversified residues as a percent of region 1.
-        reg1PercentRow = 2
+        reg1PercentRow = 3
         reg1PercentCol = 6
-        worksheet2.merge_range(0, 6, 1, 6, '% of Region 1', title_format)
+        worksheet2.merge_range(0, 6, 2, 6, '% of Region 1', title_format)
         for reg1Percent in diversityDataframe['Percent of Region 1']:
             worksheet2.write(reg1PercentRow, reg1PercentCol, reg1Percent, percent_format)
             reg1PercentRow += 1
         logging.info('Region 1 diversified residues as a percent of region 1 written to %s worksheet.' % worksheet2Name)
 
         # Write region 2 diversified residues.
-        reg2Row = 2
+        reg2Row = 3
         reg2Col = 7
-        worksheet2.merge_range(0, 7, 1, 7, 'Region 2 Diversified', title_format)
+        worksheet2.merge_range(0, 7, 2, 7, 'Region 2 Diversified', title_format)
         for reg2 in diversityDataframe['Region 2 Diversified']:
             worksheet2.write(reg2Row, reg2Col, reg2, integer_format)
             reg2Row += 1
         logging.info('Region 2 diversified residues written to %s worksheet.' % worksheet2Name)
 
         # Write region 2 diversified residues as a percent of region 2.
-        reg2PercentRow = 2
+        reg2PercentRow = 3
         reg2PercentCol = 8
-        worksheet2.merge_range(0, 8, 1, 8, '% of Region 2', title_format)
+        worksheet2.merge_range(0, 8, 2, 8, '% of Region 2', title_format)
         for reg2Percent in diversityDataframe['Percent of Region 2']:
             worksheet2.write(reg2PercentRow, reg2PercentCol, reg2Percent, percent_format)
             reg2PercentRow += 1
         logging.info('Region 2 diversified residues as a percent of region 2 written to %s worksheet.' % worksheet2Name)
 
         # Write region 3 diversified residues.
-        reg3Row = 2
+        reg3Row = 3
         reg3Col = 9
-        worksheet2.merge_range(0, 9, 1, 9, 'Region 3 Diversified', title_format)
+        worksheet2.merge_range(0, 9, 2, 9, 'Region 3 Diversified', title_format)
         for reg3 in diversityDataframe['Region 3 Diversified']:
             worksheet2.write(reg3Row, reg3Col, reg3, integer_format)
             reg3Row += 1
         logging.info('Region 3 diversified residues written to %s worksheet.' % worksheet2Name)
 
         # Write region 3 diversified residues as a percent of region 3.
-        reg3PercentRow = 2
+        reg3PercentRow = 3
         reg3PercentCol = 10
-        worksheet2.merge_range(0, 10, 1, 10, '% of Region 3', title_format)
+        worksheet2.merge_range(0, 10, 2, 10, '% of Region 3', title_format)
         for reg3Percent in diversityDataframe['Percent of Region 3']:
             worksheet2.write(reg3PercentRow, reg3PercentCol, reg3Percent, percent_format)
             reg3PercentRow += 1
@@ -1528,7 +1556,7 @@ else:
                                           )
 
         # Table formatting for diversity analyses.
-        worksheet2.add_table(2, 0, len(conservedList) + 1, 10,
+        worksheet2.add_table(3, 0, len(conservedList) + 2, 10,
                              {'header_row': False,
                               'style': None
                               }
@@ -1601,18 +1629,18 @@ else:
     worksheet3.freeze_panes(2, 1)
     logging.info('%s worksheet created.' % worksheet3Name)
 
-    # Write consensus sequence data.
-    worksheet3.write(2, 0, 'Consensus', general_format)
+    # Write reference sequence data.
+    worksheet3.write(2, 0, 'Reference', general_format)
     conRow = 2
     conCol = 1
-    for integer in consensusBiochemicalDataframe.iloc[range(0, 12, 2)]:
-        worksheet3.write(conRow, conCol, integer, consensusInteger_format)
+    for integer in referenceBiochemicalDataframe.iloc[range(0, 12, 2)]:
+        worksheet3.write(conRow, conCol, integer, referenceInteger_format)
         conCol += 2
     conCol = 2
-    for percent in consensusBiochemicalDataframe.iloc[range(1, 12, 2)]:
-        worksheet3.write(conRow, conCol, percent, consensusPercent_format)
+    for percent in referenceBiochemicalDataframe.iloc[range(1, 12, 2)]:
+        worksheet3.write(conRow, conCol, percent, referencePercent_format)
         conCol += 2
-    logging.info('Consensus sequence data written to %s worksheet.' % worksheet3Name)
+    logging.info('Reference sequence data written to %s worksheet.' % worksheet3Name)
 
     # Write sequence IDs.
     worksheet3.merge_range(0, 0, 1, 0, 'ID', title_format)
