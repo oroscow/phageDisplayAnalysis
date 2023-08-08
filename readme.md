@@ -8,18 +8,14 @@ In order of suggested use, the set of programs includes:
 2. Binding Analysis
 3. Conservation Analysis
 
-Each program can be run either as an executable or a terminal program. For further details on each program (e.g. how to run, input/ouput file types, and so on), please look at their respective reademe's in their folders.
-
-![All Program GUIs](gui.png)
-
-###### GUIs for each program.
+Each program can be run either as an executable or a terminal program. For further details on each program (e.g. how to run, input/output file types, and so on), please look at their respective readme's in their folders.
 
 ## Compatibility:
 * PyCharm is the recommended IDE to use for running terminal scripts. If using Spyder, avoid version 5 as this version
 for has conflicts with the xlsxwriter package and may get stuck on importing modules.
 * Confirmed to work with Python 3.9. Later/earlier versions may work but have not been tested.
 * Confirmed to work in Windows and unconfirmed in Macs and Linux. Path names may need to be changed to suit Macs
-and Linux' formats.
+and Linux formats.
 
 ## Updates
 
@@ -29,4 +25,4 @@ I try to update these regularly as I discover more bugs. It is unrealistic to ex
 
 If you experience any issues running the program, please either create an issue in GitHub or email me directly at oroscow@uoguelph.ca.
 
-Additionally, if these programs don't work for your data set but you would like a program that does, please send me an email and run your idea past me. We can discuss whether you want a similar program or something new altogether (don't be afraid to challenge me either)!
+Additionally, if these programs don't work for your data set but you would like a program that does, please email me and run your idea past me. We can discuss whether you want a similar program or something new altogether (don't be afraid to challenge me either)!
