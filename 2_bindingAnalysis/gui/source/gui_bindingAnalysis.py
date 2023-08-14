@@ -275,15 +275,15 @@ notesLayout = [
         '''• Bases that are lowercase in the final output indicate bases that were manually called
    due to being miscalled or not called at all as a result of machine error.
     
-• Blanks are not coated with the target protein and contain BSA or another
-  appropriate control protein.
+• Blanks are coated with the target protein and contain BSA or another appropriate
+  control protein.
 
 • Controls are not coated with the target protein and contain their corresponding
   phage.''',
         text_color='#bfbfbf',
         font=('Segoe UI', 10),
         pad=((50, 50), (50, 0))
-            )
+    )
     ]
 ]
 
@@ -899,6 +899,7 @@ else:
             if name == ID:
                 aaOrderedRatios.append(score)
 
+    # TODO: Find out why aaRatioCountDict excludes the last entry (m41_1 data)
     # Create ordered list of absorbances that correspond to unique sequences.
     aaCounts = [count for ratio, count in aaUniqueDict.items()]
     aaRatioCountDict = dict(zip(aaBinderControlRatio,
