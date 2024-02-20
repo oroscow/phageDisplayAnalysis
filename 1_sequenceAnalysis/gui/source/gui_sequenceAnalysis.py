@@ -1,4 +1,4 @@
-# !python3
+#!/bin/python3
 
 ##################
 #    MODULES
@@ -199,7 +199,7 @@ notesLayout = [
         text_color='#bfbfbf',
         font=('Segoe UI', 10),
         pad=((50, 50), (50, 0))
-            )
+    )
     ]
 ]
 
